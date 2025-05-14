@@ -105,7 +105,6 @@ if ($is_logged_in) {
                 <nav class="main-nav">
                     <ul class="nav-menu">
                         <li class="nav-item"><a href="/about-us.php">About Us</a></li>
-                        <li class="nav-item"><a href="/services.php">Services</a></li>  
                         <li class="nav-item"><a href="/eligibility-test.php">Eligibility Check</a></li>
                         <li class="nav-item"><a href="/become-member.php">Become Partner</a></li>
                     </ul>

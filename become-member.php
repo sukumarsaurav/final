@@ -167,11 +167,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
                 <!-- Monthly Plans -->
                 <div class="plans-grid cycle-plans active" id="monthly-plans">
                     <?php
-                    $filtered_plans = array_filter($plans, function($plan) {
-                        return $plan['billing_cycle'] === 'monthly';
-                    });
-                    
-                    foreach ($filtered_plans as $plan): ?>
+                    foreach ($plans as $plan): 
+                        if ($plan['billing_cycle'] !== 'monthly') continue; // Skip non-monthly plans
+                    ?>
                         <div class="plan-card" data-plan-id="<?php echo $plan['id']; ?>">
                             <div class="plan-header">
                                 <h3 class="plan-name"><?php echo htmlspecialchars($plan['name']); ?></h3>
@@ -206,11 +204,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
                 <!-- Quarterly Plans -->
                 <div class="plans-grid cycle-plans" id="quarterly-plans">
                     <?php
-                    $filtered_plans = array_filter($plans, function($plan) {
-                        return $plan['billing_cycle'] === 'quarterly';
-                    });
-                    
-                    foreach ($filtered_plans as $plan): ?>
+                    foreach ($plans as $plan): 
+                        if ($plan['billing_cycle'] !== 'quarterly') continue; // Skip non-quarterly plans
+                    ?>
                         <div class="plan-card" data-plan-id="<?php echo $plan['id']; ?>">
                             <div class="plan-header">
                                 <h3 class="plan-name"><?php echo htmlspecialchars($plan['name']); ?></h3>
@@ -245,11 +241,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
                 <!-- Annual Plans -->
                 <div class="plans-grid cycle-plans" id="annually-plans">
                     <?php
-                    $filtered_plans = array_filter($plans, function($plan) {
-                        return $plan['billing_cycle'] === 'annually';
-                    });
-                    
-                    foreach ($filtered_plans as $plan): ?>
+                    foreach ($plans as $plan): 
+                        if ($plan['billing_cycle'] !== 'annually') continue; // Skip non-annual plans
+                    ?>
                         <div class="plan-card" data-plan-id="<?php echo $plan['id']; ?>">
                             <div class="plan-header">
                                 <h3 class="plan-name"><?php echo htmlspecialchars($plan['name']); ?></h3>
