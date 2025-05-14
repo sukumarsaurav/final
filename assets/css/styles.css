@@ -513,7 +513,7 @@ body {
 .nav-menu {
     display: flex;
     align-items: center;
-    gap: 30px;
+    gap: 16px;
 }
 
 .nav-link {

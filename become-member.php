@@ -21,8 +21,55 @@ $plans = [];
 
 if ($result && $result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
+        // Ensure billing_cycle is one of the expected values
+        if (!in_array($row['billing_cycle'], ['monthly', 'quarterly', 'annually'])) {
+            // Set a default if not valid
+            $row['billing_cycle'] = 'monthly';
+        }
         $plans[] = $row;
     }
+}
+
+// Debug - Count plans by billing cycle
+$monthly_count = 0;
+$quarterly_count = 0;
+$annually_count = 0;
+
+foreach ($plans as $plan) {
+    if ($plan['billing_cycle'] === 'monthly') $monthly_count++;
+    elseif ($plan['billing_cycle'] === 'quarterly') $quarterly_count++;
+    elseif ($plan['billing_cycle'] === 'annually') $annually_count++;
+}
+
+// If no plans for a cycle, create a dummy plan
+if ($monthly_count === 0) {
+    $plans[] = [
+        'id' => 'dummy_monthly',
+        'name' => 'Basic Monthly',
+        'price' => 9.99,
+        'billing_cycle' => 'monthly',
+        'max_team_members' => 1
+    ];
+}
+
+if ($quarterly_count === 0) {
+    $plans[] = [
+        'id' => 'dummy_quarterly',
+        'name' => 'Basic Quarterly',
+        'price' => 24.99,
+        'billing_cycle' => 'quarterly',
+        'max_team_members' => 1
+    ];
+}
+
+if ($annually_count === 0) {
+    $plans[] = [
+        'id' => 'dummy_annually',
+        'name' => 'Basic Annual',
+        'price' => 89.99,
+        'billing_cycle' => 'annually',
+        'max_team_members' => 1
+    ];
 }
 
 // Check if form is submitted
@@ -74,14 +121,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
         $conn->begin_transaction();
         
         try {
+            // Create organization first using company name or user name
+            $org_name = !empty($company_name) ? $company_name : $first_name . ' ' . $last_name . "'s Organization";
+            $org_description = "Organization for " . $first_name . " " . $last_name;
+            
+            $insert_org_query = "INSERT INTO organizations (name, description) VALUES (?, ?)";
+            $stmt = $conn->prepare($insert_org_query);
+            $stmt->bind_param('ss', $org_name, $org_description);
+            $stmt->execute();
+            
+            // Get organization ID
+            $organization_id = $conn->insert_id;
+            
             // Hash password
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
             
-            // Insert user
-            $insert_user_query = "INSERT INTO users (first_name, last_name, email, phone, password, user_type, email_verified) 
-                                 VALUES (?, ?, ?, ?, ?, 'consultant', 0)";
+            // Insert user with organization_id
+            $insert_user_query = "INSERT INTO users (first_name, last_name, email, phone, password, user_type, email_verified, organization_id) 
+                                 VALUES (?, ?, ?, ?, ?, 'consultant', 0, ?)";
             $stmt = $conn->prepare($insert_user_query);
-            $stmt->bind_param('sssss', $first_name, $last_name, $email, $phone, $hashed_password);
+            $stmt->bind_param('sssssi', $first_name, $last_name, $email, $phone, $hashed_password, $organization_id);
             $stmt->execute();
             
             // Get user ID
@@ -896,6 +955,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const tabs = document.querySelectorAll('.tab');
     const cyclePlans = document.querySelectorAll('.cycle-plans');
     
+    // Debug - log the available plans
+    console.log('Monthly plans:', document.querySelectorAll('#monthly-plans .plan-card').length);
+    console.log('Quarterly plans:', document.querySelectorAll('#quarterly-plans .plan-card').length);
+    console.log('Annually plans:', document.querySelectorAll('#annually-plans .plan-card').length);
+    
     tabs.forEach(tab => {
         tab.addEventListener('click', function() {
             // Remove active class from all tabs
@@ -909,7 +973,12 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Show the selected plan section
             const cycle = this.getAttribute('data-cycle');
-            document.getElementById(`${cycle}-plans`).classList.add('active');
+            const planSection = document.getElementById(`${cycle}-plans`);
+            if (planSection) {
+                planSection.classList.add('active');
+            } else {
+                console.error(`Could not find plan section with ID: ${cycle}-plans`);
+            }
         });
     });
     
