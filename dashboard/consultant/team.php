@@ -649,6 +649,15 @@ if (isset($_GET['success'])) {
     background-color: #4262c3;
 }
 
+.btn-edit-role {
+    background-color: var(--primary-color);
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+    margin-left: 5px;
+    vertical-align: middle;
+}
+
 .empty-state {
     text-align: center;
     padding: 50px 20px;
@@ -819,39 +828,35 @@ if (isset($_GET['success'])) {
 </style>
 
 <script>
-// Modal functionality
-document.getElementById('modal_role').addEventListener('change', function() {
-    const customRoleGroup = document.getElementById('modal_custom_role_group');
-    const customRoleInput = document.getElementById('modal_custom_role_name');
-    
-    if (this.value === 'Custom') {
-        customRoleGroup.style.display = 'block';
-        customRoleInput.setAttribute('required', 'required');
-    } else {
-        customRoleGroup.style.display = 'none';
-        customRoleInput.removeAttribute('required');
-    }
-});
-
-// Open modal when Add Team Member button is clicked
+// Modal functionality for add team member
 document.getElementById('addTeamMemberBtn').addEventListener('click', function() {
     document.getElementById('addTeamMemberModal').style.display = 'block';
 });
 
-// Close modal when close button is clicked
+// Close modals when close button is clicked
 document.querySelectorAll('[data-dismiss="modal"]').forEach(function(element) {
     element.addEventListener('click', function() {
         document.getElementById('addTeamMemberModal').style.display = 'none';
+        document.getElementById('assignRoleModal').style.display = 'none';
     });
 });
 
-// Close modal when clicking outside of it
+// Close modals when clicking outside of them
 window.addEventListener('click', function(event) {
-    const modal = document.getElementById('addTeamMemberModal');
-    if (event.target === modal) {
-        modal.style.display = 'none';
+    if (event.target === document.getElementById('addTeamMemberModal')) {
+        document.getElementById('addTeamMemberModal').style.display = 'none';
+    }
+    if (event.target === document.getElementById('assignRoleModal')) {
+        document.getElementById('assignRoleModal').style.display = 'none';
     }
 });
+
+// Function to show the assign role modal
+function showAssignRoleModal(userId, memberName) {
+    document.getElementById('assign_user_id').value = userId;
+    document.getElementById('member_name_display').textContent = memberName;
+    document.getElementById('assignRoleModal').style.display = 'block';
+}
 
 // Function to handle action confirmations (deactivate, activate, resend)
 function confirmAction(action, memberId, userId) {
