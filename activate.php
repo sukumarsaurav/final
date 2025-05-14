@@ -13,7 +13,7 @@ if(is_logged_in()) {
     if($_SESSION["user_type"] === "consultant") {
         header("location: dashboard/consultant/index.php");
     } elseif($_SESSION["user_type"] === "member") {
-        header("location: dashboard/team/index.php");
+        header("location: dashboard/consultant/index.php");
     } elseif($_SESSION["user_type"] === "applicant") {
         header("location: dashboard/applicant/index.php");
     } else {
