@@ -21,55 +21,8 @@ $plans = [];
 
 if ($result && $result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
-        // Ensure billing_cycle is one of the expected values
-        if (!in_array($row['billing_cycle'], ['monthly', 'quarterly', 'annually'])) {
-            // Set a default if not valid
-            $row['billing_cycle'] = 'monthly';
-        }
         $plans[] = $row;
     }
-}
-
-// Debug - Count plans by billing cycle
-$monthly_count = 0;
-$quarterly_count = 0;
-$annually_count = 0;
-
-foreach ($plans as $plan) {
-    if ($plan['billing_cycle'] === 'monthly') $monthly_count++;
-    elseif ($plan['billing_cycle'] === 'quarterly') $quarterly_count++;
-    elseif ($plan['billing_cycle'] === 'annually') $annually_count++;
-}
-
-// If no plans for a cycle, create a dummy plan
-if ($monthly_count === 0) {
-    $plans[] = [
-        'id' => 'dummy_monthly',
-        'name' => 'Basic Monthly',
-        'price' => 9.99,
-        'billing_cycle' => 'monthly',
-        'max_team_members' => 1
-    ];
-}
-
-if ($quarterly_count === 0) {
-    $plans[] = [
-        'id' => 'dummy_quarterly',
-        'name' => 'Basic Quarterly',
-        'price' => 24.99,
-        'billing_cycle' => 'quarterly',
-        'max_team_members' => 1
-    ];
-}
-
-if ($annually_count === 0) {
-    $plans[] = [
-        'id' => 'dummy_annually',
-        'name' => 'Basic Annual',
-        'price' => 89.99,
-        'billing_cycle' => 'annually',
-        'max_team_members' => 1
-    ];
 }
 
 // Check if form is submitted
@@ -198,14 +151,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
 }
 ?>
 
-<div class="content">
-    <div class="header-container">
-        <div>
-            <h1>Become a Member</h1>
-            <p>Join our platform as a consultant and start managing your visa services.</p>
+<!-- Hero Section -->
+<section class="hero consultant-hero">
+    <div class="container">
+        <div class="hero-grid">
+            <div class="hero-content">
+                <h1 class="hero-title">Grow Your Immigration Consulting Business</h1>
+                <p class="hero-subtitle">Join Visafy to streamline your services, manage clients efficiently, and scale your practice</p>
+                <div class="hero-buttons">
+                    <a href="#membership-plans" class="btn btn-primary">View Membership Plans</a>
+                    <a href="contact.php" class="btn btn-secondary">Learn More</a>
+                </div>
+            </div>
+            <div class="hero-image-container">
+                <div class="floating-image-hero">
+                    <img src="assets/images/consultant-hero.png" alt="Immigration Consultant">
+                </div>
+            </div>
         </div>
     </div>
-    
+</section>
+
+<div class="content">
     <?php if (!empty($error_message)): ?>
         <div class="alert alert-danger"><?php echo $error_message; ?></div>
     <?php endif; ?>
@@ -214,26 +181,183 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
         <div class="alert alert-success"><?php echo $success_message; ?></div>
     <?php endif; ?>
     
-    <div class="registration-container">
+    <!-- Consultant Benefits Section -->
+    <section class="section platform-benefits">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">Why Join Visafy as a Consultant</h2>
+            <p class="section-subtitle" data-aos="fade-up" data-aos-delay="100">Our platform is designed to help you deliver exceptional immigration services</p>
+            
+            <div class="benefits-container">
+                <!-- Client Management Section -->
+                <div class="benefit-section" data-aos="fade-up">
+                    <div class="benefit-content">
+                        <div class="benefit-info">
+                            <h3>Streamlined Client Management</h3>
+                            <p class="benefit-description">
+                                Efficiently manage all your clients in one place with our comprehensive dashboard.
+                            </p>
+                            <ul class="benefit-features">
+                                <li>
+                                    <div class="check-icon">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                    <div>
+                                        <strong>Centralized Client Database</strong>
+                                        <p>Maintain detailed profiles for all your clients with searchable data and custom fields</p>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="check-icon">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                    <div>
+                                        <strong>Case Tracking System</strong>
+                                        <p>Monitor application progress with customizable milestones and automated deadline reminders</p>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="check-icon">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                    <div>
+                                        <strong>Team Collaboration Tools</strong>
+                                        <p>Assign tasks, share notes, and collaborate with your team members on cases</p>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="benefit-image">
+                            <!-- SVG Shape Background -->
+                            <div class="svg-background">
+                                <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="shape shape-1">
+                                    <path d="M42.7,-73.4C55.9,-67.1,67.7,-57.2,75.9,-44.6C84.1,-32,88.7,-16,88.1,-0.3C87.5,15.3,81.8,30.6,73.1,43.9C64.4,57.2,52.8,68.5,39.1,75.3C25.4,82.1,9.7,84.4,-5.9,83.1C-21.5,81.8,-37,76.9,-50.9,68.5C-64.8,60.1,-77.1,48.3,-83.3,33.8C-89.5,19.3,-89.6,2.2,-85.1,-13.2C-80.6,-28.6,-71.5,-42.3,-59.8,-51.6C-48.1,-60.9,-33.8,-65.8,-20.4,-70.3C-7,-74.8,5.5,-78.9,18.8,-79.1C32.1,-79.3,46.2,-75.6,42.7,-73.4Z" transform="translate(100 100)" />
+                                </svg>
+                            </div>
+                            <div class="image-container">
+                                <img src="assets/images/client-management.png" alt="Client Management">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Document Management Section -->
+                <div class="benefit-section" data-aos="fade-up">
+                    <div class="benefit-content reverse">
+                        <div class="benefit-image">
+                            <!-- SVG Shape Background -->
+                            <div class="svg-background">
+                                <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="shape shape-3">
+                                    <path d="M39.9,-68.1C52.6,-62.1,64.5,-53.1,72.7,-41C80.9,-28.8,85.4,-14.4,83.9,-0.9C82.3,12.7,74.8,25.4,66.4,37.8C58,50.3,48.7,62.5,36.5,70.1C24.2,77.7,9.1,80.7,-5.9,79.5C-20.9,78.3,-35.9,72.9,-47.5,64C-59.1,55,-67.3,42.5,-73.4,28.5C-79.5,14.5,-83.5,-1,-80.8,-15.2C-78.1,-29.4,-68.7,-42.3,-56.8,-48.9C-44.9,-55.5,-30.5,-55.8,-17.7,-61.8C-4.9,-67.8,6.3,-79.5,18.4,-80.5C30.5,-81.5,43.5,-71.8,39.9,-68.1Z" transform="translate(100 100)" />
+                                </svg>
+                            </div>
+                            <div class="image-container">
+                                <img src="assets/images/documents.png" alt="Document Management">
+                            </div>
+                        </div>
+                        <div class="benefit-info">
+                            <h3>Secure Document Management</h3>
+                            <p class="benefit-description">
+                                Organize, store, and share client documents securely through our encrypted platform.
+                            </p>
+                            <ul class="benefit-features">
+                                <li>
+                                    <div class="check-icon">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                    <div>
+                                        <strong>Document Templates</strong>
+                                        <p>Access a library of customizable templates for various immigration applications</p>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="check-icon">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                    <div>
+                                        <strong>Secure Client Portal</strong>
+                                        <p>Allow clients to securely upload and view their documents with controlled access</p>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="check-icon">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                    <div>
+                                        <strong>Document Verification System</strong>
+                                        <p>Easily review, approve, or request revisions to client-submitted documents</p>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Business Growth Section -->
+                <div class="benefit-section" data-aos="fade-up">
+                    <div class="benefit-content">
+                        <div class="benefit-info">
+                            <h3>Business Growth Tools</h3>
+                            <p class="benefit-description">
+                                Scale your practice with our suite of tools designed to help you acquire and retain clients.
+                            </p>
+                            <ul class="benefit-features">
+                                <li>
+                                    <div class="check-icon">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                    <div>
+                                        <strong>Consultant Profile Page</strong>
+                                        <p>Create a professional profile showcasing your expertise and services to potential clients</p>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="check-icon">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                    <div>
+                                        <strong>Client Engagement Tools</strong>
+                                        <p>Automated follow-ups, appointment scheduling, and service reminders to enhance client experience</p>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="check-icon">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                    <div>
+                                        <strong>Analytics Dashboard</strong>
+                                        <p>Monitor your business performance with visual reports on case types, success rates, and revenue</p>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="benefit-image">
+                            <!-- SVG Shape Background -->
+                            <div class="svg-background">
+                                <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="shape shape-5">
+                                    <path d="M48.2,-76.1C63.3,-69.2,77.2,-58.4,84.6,-44.2C92,-30,92.8,-12.5,89.6,3.7C86.3,19.9,78.9,34.8,68.9,47.9C58.9,61,46.2,72.3,31.5,77.8C16.8,83.2,0.1,82.8,-16.4,79.7C-32.9,76.6,-49.2,70.8,-62.7,60.3C-76.2,49.8,-87,34.6,-90.9,17.8C-94.8,0.9,-91.9,-17.5,-84.2,-32.8C-76.5,-48.1,-64,-60.2,-49.5,-67.5C-35,-74.8,-18.5,-77.3,-1.2,-75.5C16.1,-73.7,33.1,-83,48.2,-76.1Z" transform="translate(100 100)" />
+                                </svg>
+                            </div>
+                            <div class="image-container">
+                                <img src="assets/images/business-growth.png" alt="Business Growth">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <div class="registration-container" id="membership-plans">
         <?php if (empty($success_message)): ?>
             <div class="membership-plans">
                 <h2>Choose Your Membership Plan</h2>
                 <p>Select the plan that best fits your business needs</p>
                 
-                <!-- Billing cycle tabs -->
-                <div class="billing-cycle-tabs">
-                    <div class="tabs-container">
-                        <div class="tab active" data-cycle="monthly">Monthly</div>
-                        <div class="tab" data-cycle="quarterly">Quarterly</div>
-                        <div class="tab" data-cycle="annually">Annually</div>
-                    </div>
-                </div>
-                
-                <!-- Monthly Plans -->
-                <div class="plans-grid cycle-plans active" id="monthly-plans">
+                <!-- Membership Plans -->
+                <div class="plans-grid">
                     <?php
-                    foreach ($plans as $plan): 
-                        if ($plan['billing_cycle'] !== 'monthly') continue; // Skip non-monthly plans
+                    if (count($plans) > 0) {
+                        foreach ($plans as $plan): 
                     ?>
                         <div class="plan-card" data-plan-id="<?php echo $plan['id']; ?>">
                             <div class="plan-header">
@@ -260,84 +384,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
                                 </div>
                             </div>
                             <div class="plan-action">
-                                <button type="button" class="btn select-plan-btn" data-plan-id="<?php echo $plan['id']; ?>" data-plan-name="<?php echo htmlspecialchars($plan['name']); ?>" data-plan-price="<?php echo number_format($plan['price'], 2); ?>" data-plan-cycle="monthly" data-plan-members="<?php echo (int)$plan['max_team_members']; ?>">Select Plan</button>
+                                <button type="button" class="btn select-plan-btn" 
+                                    data-plan-id="<?php echo $plan['id']; ?>" 
+                                    data-plan-name="<?php echo htmlspecialchars($plan['name']); ?>" 
+                                    data-plan-price="<?php echo number_format($plan['price'], 2); ?>" 
+                                    data-plan-cycle="monthly" 
+                                    data-plan-members="<?php echo (int)$plan['max_team_members']; ?>">
+                                    Select Plan
+                                </button>
                             </div>
                         </div>
-                    <?php endforeach; ?>
-                </div>
-                
-                <!-- Quarterly Plans -->
-                <div class="plans-grid cycle-plans" id="quarterly-plans">
-                    <?php
-                    foreach ($plans as $plan): 
-                        if ($plan['billing_cycle'] !== 'quarterly') continue; // Skip non-quarterly plans
+                    <?php 
+                        endforeach; 
+                    } else {
+                        echo '<div class="no-plans-message">No plans are currently available. Please check back later.</div>';
+                    }
                     ?>
-                        <div class="plan-card" data-plan-id="<?php echo $plan['id']; ?>">
-                            <div class="plan-header">
-                                <h3 class="plan-name"><?php echo htmlspecialchars($plan['name']); ?></h3>
-                                <div class="plan-price">$<?php echo number_format($plan['price'], 2); ?></div>
-                                <div class="plan-billing">per quarter</div>
-                            </div>
-                            <div class="plan-features">
-                                <div class="feature">
-                                    <i class="fas fa-users"></i>
-                                    <div>Up to <?php echo (int)$plan['max_team_members']; ?> team members</div>
-                                </div>
-                                <div class="feature">
-                                    <i class="fas fa-check-circle"></i>
-                                    <div>Client management tools</div>
-                                </div>
-                                <div class="feature">
-                                    <i class="fas fa-check-circle"></i>
-                                    <div>Document management</div>
-                                </div>
-                                <div class="feature">
-                                    <i class="fas fa-check-circle"></i>
-                                    <div>Visa tracking system</div>
-                                </div>
-                            </div>
-                            <div class="plan-action">
-                                <button type="button" class="btn select-plan-btn" data-plan-id="<?php echo $plan['id']; ?>" data-plan-name="<?php echo htmlspecialchars($plan['name']); ?>" data-plan-price="<?php echo number_format($plan['price'], 2); ?>" data-plan-cycle="quarterly" data-plan-members="<?php echo (int)$plan['max_team_members']; ?>">Select Plan</button>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-                
-                <!-- Annual Plans -->
-                <div class="plans-grid cycle-plans" id="annually-plans">
-                    <?php
-                    foreach ($plans as $plan): 
-                        if ($plan['billing_cycle'] !== 'annually') continue; // Skip non-annual plans
-                    ?>
-                        <div class="plan-card" data-plan-id="<?php echo $plan['id']; ?>">
-                            <div class="plan-header">
-                                <h3 class="plan-name"><?php echo htmlspecialchars($plan['name']); ?></h3>
-                                <div class="plan-price">$<?php echo number_format($plan['price'], 2); ?></div>
-                                <div class="plan-billing">per year</div>
-                            </div>
-                            <div class="plan-features">
-                                <div class="feature">
-                                    <i class="fas fa-users"></i>
-                                    <div>Up to <?php echo (int)$plan['max_team_members']; ?> team members</div>
-                                </div>
-                                <div class="feature">
-                                    <i class="fas fa-check-circle"></i>
-                                    <div>Client management tools</div>
-                                </div>
-                                <div class="feature">
-                                    <i class="fas fa-check-circle"></i>
-                                    <div>Document management</div>
-                                </div>
-                                <div class="feature">
-                                    <i class="fas fa-check-circle"></i>
-                                    <div>Visa tracking system</div>
-                                </div>
-                            </div>
-                            <div class="plan-action">
-                                <button type="button" class="btn select-plan-btn" data-plan-id="<?php echo $plan['id']; ?>" data-plan-name="<?php echo htmlspecialchars($plan['name']); ?>" data-plan-price="<?php echo number_format($plan['price'], 2); ?>" data-plan-cycle="annually" data-plan-members="<?php echo (int)$plan['max_team_members']; ?>">Select Plan</button>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
                 </div>
             </div>
         <?php else: ?>
@@ -370,11 +432,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
                     <div class="plan-details">
                         <div class="detail">
                             <span class="label">Price:</span>
-                            <span class="value">$<span id="selected-plan-price"></span></span>
-                        </div>
-                        <div class="detail">
-                            <span class="label">Billing:</span>
-                            <span class="value"><span id="selected-plan-cycle"></span></span>
+                            <span class="value">$<span id="selected-plan-price"></span> per month</span>
                         </div>
                         <div class="detail">
                             <span class="label">Team Members:</span>
@@ -532,53 +590,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
     color: var(--text-light);
     text-align: center;
     margin-bottom: 30px;
-}
-
-.billing-cycle-tabs {
-    margin-bottom: 30px;
-    display: flex;
-    justify-content: center;
-}
-
-.tabs-container {
-    display: flex;
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    border: 1px solid var(--border-color);
-    background-color: var(--white);
-    box-shadow: var(--shadow-sm);
-}
-
-.tab {
-    padding: 12px 25px;
-    cursor: pointer;
-    font-weight: 600;
-    color: var(--text-light);
-    transition: var(--transition);
-    position: relative;
-}
-
-.tab:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 20%;
-    height: 60%;
-    width: 1px;
-    background-color: var(--border-color);
-}
-
-.tab.active {
-    background-color: var(--primary-color);
-    color: var(--white);
-}
-
-.cycle-plans {
-    display: none;
-}
-
-.cycle-plans.active {
-    display: grid;
 }
 
 .plans-grid {
@@ -894,6 +905,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
     margin-top: 30px;
 }
 
+.no-plans-message {
+    text-align: center;
+    padding: 20px;
+    background-color: var(--background-light);
+    border-radius: var(--border-radius);
+    color: var(--text-light);
+    font-style: italic;
+    width: 100%;
+    grid-column: 1 / -1;
+}
+
 .primary-btn {
     background-color: var(--primary-color);
     color: var(--white);
@@ -910,139 +932,352 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
     background-color: var(--dark-blue);
 }
 
-@media (max-width: 768px) {
-    .header-container {
-        flex-direction: column;
-        text-align: center;
+/* Hero Section Styles */
+.hero {
+    padding: 60px 0;
+    background-color: var(--background-light);
+    overflow: hidden;
+    position: relative;
+}
+
+.hero.consultant-hero {
+    background-color: rgba(234, 170, 52, 0.05);
+}
+
+.hero-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: center;
+}
+
+.hero-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--dark-blue);
+    margin-bottom: 20px;
+    line-height: 1.2;
+}
+
+.hero-subtitle {
+    font-size: 1.2rem;
+    color: var(--text-light);
+    margin-bottom: 30px;
+    line-height: 1.5;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+.btn {
+    padding: 12px 25px;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    text-decoration: none;
+    transition: var(--transition);
+    display: inline-block;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: var(--white);
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: var(--dark-blue);
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background-color: var(--white);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    background-color: var(--background-light);
+    transform: translateY(-2px);
+}
+
+.hero-image-container {
+    position: relative;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.floating-image-hero {
+    animation: float 3s ease-in-out infinite;
+    max-width: 100%;
+}
+
+.floating-image-hero img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: var(--shadow-lg);
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(0px);
     }
-    
-    .form-row {
-        flex-direction: column;
-        gap: 0;
+    50% {
+        transform: translateY(-15px);
     }
-    
-    .plans-grid {
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+/* Platform Benefits Styles */
+.section {
+    padding: 60px 0;
+}
+
+.section-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--dark-blue);
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.section-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-light);
+    text-align: center;
+    margin-bottom: 50px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.platform-benefits {
+    background-color: var(--white);
+}
+
+.benefits-container {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.benefit-section {
+    margin-bottom: 70px;
+}
+
+.benefit-content {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+}
+
+.benefit-content.reverse {
+    flex-direction: row-reverse;
+}
+
+.benefit-info {
+    flex: 1;
+}
+
+.benefit-info h3 {
+    color: var(--dark-blue);
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.benefit-description {
+    color: var(--text-light);
+    margin-bottom: 20px;
+}
+
+.benefit-features {
+    list-style: none;
+    padding: 0;
+}
+
+.benefit-features li {
+    display: flex;
+    margin-bottom: 20px;
+}
+
+.check-icon {
+    color: var(--primary-color);
+    background-color: var(--primary-light);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    flex-shrink: 0;
+    margin-top: 4px;
+}
+
+.benefit-features li strong {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--text-color);
+}
+
+.benefit-features li p {
+    color: var(--text-light);
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+.benefit-image {
+    flex: 1;
+    position: relative;
+}
+
+.svg-background {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: -1;
+}
+
+.shape {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    fill: var(--primary-light);
+    opacity: 0.3;
+}
+
+.shape-1, .shape-3, .shape-5 {
+    top: -10%;
+    left: -10%;
+    animation: morph 8s ease-in-out infinite;
+}
+
+.shape-2, .shape-4, .shape-6 {
+    top: -5%;
+    left: -5%;
+    animation: morph 8s ease-in-out infinite reverse;
+}
+
+@keyframes morph {
+    0% {
+        transform: scale(1) translate(0, 0);
+    }
+    50% {
+        transform: scale(1.05) translate(1%, 1%);
+    }
+    100% {
+        transform: scale(1) translate(0, 0);
+    }
+}
+
+.image-container {
+    padding: 10px;
+}
+
+.image-container img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: var(--shadow-md);
+}
+
+/* Responsive styles */
+@media (max-width: 991px) {
+    .hero-grid {
         grid-template-columns: 1fr;
     }
     
-    .tabs-container {
-        width: 100%;
+    .hero-image-container {
+        order: -1;
     }
     
-    .tab {
-        flex: 1;
-        text-align: center;
-        padding: 12px 10px;
-    }
-    
-    .plan-details {
+    .benefit-content {
         flex-direction: column;
-        gap: 10px;
     }
     
-    .detail {
-        min-width: 100%;
-    }
-    
-    .form-buttons {
+    .benefit-content.reverse {
         flex-direction: column;
-        gap: 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2rem;
     }
     
-    .cancel-btn, .submit-btn {
-        width: 100%;
+    .hero-buttons {
+        flex-direction: column;
+    }
+    
+    .section-title {
+        font-size: 1.7rem;
     }
 }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Tab functionality
-    const tabs = document.querySelectorAll('.tab');
-    const cyclePlans = document.querySelectorAll('.cycle-plans');
-    
     // Debug - log the available plans
-    console.log('Monthly plans:', document.querySelectorAll('#monthly-plans .plan-card').length);
-    console.log('Quarterly plans:', document.querySelectorAll('#quarterly-plans .plan-card').length);
-    console.log('Annually plans:', document.querySelectorAll('#annually-plans .plan-card').length);
+    console.log('Available plans:', document.querySelectorAll('.plan-card').length);
     
-    tabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-            // Remove active class from all tabs
-            tabs.forEach(t => t.classList.remove('active'));
-            
-            // Add active class to clicked tab
-            this.classList.add('active');
-            
-            // Hide all plan sections
-            cyclePlans.forEach(p => p.classList.remove('active'));
-            
-            // Show the selected plan section
-            const cycle = this.getAttribute('data-cycle');
-            const planSection = document.getElementById(`${cycle}-plans`);
-            if (planSection) {
-                planSection.classList.add('active');
-            } else {
-                console.error(`Could not find plan section with ID: ${cycle}-plans`);
-            }
+    // Initialize AOS animations if available
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true
         });
-    });
+    }
     
     // Modal functionality
     const modal = document.getElementById('planSelectionModal');
     const closeButtons = document.querySelectorAll('[data-dismiss="modal"]');
     const selectPlanButtons = document.querySelectorAll('.select-plan-btn');
     
-    // Open modal when clicking "Select Plan" button
-    selectPlanButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const planId = this.getAttribute('data-plan-id');
-            const planName = this.getAttribute('data-plan-name');
-            const planPrice = this.getAttribute('data-plan-price');
-            const planCycle = this.getAttribute('data-plan-cycle');
-            const planMembers = this.getAttribute('data-plan-members');
-            
-            // Set modal values
-            document.getElementById('selected-plan-name').textContent = planName;
-            document.getElementById('selected-plan-price').textContent = planPrice;
-            document.getElementById('selected-plan-cycle').textContent = planCycle;
-            document.getElementById('selected-plan-members').textContent = planMembers;
-            document.getElementById('modal_membership_plan_id').value = planId;
-            
-            // Show modal
-            modal.style.display = 'block';
-            
-            // Format the billing cycle display text
-            let cycleText = "";
-            switch(planCycle) {
-                case 'monthly':
-                    cycleText = "Monthly";
-                    break;
-                case 'quarterly':
-                    cycleText = "Quarterly (Every 3 months)";
-                    break;
-                case 'annually':
-                    cycleText = "Annually (Yearly)";
-                    break;
-                default:
-                    cycleText = planCycle;
-            }
-            document.getElementById('selected-plan-cycle').textContent = cycleText;
+    if (modal && selectPlanButtons.length > 0) {
+        // Open modal when clicking "Select Plan" button
+        selectPlanButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const planId = this.getAttribute('data-plan-id');
+                const planName = this.getAttribute('data-plan-name');
+                const planPrice = this.getAttribute('data-plan-price');
+                const planMembers = this.getAttribute('data-plan-members');
+                
+                // Set modal values
+                document.getElementById('selected-plan-name').textContent = planName;
+                document.getElementById('selected-plan-price').textContent = planPrice;
+                document.getElementById('selected-plan-members').textContent = planMembers;
+                document.getElementById('modal_membership_plan_id').value = planId;
+                
+                // Show modal
+                modal.style.display = 'block';
+            });
         });
-    });
-    
-    // Close modal when clicking close button or outside the modal
-    closeButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            modal.style.display = 'none';
-        });
-    });
-    
-    window.addEventListener('click', function(event) {
-        if (event.target === modal) {
-            modal.style.display = 'none';
+        
+        // Close modal when clicking close button or outside the modal
+        if (closeButtons.length > 0) {
+            closeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    modal.style.display = 'none';
+                });
+            });
         }
-    });
+        
+        window.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    }
     
     // Form validation
     const passwordField = document.getElementById('modal_password');
