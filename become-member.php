@@ -153,6 +153,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
             $stmt->bind_param('iis', $user_id, $membership_plan_id, $company_name);
             $stmt->execute();
             
+            // Add an entry in consultant_profiles table with default values
+            $insert_profile_query = "INSERT INTO consultant_profiles (consultant_id) VALUES (?)";
+            $stmt = $conn->prepare($insert_profile_query);
+            $stmt->bind_param('i', $user_id);
+            $stmt->execute();
+            
             // Generate verification token
             $token = bin2hex(random_bytes(32));
             $expires = date('Y-m-d H:i:s', strtotime('+24 hours'));

@@ -393,6 +393,7 @@ CREATE TABLE `consultant_profiles` (
     `social_twitter` VARCHAR(255),
     `social_facebook` VARCHAR(255),
     `is_featured` BOOLEAN DEFAULT FALSE,
+    `is_verified` BOOLEAN DEFAULT FALSE,
     `display_order` INT DEFAULT 0,
     `seo_title` VARCHAR(255),
     `seo_description` TEXT,
@@ -401,7 +402,28 @@ CREATE TABLE `consultant_profiles` (
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (`consultant_id`) REFERENCES `consultants`(`user_id`) ON DELETE CASCADE
 );
+-- Add verified_by column to consultant_profiles to track who verified the consultant
+ALTER TABLE `consultant_profiles` 
+ADD COLUMN `verified_by` INT NULL AFTER `is_verified`,
+ADD COLUMN `verified_at` DATETIME NULL AFTER `verified_by`,
+ADD CONSTRAINT `verified_by_fk` FOREIGN KEY (`verified_by`) REFERENCES `users`(`id`);
 
+-- Create a table to track verification documents
+CREATE TABLE IF NOT EXISTS `consultant_verifications` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `consultant_id` INT NOT NULL,
+  `document_type` VARCHAR(50) NOT NULL, -- e.g., 'business_license', 'id_proof', 'certification'
+  `document_path` VARCHAR(255) NOT NULL,
+  `uploaded_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `verified` BOOLEAN DEFAULT FALSE,
+  `verified_by` INT NULL,
+  `verified_at` DATETIME NULL,
+  `notes` TEXT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `idx_consultant_id` (`consultant_id`),
+  CONSTRAINT `consultant_verifications_fk` FOREIGN KEY (`consultant_id`) REFERENCES `consultants`(`user_id`) ON DELETE CASCADE,
+  CONSTRAINT `verification_verified_by_fk` FOREIGN KEY (`verified_by`) REFERENCES `users`(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci; 
 -- Add consultant availability settings table
 CREATE TABLE `consultant_availability_settings` (
     `consultant_id` INT PRIMARY KEY,

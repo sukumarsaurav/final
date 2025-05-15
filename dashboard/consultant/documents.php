@@ -8,25 +8,27 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // Ensure user is logged in and has a valid user_id
-if (!isset($_SESSION['id']) || empty($_SESSION['id'])) {
+if (!isset($_SESSION['user_id']) && isset($_SESSION['id'])) {
+    // Copy id to user_id for compatibility
+    $_SESSION['user_id'] = $_SESSION['id'];
+} elseif (!isset($_SESSION['user_id']) && !isset($_SESSION['id'])) {
     // Redirect to login if no user_id is set
     header("Location: login.php");
     exit;
 }
 
-// Assign user_id from session['id'] to be consistent with header.php
-$_SESSION['user_id'] = $_SESSION['id'];
-
 $page_title = "Document Management";
 $page_specific_css = "assets/css/documents.css";
 require_once 'includes/header.php';
+
+// Get the user's organization_id from session
+$organization_id = isset($_SESSION['organization_id']) ? $_SESSION['organization_id'] : 0;
 
 // Get all document categories
 $query = "SELECT * FROM document_categories 
           WHERE organization_id = ? OR is_global = TRUE 
           ORDER BY name";
 $stmt = $conn->prepare($query);
-$organization_id = $_SESSION['organization_id'];
 $stmt->bind_param('i', $organization_id);
 $stmt->execute();
 $categories_result = $stmt->get_result();
@@ -139,51 +141,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_category'])) {
 
 // Handle document type form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_document_type'])) {
+    $name = $_POST['name'];
     $category_id = $_POST['category_id'];
-    $name = trim($_POST['type_name']);
-    $description = trim($_POST['type_description']);
-    $is_active = isset($_POST['type_is_active']) ? 1 : 0;
+    $description = $_POST['description'];
+    $organization_id = isset($_SESSION['organization_id']) ? $_SESSION['organization_id'] : 0;
     
-    // Validate inputs
-    $errors = [];
-    if (empty($category_id)) {
-        $errors[] = "Category is required";
-    }
-    if (empty($name)) {
-        $errors[] = "Document type name is required";
-    }
+    // Check if document type already exists
+    $check_query = "SELECT id FROM document_types WHERE name = ? AND (organization_id = ? OR organization_id IS NULL)";
+    $check_stmt = $conn->prepare($check_query);
+    $check_stmt->bind_param('si', $name, $organization_id);
+    $check_stmt->execute();
+    $check_result = $check_stmt->get_result();
     
-    if (empty($errors)) {
-        // Check if document type already exists
-        $check_query = "SELECT id FROM document_types WHERE name = ?";
-        $check_stmt = $conn->prepare($check_query);
-        $check_stmt->bind_param('s', $name);
-        $check_stmt->execute();
-        $check_result = $check_stmt->get_result();
-        
-        if ($check_result->num_rows > 0) {
-            $errors[] = "Document type already exists";
-        }
-        $check_stmt->close();
-    }
-    
-    if (empty($errors)) {
-        // Insert new document type
-        $insert_query = "INSERT INTO document_types (category_id, name, description, is_active) VALUES (?, ?, ?, ?)";
-        $stmt = $conn->prepare($insert_query);
-        $stmt->bind_param('issi', $category_id, $name, $description, $is_active);
-        
-        if ($stmt->execute()) {
-            $success_message = "Document type added successfully";
-            $stmt->close();
-            header("Location: documents.php?success=2");
-            exit;
-        } else {
-            $error_message = "Error adding document type: " . $conn->error;
-            $stmt->close();
-        }
+    if ($check_result->num_rows > 0) {
+        $error = "Document type with this name already exists";
     } else {
-        $error_message = implode("<br>", $errors);
+        $insert_query = "INSERT INTO document_types (name, category_id, description, organization_id, is_active) VALUES (?, ?, ?, ?, 1)";
+        $insert_stmt = $conn->prepare($insert_query);
+        $insert_stmt->bind_param('sisi', $name, $category_id, $description, $organization_id);
+        
+        if ($insert_stmt->execute()) {
+            $success = "Document type added successfully";
+        } else {
+            $error = "Error adding document type: " . $conn->error;
+        }
     }
 }
 
@@ -193,9 +174,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_template'])) {
     $document_type_id = $_POST['document_type_id'];
     $content = trim($_POST['content']);
     $is_active = isset($_POST['template_is_active']) ? 1 : 0;
-    $created_by = $_SESSION['user_id']; // Assuming user_id is stored in session
-    $organization_id = $_SESSION['organization_id'];
-    $consultant_id = $_SESSION['user_id']; // Assuming the current user is a consultant
+    $created_by = $_SESSION['user_id']; 
+    $organization_id = isset($_SESSION['organization_id']) ? $_SESSION['organization_id'] : 0;
+    $consultant_id = $_SESSION['user_id']; 
     
     // Validate inputs
     $errors = [];
@@ -252,9 +233,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['generate_document']))
     $client_id = $_POST['client_id'];
     $application_id = !empty($_POST['application_id']) ? $_POST['application_id'] : null;
     $booking_id = !empty($_POST['booking_id']) ? $_POST['booking_id'] : null;
-    $created_by = $_SESSION['user_id']; // Assuming user_id is stored in session
-    $organization_id = $_SESSION['organization_id'];
-    $consultant_id = $_SESSION['user_id']; // Assuming the current user is a consultant
+    $created_by = $_SESSION['user_id']; 
+    $organization_id = isset($_SESSION['organization_id']) ? $_SESSION['organization_id'] : 0;
+    $consultant_id = $_SESSION['user_id']; 
     
     // Validate inputs
     $errors = [];
@@ -364,7 +345,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_document_type'
 }
 
 // Get all generated documents for this organization
-$generated_documents_query = "SELECT gd.id, gd.document_name, gd.file_path, gd.generated_date, 
+$generated_documents_query = "SELECT gd.id, gd.name as document_name, gd.file_path, gd.generated_date, 
                                    gd.application_id, gd.booking_id,
                                    dt.name AS type_name, 
                                    dtpl.name AS template_name,
@@ -374,9 +355,9 @@ $generated_documents_query = "SELECT gd.id, gd.document_name, gd.file_path, gd.g
                                    b.reference_number AS booking_reference
                             FROM generated_documents gd
                             JOIN document_types dt ON gd.document_type_id = dt.id
-                            JOIN document_templates dtpl ON gd.document_template_id = dtpl.id
+                            JOIN document_templates dtpl ON gd.template_id = dtpl.id
                             JOIN users c ON gd.client_id = c.id
-                            JOIN users u ON gd.consultant_id = u.id
+                            JOIN users u ON gd.created_by = u.id
                             LEFT JOIN applications a ON gd.application_id = a.id
                             LEFT JOIN bookings b ON gd.booking_id = b.id
                             WHERE gd.organization_id = ?

@@ -7,10 +7,21 @@ $page_specific_css = "assets/css/profile.css";
 require_once 'includes/header.php';
 
 // Get the current user data
-$user_id = $_SESSION["id"];
-$query = "SELECT u.*, oauth.provider, oauth.provider_user_id 
+$user_id = isset($_SESSION["user_id"]) ? $_SESSION["user_id"] : (isset($_SESSION["id"]) ? $_SESSION["id"] : 0);
+$organization_id = isset($_SESSION["organization_id"]) ? $_SESSION["organization_id"] : null;
+
+// Update query to include consultant_profiles table data
+$query = "SELECT u.*, c.company_name, o.name as organization_name, c.membership_plan_id,
+          mp.name as membership_plan, mp.max_team_members, c.team_members_count, oauth.provider, oauth.provider_user_id,
+          cp.bio, cp.specializations, cp.years_experience, cp.education, cp.certifications, cp.languages,
+          cp.website, cp.social_linkedin, cp.social_twitter, cp.social_facebook, cp.is_featured, 
+          cp.is_verified, cp.verified_by, cp.verified_at, cp.banner_image
           FROM users u 
+          LEFT JOIN consultants c ON u.id = c.user_id
+          LEFT JOIN organizations o ON u.organization_id = o.id
+          LEFT JOIN membership_plans mp ON c.membership_plan_id = mp.id
           LEFT JOIN oauth_tokens oauth ON u.id = oauth.user_id AND oauth.provider = 'google'
+          LEFT JOIN consultant_profiles cp ON u.id = cp.consultant_id
           WHERE u.id = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param('i', $user_id);
@@ -105,10 +116,140 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION["email"] = $email;
                 
                 // Refresh user data
-                $result = $conn->query("SELECT * FROM users WHERE id = $user_id");
+                $result = $conn->query("SELECT u.*, c.company_name, o.name as organization_name, c.membership_plan_id,
+                                        mp.name as membership_plan, mp.max_team_members, c.team_members_count,
+                                        cp.bio, cp.specializations, cp.years_experience, cp.education, cp.certifications, cp.languages,
+                                        cp.website, cp.social_linkedin, cp.social_twitter, cp.social_facebook, cp.is_featured, 
+                                        cp.is_verified, cp.verified_by, cp.verified_at, cp.banner_image 
+                                        FROM users u 
+                                        LEFT JOIN consultants c ON u.id = c.user_id
+                                        LEFT JOIN organizations o ON u.organization_id = o.id
+                                        LEFT JOIN membership_plans mp ON c.membership_plan_id = mp.id
+                                        LEFT JOIN consultant_profiles cp ON u.id = cp.consultant_id
+                                        WHERE u.id = $user_id");
                 $user_data = $result->fetch_assoc();
             } else {
                 $error_message = "Error updating profile: " . $conn->error;
+            }
+            $stmt->close();
+        } else {
+            $error_message = implode("<br>", $validation_errors);
+        }
+    }
+    
+    // Update professional info
+    if (isset($_POST['update_professional_info'])) {
+        $bio = trim($_POST['bio']);
+        $specializations = trim($_POST['specializations']);
+        $years_experience = intval($_POST['years_experience']);
+        $education = trim($_POST['education']);
+        $certifications = trim($_POST['certifications']);
+        $languages = trim($_POST['languages']);
+        $website = trim($_POST['website']);
+        $social_linkedin = trim($_POST['social_linkedin']);
+        $social_twitter = trim($_POST['social_twitter']);
+        $social_facebook = trim($_POST['social_facebook']);
+        
+        // Validate URLs if provided
+        if (!empty($website) && !filter_var($website, FILTER_VALIDATE_URL)) {
+            $validation_errors[] = "Website URL is invalid";
+        }
+        if (!empty($social_linkedin) && !filter_var($social_linkedin, FILTER_VALIDATE_URL)) {
+            $validation_errors[] = "LinkedIn URL is invalid";
+        }
+        if (!empty($social_twitter) && !filter_var($social_twitter, FILTER_VALIDATE_URL)) {
+            $validation_errors[] = "Twitter URL is invalid";
+        }
+        if (!empty($social_facebook) && !filter_var($social_facebook, FILTER_VALIDATE_URL)) {
+            $validation_errors[] = "Facebook URL is invalid";
+        }
+        
+        // Handle banner image upload
+        $banner_image = $user_data['banner_image'] ?? '';
+        if (isset($_FILES['banner_image']) && $_FILES['banner_image']['error'] == 0) {
+            $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
+            $max_size = 5 * 1024 * 1024; // 5MB
+            
+            if (!in_array($_FILES['banner_image']['type'], $allowed_types)) {
+                $validation_errors[] = "Only JPG, PNG or GIF files are allowed for banner image";
+            } elseif ($_FILES['banner_image']['size'] > $max_size) {
+                $validation_errors[] = "Banner image size should be less than 5MB";
+            } else {
+                $upload_dir = '../../uploads/banners/';
+                
+                // Create directory if it doesn't exist
+                if (!is_dir($upload_dir)) {
+                    mkdir($upload_dir, 0755, true);
+                }
+                
+                $file_extension = pathinfo($_FILES['banner_image']['name'], PATHINFO_EXTENSION);
+                $filename = 'banner_' . $user_id . '_' . time() . '.' . $file_extension;
+                $target_file = $upload_dir . $filename;
+                
+                if (move_uploaded_file($_FILES['banner_image']['tmp_name'], $target_file)) {
+                    $banner_image = $filename;
+                } else {
+                    $validation_errors[] = "Failed to upload banner image";
+                }
+            }
+        }
+        
+        // Update professional info if no validation errors
+        if (empty($validation_errors)) {
+            // Check if consultant profile already exists
+            $check_query = "SELECT consultant_id FROM consultant_profiles WHERE consultant_id = ?";
+            $stmt = $conn->prepare($check_query);
+            $stmt->bind_param('i', $user_id);
+            $stmt->execute();
+            $check_result = $stmt->get_result();
+            
+            if ($check_result->num_rows > 0) {
+                // Update existing profile
+                $update_query = "UPDATE consultant_profiles SET 
+                                bio = ?, 
+                                specializations = ?, 
+                                years_experience = ?, 
+                                education = ?, 
+                                certifications = ?, 
+                                languages = ?, 
+                                website = ?, 
+                                social_linkedin = ?, 
+                                social_twitter = ?, 
+                                social_facebook = ?, 
+                                banner_image = ?
+                                WHERE consultant_id = ?";
+                $stmt = $conn->prepare($update_query);
+                $stmt->bind_param('ssisssssssi', $bio, $specializations, $years_experience, $education, $certifications, 
+                                $languages, $website, $social_linkedin, $social_twitter, $social_facebook, $banner_image, $user_id);
+            } else {
+                // Insert new profile
+                $insert_query = "INSERT INTO consultant_profiles 
+                                (consultant_id, bio, specializations, years_experience, education, certifications, 
+                                languages, website, social_linkedin, social_twitter, social_facebook, banner_image)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                $stmt = $conn->prepare($insert_query);
+                $stmt->bind_param('ississssssss', $user_id, $bio, $specializations, $years_experience, $education, $certifications, 
+                                $languages, $website, $social_linkedin, $social_twitter, $social_facebook, $banner_image);
+            }
+            
+            if ($stmt->execute()) {
+                $success_message = "Professional information updated successfully";
+                
+                // Refresh user data
+                $result = $conn->query("SELECT u.*, c.company_name, o.name as organization_name, c.membership_plan_id,
+                                        mp.name as membership_plan, mp.max_team_members, c.team_members_count,
+                                        cp.bio, cp.specializations, cp.years_experience, cp.education, cp.certifications, cp.languages,
+                                        cp.website, cp.social_linkedin, cp.social_twitter, cp.social_facebook, cp.is_featured, 
+                                        cp.is_verified, cp.verified_by, cp.verified_at, cp.banner_image
+                                        FROM users u 
+                                        LEFT JOIN consultants c ON u.id = c.user_id
+                                        LEFT JOIN organizations o ON u.organization_id = o.id
+                                        LEFT JOIN membership_plans mp ON c.membership_plan_id = mp.id
+                                        LEFT JOIN consultant_profiles cp ON u.id = cp.consultant_id
+                                        WHERE u.id = $user_id");
+                $user_data = $result->fetch_assoc();
+            } else {
+                $error_message = "Error updating professional information: " . $conn->error;
             }
             $stmt->close();
         } else {
@@ -248,6 +389,115 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->close();
         }
     }
+    
+    // Organization Info Update
+    if (isset($_POST['update_organization'])) {
+        $organization_id = trim($_POST['organization_id']);
+        $organization_name = trim($_POST['organization_name']);
+        
+        // Validate inputs
+        if (empty($organization_id)) {
+            $validation_errors[] = "Organization ID is required";
+        }
+        if (empty($organization_name)) {
+            $validation_errors[] = "Organization name is required";
+        }
+        
+        // Update organization if no validation errors
+        if (empty($validation_errors)) {
+            // First check if organization exists
+            $check_query = "SELECT id FROM organizations WHERE id = ? AND deleted_at IS NULL";
+            $stmt = $conn->prepare($check_query);
+            $stmt->bind_param('i', $organization_id);
+            $stmt->execute();
+            $check_result = $stmt->get_result();
+            
+            if ($check_result->num_rows > 0) {
+                // Update organization name
+                $update_org_query = "UPDATE organizations SET name = ? WHERE id = ?";
+                $stmt = $conn->prepare($update_org_query);
+                $stmt->bind_param('si', $organization_name, $organization_id);
+                $stmt->execute();
+                
+                // Update user's organization ID
+                $update_user_query = "UPDATE users SET organization_id = ? WHERE id = ?";
+                $stmt = $conn->prepare($update_user_query);
+                $stmt->bind_param('ii', $organization_id, $user_id);
+                
+                if ($stmt->execute()) {
+                    $success_message = "Organization information updated successfully";
+                    
+                    // Update session variables
+                    $_SESSION["organization_id"] = $organization_id;
+                    
+                    // Refresh user data
+                    $result = $conn->query("SELECT u.*, c.company_name, o.name as organization_name, c.membership_plan_id,
+                                            mp.name as membership_plan, mp.max_team_members, c.team_members_count 
+                                            FROM users u 
+                                            LEFT JOIN consultants c ON u.id = c.user_id
+                                            LEFT JOIN organizations o ON u.organization_id = o.id
+                                            LEFT JOIN membership_plans mp ON c.membership_plan_id = mp.id
+                                            WHERE u.id = $user_id");
+                    $user_data = $result->fetch_assoc();
+                } else {
+                    $error_message = "Error updating organization information: " . $conn->error;
+                }
+            } else {
+                $error_message = "Organization with this ID does not exist";
+            }
+            $stmt->close();
+        } else {
+            $error_message = implode("<br>", $validation_errors);
+        }
+    }
+    
+    // Company Info Update
+    if (isset($_POST['update_company'])) {
+        $company_name = trim($_POST['company_name']);
+        
+        // Validate inputs
+        if (empty($company_name)) {
+            $validation_errors[] = "Company name is required";
+        }
+        
+        // Update company info if no validation errors
+        if (empty($validation_errors)) {
+            // Check if consultant record exists
+            $check_query = "SELECT user_id FROM consultants WHERE user_id = ?";
+            $stmt = $conn->prepare($check_query);
+            $stmt->bind_param('i', $user_id);
+            $stmt->execute();
+            $check_result = $stmt->get_result();
+            
+            if ($check_result->num_rows > 0) {
+                // Update consultant record
+                $update_query = "UPDATE consultants SET company_name = ? WHERE user_id = ?";
+                $stmt = $conn->prepare($update_query);
+                $stmt->bind_param('si', $company_name, $user_id);
+                
+                if ($stmt->execute()) {
+                    $success_message = "Company information updated successfully";
+                    
+                    // Refresh user data
+                    $result = $conn->query("SELECT u.*, c.company_name, o.name as organization_name, c.membership_plan_id,
+                                           mp.name as membership_plan, mp.max_team_members, c.team_members_count 
+                                           FROM users u 
+                                           LEFT JOIN consultants c ON u.id = c.user_id
+                                           LEFT JOIN organizations o ON u.organization_id = o.id
+                                           LEFT JOIN membership_plans mp ON c.membership_plan_id = mp.id
+                                           WHERE u.id = $user_id");
+                    $user_data = $result->fetch_assoc();
+                } else {
+                    $error_message = "Error updating company information: " . $conn->error;
+                }
+            } else {
+                $error_message = "Consultant record not found";
+            }
+            $stmt->close();
+        } else {
+            $error_message = implode("<br>", $validation_errors);
+        }
+    }
 }
 
 // Check for success message from redirect
@@ -293,17 +543,33 @@ if (!empty($user_data['profile_picture'])) {
             </div>
             <div class="profile-info">
                 <h2><?php echo htmlspecialchars($user_data['first_name'] . ' ' . $user_data['last_name']); ?></h2>
-                <p class="role">Administrator</p>
+                <p class="role"><?php echo ucfirst($user_data['user_type']); ?></p>
+                <?php if (!empty($user_data['organization_name'])): ?>
+                <p class="organization"><?php echo htmlspecialchars($user_data['organization_name']); ?></p>
+                <?php endif; ?>
+                <?php if (!empty($user_data['membership_plan'])): ?>
+                <p class="membership">Plan: <?php echo htmlspecialchars($user_data['membership_plan']); ?> 
+                (<?php echo $user_data['team_members_count']; ?>/<?php echo $user_data['max_team_members']; ?> team members)</p>
+                <?php endif; ?>
                 <div class="account-status">
                     <span class="status-badge <?php echo $user_data['status'] === 'active' ? 'active' : 'inactive'; ?>">
                         <i class="fas fa-circle"></i> <?php echo ucfirst($user_data['status']); ?>
                     </span>
                 </div>
+                <?php if (!empty($user_data['is_verified']) && $user_data['is_verified'] == 1): ?>
+                <div class="verification-status">
+                    <span class="verified-badge">
+                        <i class="fas fa-check-circle"></i> Verified Consultant
+                    </span>
+                </div>
+                <?php endif; ?>
             </div>
             
             <div class="profile-tabs">
                 <button class="tab-btn active" data-tab="personal-info"><i class="fas fa-user"></i> Personal Info</button>
+                <button class="tab-btn" data-tab="professional-info"><i class="fas fa-briefcase"></i> Professional Info</button>
                 <button class="tab-btn" data-tab="security"><i class="fas fa-lock"></i> Security</button>
+                <button class="tab-btn" data-tab="organization-info"><i class="fas fa-building"></i> Organization</button>
                 <button class="tab-btn" data-tab="connected-accounts"><i class="fas fa-link"></i> Connected Accounts</button>
             </div>
         </div>
@@ -353,6 +619,125 @@ if (!empty($user_data['profile_picture'])) {
                 </form>
             </div>
             
+            <!-- Professional Info Tab -->
+            <div class="tab-content" id="professional-info">
+                <div class="section-header">
+                    <h3>Professional Information</h3>
+                    <p>Showcase your expertise and professional background</p>
+                </div>
+                
+                <?php if ($user_data['user_type'] === 'consultant'): ?>
+                <form action="profile.php" method="POST" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="bio">Professional Bio</label>
+                        <textarea id="bio" name="bio" class="form-control" rows="4"><?php echo htmlspecialchars($user_data['bio'] ?? ''); ?></textarea>
+                        <small class="form-text">Describe your professional background and expertise (500 characters max)</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="specializations">Specializations</label>
+                        <textarea id="specializations" name="specializations" class="form-control" rows="3"><?php echo htmlspecialchars($user_data['specializations'] ?? ''); ?></textarea>
+                        <small class="form-text">List your areas of expertise, separated by commas</small>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="years_experience">Years of Experience</label>
+                            <input type="number" id="years_experience" name="years_experience" class="form-control" 
+                                value="<?php echo htmlspecialchars($user_data['years_experience'] ?? 0); ?>" min="0" max="50">
+                        </div>
+                        <div class="form-group">
+                            <label for="languages">Languages</label>
+                            <input type="text" id="languages" name="languages" class="form-control" 
+                                value="<?php echo htmlspecialchars($user_data['languages'] ?? ''); ?>">
+                            <small class="form-text">E.g., English (Fluent), Spanish (Intermediate)</small>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="education">Education</label>
+                        <textarea id="education" name="education" class="form-control" rows="3"><?php echo htmlspecialchars($user_data['education'] ?? ''); ?></textarea>
+                        <small class="form-text">List your educational qualifications (degrees, institutions, years)</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="certifications">Certifications</label>
+                        <textarea id="certifications" name="certifications" class="form-control" rows="3"><?php echo htmlspecialchars($user_data['certifications'] ?? ''); ?></textarea>
+                        <small class="form-text">List relevant professional certifications or accreditations</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="banner_image">Profile Banner Image</label>
+                        <div class="file-upload-container">
+                            <input type="file" id="banner_image" name="banner_image" class="form-control file-upload" accept="image/jpeg, image/png, image/gif">
+                            <div class="file-upload-text">
+                                <i class="fas fa-upload"></i> Choose a file...
+                            </div>
+                        </div>
+                        <small class="form-text">Maximum size: 5MB. Recommended size: 1200x300px. This image will appear at the top of your public profile.</small>
+                    </div>
+                    
+                    <div class="section-divider"></div>
+                    
+                    <div class="section-subheader">
+                        <h4>Online Presence</h4>
+                        <p>Share your professional websites and social media profiles</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="website">Website</label>
+                        <input type="url" id="website" name="website" class="form-control" 
+                            value="<?php echo htmlspecialchars($user_data['website'] ?? ''); ?>" placeholder="https://example.com">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="social_linkedin">LinkedIn</label>
+                            <input type="url" id="social_linkedin" name="social_linkedin" class="form-control" 
+                                value="<?php echo htmlspecialchars($user_data['social_linkedin'] ?? ''); ?>" placeholder="https://linkedin.com/in/username">
+                        </div>
+                        <div class="form-group">
+                            <label for="social_twitter">Twitter</label>
+                            <input type="url" id="social_twitter" name="social_twitter" class="form-control" 
+                                value="<?php echo htmlspecialchars($user_data['social_twitter'] ?? ''); ?>" placeholder="https://twitter.com/username">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="social_facebook">Facebook</label>
+                        <input type="url" id="social_facebook" name="social_facebook" class="form-control" 
+                            value="<?php echo htmlspecialchars($user_data['social_facebook'] ?? ''); ?>" placeholder="https://facebook.com/username">
+                    </div>
+                    
+                    <?php if (isset($user_data['is_verified']) && $user_data['is_verified'] == 1): ?>
+                    <div class="verification-info">
+                        <div class="verification-status">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Your profile is verified</span>
+                        </div>
+                        <p>Verified on: <?php echo date('F j, Y', strtotime($user_data['verified_at'])); ?></p>
+                    </div>
+                    <?php else: ?>
+                    <div class="verification-info">
+                        <div class="verification-status not-verified">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>Your profile is not verified</span>
+                        </div>
+                        <p>Get your profile verified to increase trust with potential clients. <a href="verification.php">Upload verification documents</a></p>
+                    </div>
+                    <?php endif; ?>
+                    
+                    <div class="form-buttons">
+                        <button type="submit" name="update_professional_info" class="btn primary-btn">Save Professional Info</button>
+                    </div>
+                </form>
+                <?php else: ?>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Professional information is only available for consultants.
+                </div>
+                <?php endif; ?>
+            </div>
+            
             <!-- Security Tab -->
             <div class="tab-content" id="security">
                 <div class="section-header">
@@ -389,6 +774,51 @@ if (!empty($user_data['profile_picture'])) {
                         <button type="submit" name="update_password" class="btn primary-btn">Update Password</button>
                     </div>
                 </form>
+            </div>
+            
+            <!-- Organization Info Tab -->
+            <div class="tab-content" id="organization-info">
+                <div class="section-header">
+                    <h3>Organization Information</h3>
+                    <p>Your organization details</p>
+                </div>
+                
+                <?php if ($user_data['user_type'] === 'consultant'): ?>
+                <form action="profile.php" method="POST">
+                    <div class="form-group">
+                        <label for="organization_name">Organization Name</label>
+                        <input type="text" id="organization_name" name="organization_name" class="form-control" 
+                            value="<?php echo htmlspecialchars($user_data['organization_name'] ?? ''); ?>" <?php echo $user_data['user_type'] !== 'admin' ? 'readonly' : ''; ?>>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="company_name">Company Name</label>
+                        <input type="text" id="company_name" name="company_name" class="form-control" 
+                            value="<?php echo htmlspecialchars($user_data['company_name'] ?? ''); ?>">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Membership Plan</label>
+                        <div class="membership-details">
+                            <div class="plan-name"><?php echo htmlspecialchars($user_data['membership_plan'] ?? 'No plan'); ?></div>
+                            <div class="team-count">
+                                <span class="count-label">Team Members:</span>
+                                <span class="count-value"><?php echo ($user_data['team_members_count'] ?? '0') . ' / ' . ($user_data['max_team_members'] ?? '0'); ?></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <?php if ($user_data['user_type'] === 'consultant'): ?>
+                    <div class="form-buttons">
+                        <button type="submit" name="update_company" class="btn primary-btn">Save Company Details</button>
+                    </div>
+                    <?php endif; ?>
+                </form>
+                <?php else: ?>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Organization information is only available for consultants.
+                </div>
+                <?php endif; ?>
             </div>
             
             <!-- Connected Accounts Tab -->
@@ -572,6 +1002,23 @@ if (!empty($user_data['profile_picture'])) {
     margin: 5px 0;
     color: var(--secondary-color);
     font-size: 0.9rem;
+}
+
+.profile-info .organization {
+    margin: 5px 0;
+    color: var(--primary-color);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.profile-info .membership {
+    margin: 5px 0;
+    color: var(--dark-color);
+    font-size: 0.8rem;
+    background-color: rgba(4, 33, 103, 0.1);
+    padding: 4px 8px;
+    border-radius: 12px;
+    display: inline-block;
 }
 
 .status-badge {
@@ -801,6 +1248,116 @@ if (!empty($user_data['profile_picture'])) {
     margin: 3px 0 0;
     font-size: 0.9rem;
     color: var(--secondary-color);
+}
+
+.membership-details {
+    background-color: #f8f9fc;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    padding: 15px;
+}
+
+.plan-name {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--primary-color);
+    margin-bottom: 10px;
+}
+
+.team-count {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: white;
+    border-radius: 4px;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+}
+
+.count-label {
+    color: var(--dark-color);
+}
+
+.count-value {
+    font-weight: 600;
+}
+
+.verification-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    background-color: rgba(28, 200, 138, 0.1);
+    color: var(--success-color);
+    margin-top: 8px;
+}
+
+.verification-badge i {
+    font-size: 12px;
+}
+
+.verification-info {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f8f9fc;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+}
+
+.verification-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+    color: var(--success-color);
+}
+
+.verification-status.not-verified {
+    color: var(--secondary-color);
+}
+
+.verification-status i {
+    font-size: 18px;
+}
+
+.verification-info p {
+    margin: 10px 0 0;
+    font-size: 14px;
+    color: var(--secondary-color);
+}
+
+.verification-info a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.verification-info a:hover {
+    text-decoration: underline;
+}
+
+.section-divider {
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 30px 0;
+}
+
+.section-subheader {
+    margin-bottom: 20px;
+}
+
+.section-subheader h4 {
+    margin: 0 0 5px;
+    color: var(--primary-color);
+    font-size: 1.1rem;
+}
+
+.section-subheader p {
+    margin: 0;
+    color: var(--secondary-color);
+    font-size: 0.9rem;
 }
 
 @media (max-width: 768px) {
