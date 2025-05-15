@@ -61,49 +61,68 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Notification dropdown toggle
-    document.getElementById('notification-toggle').addEventListener('click', function(e) {
-        e.stopPropagation();
-        document.getElementById('notification-menu').classList.toggle('show');
-    });
+    const notificationToggle = document.getElementById('notification-toggle');
+    const notificationMenu = document.getElementById('notification-menu');
+
+    if (notificationToggle && notificationMenu) {
+        notificationToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            notificationMenu.classList.toggle('active');
+        });
+        
+        // Close notification dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (notificationMenu.classList.contains('active') && 
+                !notificationMenu.contains(e.target) && 
+                e.target !== notificationToggle) {
+                notificationMenu.classList.remove('active');
+            }
+        });
+        
+        // Prevent dropdown from closing when clicking inside menu
+        notificationMenu.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    }
     
-    // Close notification dropdown when clicking outside
-    document.addEventListener('click', function(e) {
-        const dropdown = document.getElementById('notification-menu');
-        if (dropdown.classList.contains('show') && !dropdown.contains(e.target) && e.target.id !== 'notification-toggle') {
-            dropdown.classList.remove('show');
-        }
-    });
-    
-    // Handle notification click - mark as read
-    document.querySelectorAll('.notification-item').forEach(item => {
-        item.addEventListener('click', function() {
-            const notificationId = this.getAttribute('data-id');
-            if (this.classList.contains('unread')) {
-                // AJAX request to mark notification as read
-                fetch('ajax/mark_notification_read.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: 'notification_id=' + notificationId
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        this.classList.remove('unread');
-                        // Update badge count
-                        const badge = document.querySelector('.notification-badge');
-                        if (badge) {
-                            const currentCount = parseInt(badge.textContent);
-                            if (currentCount > 1) {
-                                badge.textContent = currentCount - 1;
-                            } else {
-                                badge.remove();
-                            }
+    // Handle mark as read links
+    document.querySelectorAll('.notification-mark-read').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const notificationId = this.getAttribute('href').split('id=')[1];
+            const notificationItem = this.closest('.notification-item');
+            
+            // AJAX request to mark notification as read
+            fetch('ajax/mark_notification_read.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'notification_id=' + notificationId + '&user_id=' + userId
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    notificationItem.classList.remove('unread');
+                    notificationItem.classList.add('read');
+                    
+                    // Update badge count
+                    const badge = document.querySelector('.notification-badge');
+                    if (badge) {
+                        const currentCount = parseInt(badge.textContent);
+                        if (currentCount > 1) {
+                            badge.textContent = currentCount - 1;
+                        } else {
+                            badge.remove();
                         }
                     }
-                });
-            }
+                    
+                    // Hide the mark as read button
+                    this.style.display = 'none';
+                }
+            });
         });
     });
     
@@ -115,7 +134,11 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // AJAX request to mark all notifications as read
             fetch('ajax/mark_all_notifications_read.php', {
-                method: 'POST'
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'user_id=' + userId
             })
             .then(response => response.json())
             .then(data => {
@@ -123,6 +146,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Update UI
                     document.querySelectorAll('.notification-item.unread').forEach(item => {
                         item.classList.remove('unread');
+                        item.classList.add('read');
+                        
+                        // Hide mark as read buttons
+                        const markReadBtn = item.querySelector('.notification-mark-read');
+                        if (markReadBtn) {
+                            markReadBtn.style.display = 'none';
+                        }
                     });
                     
                     // Remove notification badge

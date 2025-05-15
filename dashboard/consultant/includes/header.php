@@ -169,21 +169,27 @@ if ($user_type == 'consultant') {
                 <a href="index.php" class="header-logo">
                     <img src="../../assets/images/logo-Visafy-light.png" alt="Visafy Logo" class="desktop-logo">
                 </a>
-                <?php if (!empty($user['organization_name'])): ?>
-                <span class="organization-name"><?php echo htmlspecialchars($user['organization_name']); ?></span>
-                <?php endif; ?>
+               
             </div>
             <div class="header-right">
-                <?php if ($user_type == 'consultant' && $membership_plan): ?>
-                <div class="membership-info">
-                    <span class="plan-badge"><?php echo htmlspecialchars($membership_plan); ?> Plan</span>
-                    <span class="team-count"><?php echo $team_members_count; ?>/<?php echo $max_team_members; ?> Team Members</span>
-                </div>
-                <?php endif; ?>
-                <!-- <div class="notification-dropdown">
+               
+                <div class="notification-dropdown">
                     <div class="notification-icon" id="notification-toggle">
                         <i class="fas fa-bell"></i>
-                        <?php if ($notification_count > 0): ?>
+                        <?php
+                        // Get unread notification count
+                        $notification_count_query = "SELECT COUNT(*) as count 
+                                                    FROM notifications 
+                                                    WHERE user_id = ? AND is_read = 0 AND is_dismissed = 0";
+                        $stmt = $conn->prepare($notification_count_query);
+                        $stmt->bind_param("i", $user_id);
+                        $stmt->execute();
+                        $notification_count_result = $stmt->get_result();
+                        $notification_count = $notification_count_result->fetch_assoc()['count'];
+                        $stmt->close();
+                        
+                        if ($notification_count > 0):
+                        ?>
                         <span class="notification-badge"><?php echo $notification_count; ?></span>
                         <?php endif; ?>
                     </div>
@@ -191,35 +197,85 @@ if ($user_type == 'consultant') {
                         <div class="notification-header">
                             <h3>Notifications</h3>
                             <?php if ($notification_count > 0): ?>
-                            <a href="notifications.php" class="mark-all-read">Mark all as read</a>
+                            <a href="notification.php?action=mark_all_read" class="mark-all-read">Mark all as read</a>
                             <?php endif; ?>
                         </div>
                         <div class="notification-list">
-                            <?php if (empty($notifications_list)): ?>
-                            <div class="notification-item">
+                            <?php
+                            // Get recent notifications
+                            $recent_notifications_query = "SELECT 
+                                n.id, n.title, n.message, n.created_at, n.is_read, n.action_link,
+                                nt.icon, nt.color, nt.type_name
+                                FROM notifications n
+                                JOIN notification_types nt ON n.type_id = nt.id
+                                WHERE n.user_id = ? AND n.is_dismissed = 0
+                                ORDER BY n.created_at DESC
+                                LIMIT 5";
+                            $stmt = $conn->prepare($recent_notifications_query);
+                            $stmt->bind_param("i", $user_id);
+                            $stmt->execute();
+                            $notifications_result = $stmt->get_result();
+                            $notifications_list = [];
+                            
+                            if ($notifications_result && $notifications_result->num_rows > 0) {
+                                while ($row = $notifications_result->fetch_assoc()) {
+                                    $notifications_list[] = $row;
+                                }
+                            }
+                            $stmt->close();
+                            
+                            if (empty($notifications_list)):
+                            ?>
+                            <div class="notification-item empty">
                                 <p>No new notifications</p>
                             </div>
                             <?php else: ?>
                             <?php foreach ($notifications_list as $notification): ?>
                             <div class="notification-item <?php echo $notification['is_read'] ? 'read' : 'unread'; ?>">
-                                <div class="notification-icon-small">
-                                    <i class="fas fa-info-circle"></i>
+                                <div class="notification-icon-small" style="background-color: <?php echo $notification['color']; ?>">
+                                    <i class="<?php echo $notification['icon']; ?>"></i>
                                 </div>
                                 <div class="notification-details">
                                     <h4><?php echo htmlspecialchars($notification['title']); ?></h4>
-                                    <p><?php echo htmlspecialchars($notification['content']); ?></p>
-                                    <span
-                                        class="notification-time"><?php echo date('M d, Y H:i', strtotime($notification['created_at'])); ?></span>
+                                    <p><?php echo htmlspecialchars($notification['message']); ?></p>
+                                    <span class="notification-time">
+                                        <?php 
+                                        $notification_time = new DateTime($notification['created_at']);
+                                        $now = new DateTime();
+                                        $diff = $notification_time->diff($now);
+                                        
+                                        if ($diff->days > 0) {
+                                            echo $diff->days . 'd ago';
+                                        } elseif ($diff->h > 0) {
+                                            echo $diff->h . 'h ago';
+                                        } elseif ($diff->i > 0) {
+                                            echo $diff->i . 'm ago';
+                                        } else {
+                                            echo 'Just now';
+                                        }
+                                        ?>
+                                    </span>
                                 </div>
+                                <?php if (!empty($notification['action_link'])): ?>
+                                <a href="<?php echo $notification['action_link']; ?>" class="notification-action">
+                                    <i class="fas fa-arrow-right"></i>
+                                </a>
+                                <?php endif; ?>
+                                <?php if (!$notification['is_read']): ?>
+                                <a href="notification.php?action=mark_read&id=<?php echo $notification['id']; ?>" 
+                                   class="notification-mark-read" title="Mark as read">
+                                    <i class="fas fa-check"></i>
+                                </a>
+                                <?php endif; ?>
                             </div>
                             <?php endforeach; ?>
                             <?php endif; ?>
                         </div>
                         <div class="notification-footer">
-                            <a href="notifications.php">View all notifications</a>
+                            <a href="notification.php">View all notifications</a>
                         </div>
                     </div>
-                </div> -->
+                </div>
                 <div class="user-dropdown">
                     <span
                         class="user-name"><?php echo htmlspecialchars($_SESSION["first_name"] . ' ' . $_SESSION["last_name"]); ?></span>
@@ -304,10 +360,10 @@ if ($user_type == 'consultant') {
 
                 <?php if ($user_type == 'consultant' || $user_type == 'admin'): ?>
                 <div class="sidebar-divider"></div>
-                <div class="sidebar-section-title">Team Management</div>
+                <div class="sidebar-section-title">Organization</div>
                 <a href="team.php" class="nav-item <?php echo $current_page == 'team' ? 'active' : ''; ?>">
-                    <i class="fas fa-user-friends"></i>
-                    <span class="nav-item-text">Team Members</span>
+                    <i class="fas fa-building"></i>
+                    <span class="nav-item-text">Organization</span>
                 </a>
                 <?php endif; ?>
                 
@@ -328,13 +384,6 @@ if ($user_type == 'consultant') {
                     <i class="fas fa-mail-bulk"></i>
                     <span class="nav-item-text">Email Management</span>
                 </a>
-                
-                <?php if ($user_type == 'consultant'): ?>
-                <a href="organization.php" class="nav-item <?php echo $current_page == 'organization' ? 'active' : ''; ?>">
-                    <i class="fas fa-building"></i>
-                    <span class="nav-item-text">Organization</span>
-                </a>
-                <?php endif; ?>
                 <?php endif; ?>
 
                 <div class="sidebar-divider"></div>

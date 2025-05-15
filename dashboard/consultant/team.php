@@ -2,13 +2,26 @@
 // Start output buffering to prevent 'headers already sent' errors
 ob_start();
 
-$page_title = "Team Management";
+$page_title = "Organization Management";
 $page_specific_css = "assets/css/team.css";
 require_once 'includes/header.php';
 
 // Get the consultant ID from the session (assuming the logged-in user is a consultant)
 $consultant_id = $_SESSION["id"];
 $organization_id = isset($user['organization_id']) ? $user['organization_id'] : null;
+
+// Get organization details
+$org_query = "SELECT o.*, c.company_name, mp.name as plan_name, mp.max_team_members, mp.price
+              FROM organizations o 
+              LEFT JOIN consultants c ON c.user_id = ?
+              LEFT JOIN membership_plans mp ON c.membership_plan_id = mp.id
+              WHERE o.id = ?";
+$org_stmt = $conn->prepare($org_query);
+$org_stmt->bind_param("ii", $consultant_id, $organization_id);
+$org_stmt->execute();
+$org_result = $org_stmt->get_result();
+$organization = $org_result->fetch_assoc();
+$org_stmt->close();
 
 // Get all team members for this consultant's organization
 $query = "SELECT tm.id, tm.consultant_id, tm.member_user_id, tm.member_type, tm.invitation_status, 
@@ -270,9 +283,41 @@ if (isset($_GET['success'])) {
 ?>
 
 <div class="content">
+    <!-- Organization Details Section -->
+    <div class="org-details-container">
+        <div class="org-info">
+            <h1>Organization Details</h1>
+            <div class="org-details">
+                <div class="org-detail-item">
+                    <span class="label">Organization Name:</span>
+                    <span class="value"><?php echo !empty($user['organization_name']) ? htmlspecialchars($user['organization_name']) : (!empty($organization['company_name']) ? htmlspecialchars($organization['company_name']) : 'Not set'); ?></span>
+                </div>
+                <div class="org-detail-item">
+                    <span class="label">Current Plan:</span>
+                    <span class="value plan-badge"><?php echo !empty($organization['plan_name']) ? htmlspecialchars($organization['plan_name']) : 'Free'; ?></span>
+                </div>
+                <div class="org-detail-item">
+                    <span class="label">Team Members:</span>
+                    <span class="value"><?php echo count($team_members); ?> / <?php echo !empty($organization['max_team_members']) ? $organization['max_team_members'] : 0; ?></span>
+                </div>
+                <?php if (!empty($organization['price'])): ?>
+                <div class="org-detail-item">
+                    <span class="label">Monthly Fee:</span>
+                    <span class="value">$<?php echo number_format($organization['price'], 2); ?></span>
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+        <div class="org-actions">
+            <a href="subscription.php" class="btn primary-btn upgrade-btn">
+                <i class="fas fa-arrow-circle-up"></i> Upgrade Plan
+            </a>
+        </div>
+    </div>
+
     <div class="header-container">
         <div>
-            <h1>Team Management</h1>
+            <h2>Team Management</h2>
             <p>Manage your team members and send invitations to new team members.</p>
         </div>
         <div>
@@ -823,6 +868,72 @@ if (isset($_GET['success'])) {
     .btn-action {
         width: 100%;
         justify-content: center;
+    }
+}
+
+/* Add organization details styling */
+.org-details-container {
+    display: flex;
+    justify-content: space-between;
+    background-color: white;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.org-info h1 {
+    color: var(--primary-color);
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+}
+
+.org-details {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.org-detail-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.org-detail-item .label {
+    font-weight: 600;
+    color: var(--secondary-color);
+    font-size: 0.9rem;
+}
+
+.org-detail-item .value {
+    font-size: 1.1rem;
+    color: var(--dark-color);
+}
+
+.plan-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    background-color: var(--primary-color);
+    color: white !important;
+    border-radius: 15px;
+    font-size: 0.9rem !important;
+}
+
+.upgrade-btn {
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+@media (max-width: 768px) {
+    .org-details-container {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .org-details {
+        grid-template-columns: 1fr;
     }
 }
 </style>
