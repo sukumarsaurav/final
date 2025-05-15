@@ -158,6 +158,34 @@ if ($my_tasks_result && $my_tasks_result->num_rows > 0) {
 }
 $stmt->close();
 
+// Get team tasks (tasks assigned to team members in your organization)
+$team_tasks_query = "SELECT t.id, t.name, t.priority, t.status, t.due_date,
+                  ta.status as assignment_status,
+                  u.id as assignee_id, CONCAT(u.first_name, ' ', u.last_name) as assignee_name
+                  FROM tasks t 
+                  JOIN task_assignments ta ON t.id = ta.task_id
+                  JOIN users u ON ta.assignee_id = u.id
+                  JOIN users creator ON t.creator_id = creator.id
+                  WHERE t.creator_id = ? 
+                  AND ta.assignee_id != ?
+                  AND t.deleted_at IS NULL 
+                  AND ta.deleted_at IS NULL
+                  AND ta.status IN ('pending', 'in_progress')
+                  ORDER BY t.due_date ASC, t.priority DESC
+                  LIMIT 10";
+$stmt = $conn->prepare($team_tasks_query);
+$stmt->bind_param("ii", $_SESSION['id'], $_SESSION['id']);
+$stmt->execute();
+$team_tasks_result = $stmt->get_result();
+$team_tasks = [];
+
+if ($team_tasks_result && $team_tasks_result->num_rows > 0) {
+    while ($row = $team_tasks_result->fetch_assoc()) {
+        $team_tasks[] = $row;
+    }
+}
+$stmt->close();
+
 // Get recent notifications
 $recent_notifications_query = "SELECT 
     n.id, n.title, n.message, n.created_at, n.action_link,
@@ -475,7 +503,141 @@ $stmt->close();
             <?php endif; ?>
         </div>
     </div>
-    
+      <div class="dashboard-grid">
+        <!-- My Tasks Section -->
+        <div class="dashboard-section my-tasks">
+            <div class="section-header">
+                <h2>My Tasks</h2>
+                <a href="tasks.php" class="btn-link">View All</a>
+            </div>
+
+            <?php if (empty($my_tasks)): ?>
+            <div class="empty-state">
+                <i class="fas fa-tasks"></i>
+                <p>No pending tasks assigned to you</p>
+            </div>
+            <?php else: ?>
+            <div class="task-list">
+                <?php foreach ($my_tasks as $task): ?>
+                    <div class="team-task-item">
+                        <div class="team-task-info">
+                            <span class="task-priority-badge <?php echo $task['priority']; ?>">
+                                <?php echo ucfirst($task['priority']); ?>
+                            </span>
+                            <div class="task-name">
+                                <a href="task_detail.php?id=<?php echo $task['id']; ?>">
+                                    <?php echo htmlspecialchars($task['name']); ?>
+                                </a>
+                            </div>
+                            <?php if (!empty($task['due_date'])): ?>
+                                <?php 
+                                    $due_date = new DateTime($task['due_date']);
+                                    $today = new DateTime();
+                                    $interval = $today->diff($due_date);
+                                    $is_overdue = $due_date < $today && $task['status'] !== 'completed';
+                                    $date_class = $is_overdue ? 'overdue' : '';
+                                ?>
+                                <div class="due-date <?php echo $date_class; ?>">
+                                    <i class="far fa-calendar-alt"></i>
+                                    Due: <?php echo $due_date->format('M d, Y'); ?>
+                                    <?php if ($is_overdue): ?>
+                                        <span class="overdue-tag">Overdue</span>
+                                    <?php elseif ($interval->days == 0): ?>
+                                        <span class="today-tag">Today</span>
+                                    <?php elseif ($interval->days == 1 && $due_date > $today): ?>
+                                        <span class="tomorrow-tag">Tomorrow</span>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        <div class="team-task-status">
+                            <span class="status-badge <?php echo $task['status']; ?>">
+                                <?php echo ucwords(str_replace('_', ' ', $task['status'])); ?>
+                            </span>
+                            <div class="task-actions">
+                                <a href="task_detail.php?id=<?php echo $task['id']; ?>" class="btn-task-action">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                                <?php if ($task['status'] === 'pending'): ?>
+                                    <a href="tasks.php?action=start&task_id=<?php echo $task['id']; ?>" class="btn-task-action start">
+                                        <i class="fas fa-play"></i> Start
+                                    </a>
+                                <?php elseif ($task['status'] === 'in_progress'): ?>
+                                    <a href="tasks.php?action=complete&task_id=<?php echo $task['id']; ?>" class="btn-task-action complete">
+                                        <i class="fas fa-check"></i> Complete
+                                    </a>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+            <?php endif; ?>
+        </div>
+
+        <!-- Team Tasks Section -->
+        <div class="dashboard-section team-tasks">
+            <div class="section-header">
+                <h2>Team Tasks</h2>
+                <a href="tasks.php" class="btn-link">Manage All</a>
+            </div>
+
+            <?php if (empty($team_tasks)): ?>
+            <div class="empty-state">
+                <i class="fas fa-user-friends"></i>
+                <p>No pending tasks assigned to your team</p>
+            </div>
+            <?php else: ?>
+            <div class="task-list">
+                <?php foreach ($team_tasks as $task): ?>
+                    <div class="team-task-item">
+                        <div class="team-task-info">
+                            <span class="task-priority-badge <?php echo $task['priority']; ?>">
+                                <?php echo ucfirst($task['priority']); ?>
+                            </span>
+                            <div class="task-name">
+                                <a href="task_detail.php?id=<?php echo $task['id']; ?>">
+                                    <?php echo htmlspecialchars($task['name']); ?>
+                                </a>
+                            </div>
+                            <div class="task-assignee">
+                                <i class="fas fa-user"></i> Assigned to: <?php echo htmlspecialchars($task['assignee_name']); ?>
+                            </div>
+                            <?php if (!empty($task['due_date'])): ?>
+                                <?php 
+                                    $due_date = new DateTime($task['due_date']);
+                                    $today = new DateTime();
+                                    $interval = $today->diff($due_date);
+                                    $is_overdue = $due_date < $today && $task['status'] !== 'completed';
+                                    $date_class = $is_overdue ? 'overdue' : '';
+                                ?>
+                                <div class="due-date <?php echo $date_class; ?>">
+                                    <i class="far fa-calendar-alt"></i>
+                                    Due: <?php echo $due_date->format('M d, Y'); ?>
+                                    <?php if ($is_overdue): ?>
+                                        <span class="overdue-tag">Overdue</span>
+                                    <?php elseif ($interval->days == 0): ?>
+                                        <span class="today-tag">Today</span>
+                                    <?php elseif ($interval->days == 1 && $due_date > $today): ?>
+                                        <span class="tomorrow-tag">Tomorrow</span>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        <div class="team-task-status">
+                            <span class="status-badge <?php echo $task['status']; ?>">
+                                <?php echo ucwords(str_replace('_', ' ', $task['status'])); ?>
+                            </span>
+                            <a href="task_detail.php?id=<?php echo $task['id']; ?>" class="btn-task-action">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+            <?php endif; ?>
+        </div>
+    </div>
     <div class="dashboard-grid">
         <!-- AI Chat Section -->
         <div class="dashboard-section ai-chat">
@@ -616,6 +778,9 @@ $stmt->close();
         </div>
     </div>
 
+    <!-- Tasks Section -->
+  
+
     <!-- Charts Section -->
     <div class="dashboard-charts">
         <div class="chart-container">
@@ -639,44 +804,7 @@ $stmt->close();
     </div>
 
     <!-- Quick Actions Section -->
-    <div class="quick-actions">
-        <div class="section-header">
-            <h2>Quick Actions</h2>
-        </div>
-        <div class="actions-grid">
-            <a href="create_booking.php" class="action-card">
-                <div class="action-icon">
-                    <i class="fas fa-calendar-plus"></i>
-                </div>
-                <div class="action-title">Create Booking</div>
-                <div class="action-description">Schedule a new consultation</div>
-            </a>
-
-            <a href="ai-chat.php" class="action-card">
-                <div class="action-icon">
-                    <i class="fas fa-robot"></i>
-                </div>
-                <div class="action-title">AI Assistant</div>
-                <div class="action-description">Get help with cases and IRCC</div>
-            </a>
-
-            <a href="messaging.php" class="action-card">
-                <div class="action-icon">
-                    <i class="fas fa-envelope"></i>
-                </div>
-                <div class="action-title">Messages</div>
-                <div class="action-description">View and send client messages</div>
-            </a>
-
-            <a href="applications.php" class="action-card">
-                <div class="action-icon">
-                    <i class="fas fa-file-alt"></i>
-                </div>
-                <div class="action-title">Applications</div>
-                <div class="action-description">Manage client applications</div>
-            </a>
-        </div>
-    </div>
+   
 </div>
 
 <style>

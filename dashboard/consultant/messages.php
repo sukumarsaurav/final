@@ -29,7 +29,27 @@ function formatTimeAgo($timestamp) {
 
 // Get all conversations for current user
 $user_id = $_SESSION['id'];
-$organization_id = $_SESSION['organization_id'];
+
+// Check if organization_id is set in session, if not fetch it from database
+if (!isset($_SESSION['organization_id'])) {
+    // Get organization_id from user data
+    $org_query = "SELECT organization_id FROM users WHERE id = ?";
+    $stmt = $conn->prepare($org_query);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $org_result = $stmt->get_result();
+    if ($org_result && $org_result->num_rows > 0) {
+        $organization_id = $org_result->fetch_assoc()['organization_id'];
+        // Set it in the session for future use
+        $_SESSION['organization_id'] = $organization_id;
+    } else {
+        // Default to 0 if not found (this should be handled gracefully)
+        $organization_id = 0;
+    }
+    $stmt->close();
+} else {
+    $organization_id = $_SESSION['organization_id'];
+}
 
 // Fetch all conversations the current user is participating in within their organization
 $query = "SELECT c.id, c.title, c.type, c.application_id, c.booking_id, c.created_at, c.last_message_at,
