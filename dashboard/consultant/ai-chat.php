@@ -14,7 +14,7 @@ $tables_result = $conn->query($check_tables_sql);
 
 if ($tables_result->num_rows == 0) {
     // Include the SQL file to create tables
-    $sql_file = file_get_contents('../../chatbot.sql');
+    $sql_file = file_get_contents('../../chabot.sql');
     $conn->multi_query($sql_file);
     // Clear results
     while ($conn->more_results() && $conn->next_result()) {
@@ -32,34 +32,50 @@ $sql = "SELECT c.*, m.content as last_message, m.created_at as last_message_time
             FROM ai_chat_messages
             WHERE role = 'user' AND deleted_at IS NULL
         ) m ON m.conversation_id = c.id AND m.rn = 1
-        WHERE c.user_id = ? AND c.deleted_at IS NULL 
+        WHERE c.consultant_id = ? AND c.deleted_at IS NULL 
         ORDER BY COALESCE(m.created_at, c.created_at) DESC";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $conversations = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
-// Get monthly usage if user is a team member
-$messages_remaining = "Unlimited"; // Default for admins
+// Get monthly chat usage and limit
+$chats_remaining = "Unlimited"; // Default for admins
+$monthly_limit = "Unlimited";
 
-if ($user_type == 'member') {
-    // Get the team_member_id for this user
-    $stmt = $conn->prepare("SELECT id FROM team_members WHERE user_id = ?");
+if ($user_type != 'admin') {
+    // Get plan-based limits
+    $plan_limits = [
+        'Bronze' => 40,
+        'Silver' => 80,
+        'Gold' => 150
+    ];
+    
+    // Get user's membership plan
+    $sql = "SELECT mp.name FROM membership_plans mp 
+            JOIN consultants c ON c.membership_plan_id = mp.id 
+            WHERE c.user_id = ?";
+    $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
     $result = $stmt->get_result();
-    $team_member = $result->fetch_assoc();
-    $team_member_id = $team_member['id'] ?? null;
     
-    if ($team_member_id) {
+    if ($row = $result->fetch_assoc()) {
+        $plan_name = $row['name'];
+        $monthly_limit = $plan_limits[$plan_name] ?? 40; // Default to Bronze limit if plan not found
+        
+        // Get current month's usage
         $month = date('Y-m');
-        $sql = "SELECT message_count FROM ai_chat_usage WHERE team_member_id = ? AND month = ?";
+        $sql = "SELECT chat_count FROM ai_chat_usage WHERE consultant_id = ? AND month = ?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("is", $team_member_id, $month);
+        $stmt->bind_param("is", $user_id, $month);
         $stmt->execute();
         $usage = $stmt->get_result()->fetch_assoc();
-        $messages_used = $usage ? $usage['message_count'] : 0;
-        $messages_remaining = 50 - $messages_used;
+        $chats_used = $usage ? $usage['chat_count'] : 0;
+        $chats_remaining = $monthly_limit - $chats_used;
+    } else {
+        $monthly_limit = 40; // Default to Bronze if no plan found
+        $chats_remaining = $monthly_limit;
     }
 }
 ?>
@@ -100,8 +116,8 @@ if ($user_type == 'member') {
                         <h4>New Conversation</h4>
                     </div>
                     <div class="messages-remaining">
-                        <i class="fas fa-message"></i>
-                        <span><?php echo $messages_remaining; ?> <?php echo $user_type == 'admin' ? '' : 'messages remaining'; ?></span>
+                        <i class="fas fa-comment-dots"></i>
+                        <span><?php echo $chats_remaining; ?> <?php echo $user_type == 'admin' ? '' : "of $monthly_limit chats remaining"; ?></span>
                     </div>
                 </div>
                 
@@ -111,14 +127,20 @@ if ($user_type == 'member') {
                         <img src="../../assets/images/ai-chatbot.svg" alt="AI Chat Bot" class="chat-bot-icon">
                         <h3>Welcome to AI Assistant</h3>
                         <p>I'm your visa and immigration consultant assistant. How can I help you today?</p>
+                        <?php if ($user_type != 'admin' && $chats_remaining <= 0): ?>
+                        <div class="limit-warning">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <p>You've reached your monthly chat limit. Please upgrade your plan for more chats.</p>
+                        </div>
+                        <?php endif; ?>
                     </div>
                 </div>
 
                 <!-- Chat Input -->
                 <div class="chat-input-container">
                     <form id="chat-form">
-                        <input type="text" id="user-input" placeholder="Type your message here..." required>
-                        <button type="submit" id="send-button">
+                        <input type="text" id="user-input" placeholder="Type your message here..." required <?php echo ($user_type != 'admin' && $chats_remaining <= 0) ? 'disabled' : ''; ?>>
+                        <button type="submit" id="send-button" <?php echo ($user_type != 'admin' && $chats_remaining <= 0) ? 'disabled' : ''; ?>>
                             <i class="fas fa-paper-plane"></i>
                         </button>
                     </form>
@@ -132,6 +154,7 @@ if ($user_type == 'member') {
 let activeConversationId = null;
 let isSidebarVisible = true;
 let userType = '<?php echo $user_type; ?>';
+let monthlyLimit = <?php echo is_numeric($monthly_limit) ? $monthly_limit : "'Unlimited'"; ?>;
 
 // Toggle sidebar
 document.getElementById('toggle-sidebar').addEventListener('click', function() {
@@ -153,7 +176,7 @@ function setActiveConversation(conversationId, title = null) {
 }
 
 function updateUsageCounter() {
-    // Only update usage for team members, not admins
+    // Only update usage for non-admin users
     if (userType !== 'admin') {
         fetch('ajax/chat_handler.php', {
             method: 'POST',
@@ -165,9 +188,38 @@ function updateUsageCounter() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                const remaining = 50 - data.usage;
+                const remaining = data.limit - data.usage;
                 document.querySelector('.messages-remaining span').textContent = 
-                    `${remaining} messages remaining`;
+                    `${remaining} of ${data.limit} chats remaining`;
+                
+                // Disable input if limit reached
+                const chatInput = document.getElementById('user-input');
+                const sendButton = document.getElementById('send-button');
+                
+                if (remaining <= 0) {
+                    chatInput.disabled = true;
+                    sendButton.disabled = true;
+                    
+                    // Add warning if not already present
+                    if (!document.querySelector('.limit-warning')) {
+                        const warningDiv = document.createElement('div');
+                        warningDiv.className = 'limit-warning';
+                        warningDiv.innerHTML = `
+                            <i class="fas fa-exclamation-circle"></i>
+                            <p>You've reached your monthly chat limit. Please upgrade your plan for more chats.</p>
+                        `;
+                        document.getElementById('chat-messages').appendChild(warningDiv);
+                    }
+                } else {
+                    chatInput.disabled = false;
+                    sendButton.disabled = false;
+                    
+                    // Remove warning if present
+                    const warning = document.querySelector('.limit-warning');
+                    if (warning) {
+                        warning.remove();
+                    }
+                }
             }
         });
     }
@@ -276,12 +328,17 @@ function createNewChat() {
             // Reset chat area
             document.getElementById('chat-messages').innerHTML = `
                 <div class="welcome-content">
-                    <img src="../../assets/images/ai-chat-bot.png" alt="AI Chat Bot" class="chat-bot-icon">
+                    <img src="../../assets/images/ai-chatbot.svg" alt="AI Chat Bot" class="chat-bot-icon">
                     <h3>Welcome to AI Assistant</h3>
                     <p>${data.welcome_message || "I'm your visa and immigration consultant assistant. How can I help you today?"}</p>
                 </div>
             `;
             document.querySelector('.chat-header h4').textContent = 'New Conversation';
+            
+            // Update usage counter
+            if (userType !== 'admin') {
+                updateUsageCounter();
+            }
             
             // Focus input
             document.getElementById('user-input').focus();
@@ -417,9 +474,6 @@ function sendMessage(message) {
         
         if (data.success) {
             appendMessage(data.message);
-            if (userType !== 'admin') {
-                updateUsageCounter();
-            }
             
             // Update conversation preview
             const conversationItem = document.querySelector(`.conversation-item[data-id="${activeConversationId}"]`);
@@ -732,10 +786,36 @@ if (!document.querySelector('.conversation-item')) {
     background-color: #2980b9;
 }
 
+#send-button:disabled {
+    background-color: #a0aec0;
+    cursor: not-allowed;
+}
+
+#user-input:disabled {
+    background-color: #f7fafc;
+    cursor: not-allowed;
+}
+
 .loading-messages {
     text-align: center;
     padding: 20px;
     color: #718096;
+}
+
+.limit-warning {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #fff5f5;
+    border: 1px solid #fed7d7;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    color: #c53030;
+}
+
+.limit-warning i {
+    font-size: 24px;
+    margin-right: 15px;
 }
 
 /* Typing animation */
