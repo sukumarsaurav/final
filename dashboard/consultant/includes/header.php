@@ -276,17 +276,10 @@ if ($user_type == 'consultant') {
                     <i class="fas fa-calendar-alt"></i>
                     <span class="nav-item-text">Bookings</span>
                 </a>
-                <a href="eligibility-checker.php"
-                    class="nav-item <?php echo $current_page == 'eligibility-checker' ? 'active' : ''; ?>">
-                    <i class="fas fa-check-square"></i>
-                    <span class="nav-item-text">Eligibility Checker</span>
-                </a>
+            
                 <div class="sidebar-divider"></div>
                 
-                <a href="leads.php" class="nav-item <?php echo $current_page == 'leads' ? 'active' : ''; ?>">
-                    <i class="fas fa-users"></i>
-                    <span class="nav-item-text">Leads</span>
-                </a>
+               
                 <a href="clients.php" class="nav-item <?php echo $current_page == 'clients' ? 'active' : ''; ?>">
                     <i class="fa-solid fa-user-check"></i>
                     <span class="nav-item-text">Clients</span>
@@ -329,7 +322,6 @@ if ($user_type == 'consultant') {
                 </a>
                 
                 <?php if ($user_type == 'consultant'): ?>
-                <div class="sidebar-divider"></div>
                 <a href="organization.php" class="nav-item <?php echo $current_page == 'organization' ? 'active' : ''; ?>">
                     <i class="fas fa-building"></i>
                     <span class="nav-item-text">Organization</span>
