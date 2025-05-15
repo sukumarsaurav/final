@@ -18,11 +18,19 @@ if ($is_logged_in) {
     $profile_image = !empty($_SESSION['profile_picture']) ? $_SESSION['profile_picture'] : '';
 
     if (!empty($profile_image)) {
-        // Check if file exists in either location
-        if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/uploads/profiles/' . $profile_image)) {
-            $profile_img = '/uploads/profiles/' . $profile_image;
-        } else if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/uploads/profile/' . $profile_image)) {
-            $profile_img = '/uploads/profile/' . $profile_image;
+        // Check for new structure first (users/{user_id}/profile/...)
+        if (strpos($profile_image, 'users/') === 0) {
+            if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/uploads/' . $profile_image)) {
+                $profile_img = '/uploads/' . $profile_image;
+            }
+        } else {
+            // Legacy structure
+            // Check if file exists in either location
+            if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/uploads/profiles/' . $profile_image)) {
+                $profile_img = '/uploads/profiles/' . $profile_image;
+            } else if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/uploads/profile/' . $profile_image)) {
+                $profile_img = '/uploads/profile/' . $profile_image;
+            }
         }
     }
 }

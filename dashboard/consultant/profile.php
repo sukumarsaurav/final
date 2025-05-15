@@ -10,6 +10,26 @@ require_once 'includes/header.php';
 $user_id = isset($_SESSION["user_id"]) ? $_SESSION["user_id"] : (isset($_SESSION["id"]) ? $_SESSION["id"] : 0);
 $organization_id = isset($_SESSION["organization_id"]) ? $_SESSION["organization_id"] : null;
 
+// Create user upload directories if they don't exist
+$user_upload_dir = '../../uploads/users/' . $user_id;
+$profile_dir = $user_upload_dir . '/profile';
+$documents_dir = $user_upload_dir . '/documents';
+$banners_dir = $user_upload_dir . '/banners';
+
+// Create directories if they don't exist
+if (!is_dir($user_upload_dir)) {
+    mkdir($user_upload_dir, 0755, true);
+}
+if (!is_dir($profile_dir)) {
+    mkdir($profile_dir, 0755, true);
+}
+if (!is_dir($documents_dir)) {
+    mkdir($documents_dir, 0755, true);
+}
+if (!is_dir($banners_dir)) {
+    mkdir($banners_dir, 0755, true);
+}
+
 // Update query to include consultant_profiles table data
 $query = "SELECT u.*, c.company_name, o.name as organization_name, c.membership_plan_id,
           mp.name as membership_plan, mp.max_team_members, c.team_members_count, oauth.provider, oauth.provider_user_id,
@@ -74,30 +94,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Handle profile picture upload
         $profile_picture = $user_data['profile_picture'];
         if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] == 0) {
-            $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
-            $max_size = 2 * 1024 * 1024; // 2MB
+            $upload_result = handle_user_file_upload(
+                $user_id, 
+                $_FILES['profile_picture'],
+                'profile',
+                [
+                    'max_size' => 2 * 1024 * 1024, // 2MB
+                    'allowed_types' => ['image/jpeg', 'image/png', 'image/gif'],
+                    'filename_prefix' => 'profile_'
+                ]
+            );
             
-            if (!in_array($_FILES['profile_picture']['type'], $allowed_types)) {
-                $validation_errors[] = "Only JPG, PNG or GIF files are allowed";
-            } elseif ($_FILES['profile_picture']['size'] > $max_size) {
-                $validation_errors[] = "File size should be less than 2MB";
+            if ($upload_result['status']) {
+                $profile_picture = $upload_result['file_path'];
             } else {
-                $upload_dir = '../../uploads/profiles/';
-                
-                // Create directory if it doesn't exist
-                if (!is_dir($upload_dir)) {
-                    mkdir($upload_dir, 0755, true);
-                }
-                
-                $file_extension = pathinfo($_FILES['profile_picture']['name'], PATHINFO_EXTENSION);
-                $filename = 'profile_' . $user_id . '_' . time() . '.' . $file_extension;
-                $target_file = $upload_dir . $filename;
-                
-                if (move_uploaded_file($_FILES['profile_picture']['tmp_name'], $target_file)) {
-                    $profile_picture = $filename;
-                } else {
-                    $validation_errors[] = "Failed to upload profile picture";
-                }
+                $validation_errors[] = $upload_result['message'];
             }
         }
         
@@ -114,6 +125,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION["first_name"] = $first_name;
                 $_SESSION["last_name"] = $last_name;
                 $_SESSION["email"] = $email;
+                $_SESSION["profile_picture"] = $profile_picture;
                 
                 // Refresh user data
                 $result = $conn->query("SELECT u.*, c.company_name, o.name as organization_name, c.membership_plan_id,
@@ -167,30 +179,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Handle banner image upload
         $banner_image = $user_data['banner_image'] ?? '';
         if (isset($_FILES['banner_image']) && $_FILES['banner_image']['error'] == 0) {
-            $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
-            $max_size = 5 * 1024 * 1024; // 5MB
+            $upload_result = handle_user_file_upload(
+                $user_id, 
+                $_FILES['banner_image'],
+                'banners',
+                [
+                    'max_size' => 5 * 1024 * 1024, // 5MB
+                    'allowed_types' => ['image/jpeg', 'image/png', 'image/gif'],
+                    'filename_prefix' => 'banner_'
+                ]
+            );
             
-            if (!in_array($_FILES['banner_image']['type'], $allowed_types)) {
-                $validation_errors[] = "Only JPG, PNG or GIF files are allowed for banner image";
-            } elseif ($_FILES['banner_image']['size'] > $max_size) {
-                $validation_errors[] = "Banner image size should be less than 5MB";
+            if ($upload_result['status']) {
+                $banner_image = $upload_result['file_path'];
             } else {
-                $upload_dir = '../../uploads/banners/';
-                
-                // Create directory if it doesn't exist
-                if (!is_dir($upload_dir)) {
-                    mkdir($upload_dir, 0755, true);
-                }
-                
-                $file_extension = pathinfo($_FILES['banner_image']['name'], PATHINFO_EXTENSION);
-                $filename = 'banner_' . $user_id . '_' . time() . '.' . $file_extension;
-                $target_file = $upload_dir . $filename;
-                
-                if (move_uploaded_file($_FILES['banner_image']['tmp_name'], $target_file)) {
-                    $banner_image = $filename;
-                } else {
-                    $validation_errors[] = "Failed to upload banner image";
-                }
+                $validation_errors[] = $upload_result['message'];
             }
         }
         
@@ -259,45 +262,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Update just the profile picture (Ajax request)
     if (isset($_POST['update_profile_picture']) && isset($_FILES['profile_picture'])) {
-        $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
-        $max_size = 2 * 1024 * 1024; // 2MB
-        $validation_errors = [];
+        $upload_result = handle_user_file_upload(
+            $user_id, 
+            $_FILES['profile_picture'],
+            'profile',
+            [
+                'max_size' => 2 * 1024 * 1024, // 2MB
+                'allowed_types' => ['image/jpeg', 'image/png', 'image/gif'],
+                'filename_prefix' => 'profile_'
+            ]
+        );
         
-        if ($_FILES['profile_picture']['error'] != 0) {
-            $validation_errors[] = "Error uploading file. Please try again.";
-        } elseif (!in_array($_FILES['profile_picture']['type'], $allowed_types)) {
-            $validation_errors[] = "Only JPG, PNG or GIF files are allowed";
-        } elseif ($_FILES['profile_picture']['size'] > $max_size) {
-            $validation_errors[] = "File size should be less than 2MB";
-        } else {
-            $upload_dir = '../../uploads/profiles/';
+        if ($upload_result['status']) {
+            // Update database
+            $update_query = "UPDATE users SET profile_picture = ? WHERE id = ?";
+            $stmt = $conn->prepare($update_query);
+            $stmt->bind_param('si', $upload_result['file_path'], $user_id);
             
-            // Create directory if it doesn't exist
-            if (!is_dir($upload_dir)) {
-                mkdir($upload_dir, 0755, true);
-            }
-            
-            $file_extension = pathinfo($_FILES['profile_picture']['name'], PATHINFO_EXTENSION);
-            $filename = 'profile_' . $user_id . '_' . time() . '.' . $file_extension;
-            $target_file = $upload_dir . $filename;
-            
-            if (move_uploaded_file($_FILES['profile_picture']['tmp_name'], $target_file)) {
-                // Update database
-                $update_query = "UPDATE users SET profile_picture = ? WHERE id = ?";
-                $stmt = $conn->prepare($update_query);
-                $stmt->bind_param('si', $filename, $user_id);
+            if ($stmt->execute()) {
+                // Update session
+                $_SESSION['profile_picture'] = $upload_result['file_path'];
                 
-                if ($stmt->execute()) {
-                    // Success - redirect to refresh the page
-                    header('Location: profile.php?success=profile_picture_updated');
-                    exit;
-                } else {
-                    $validation_errors[] = "Error updating profile picture in database";
-                }
-                $stmt->close();
+                // Success - redirect to refresh the page
+                header('Location: profile.php?success=profile_picture_updated');
+                exit;
             } else {
-                $validation_errors[] = "Failed to upload profile picture";
+                $validation_errors[] = "Error updating profile picture in database";
             }
+            $stmt->close();
+        } else {
+            $validation_errors[] = $upload_result['message'];
         }
         
         if (!empty($validation_errors)) {
@@ -508,9 +502,23 @@ if (isset($_GET['success']) && $_GET['success'] === 'profile_picture_updated') {
 // Get profile picture URL
 $profile_img = '../../assets/images/default-profile.jpg';
 if (!empty($user_data['profile_picture'])) {
-    $profile_path = '../../uploads/profiles/' . $user_data['profile_picture'];
-    if (file_exists($profile_path)) {
-        $profile_img = $profile_path;
+    if (strpos($user_data['profile_picture'], 'users/') === 0) {
+        // New path structure
+        $profile_path = '../../uploads/' . $user_data['profile_picture'];
+        if (file_exists($profile_path)) {
+            $profile_img = $profile_path;
+        }
+    } else {
+        // Legacy path structure
+        $profile_path = '../../uploads/profiles/' . $user_data['profile_picture'];
+        if (file_exists($profile_path)) {
+            $profile_img = $profile_path;
+        } else {
+            $profile_path = '../../uploads/profile/' . $user_data['profile_picture'];
+            if (file_exists($profile_path)) {
+                $profile_img = $profile_path;
+            }
+        }
     }
 }
 ?>
