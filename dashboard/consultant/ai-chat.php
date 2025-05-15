@@ -39,8 +39,8 @@ $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $conversations = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
-// Get monthly chat usage and limit
-$chats_remaining = "Unlimited"; // Default for admins
+// Get monthly message usage and limit
+$messages_remaining = "Unlimited"; // Default for admins
 $monthly_limit = "Unlimited";
 
 if ($user_type != 'admin') {
@@ -71,11 +71,11 @@ if ($user_type != 'admin') {
         $stmt->bind_param("is", $user_id, $month);
         $stmt->execute();
         $usage = $stmt->get_result()->fetch_assoc();
-        $chats_used = $usage ? $usage['chat_count'] : 0;
-        $chats_remaining = $monthly_limit - $chats_used;
+        $messages_used = $usage ? $usage['chat_count'] : 0;
+        $messages_remaining = $monthly_limit - $messages_used;
     } else {
         $monthly_limit = 40; // Default to Bronze if no plan found
-        $chats_remaining = $monthly_limit;
+        $messages_remaining = $monthly_limit;
     }
 }
 ?>
@@ -117,7 +117,7 @@ if ($user_type != 'admin') {
                     </div>
                     <div class="messages-remaining">
                         <i class="fas fa-comment-dots"></i>
-                        <span><?php echo $chats_remaining; ?> <?php echo $user_type == 'admin' ? '' : "of $monthly_limit chats remaining"; ?></span>
+                        <span><?php echo $messages_remaining; ?> <?php echo $user_type == 'admin' ? '' : "of $monthly_limit messages remaining"; ?></span>
                     </div>
                 </div>
                 
@@ -127,10 +127,10 @@ if ($user_type != 'admin') {
                         <img src="../../assets/images/ai-chatbot.svg" alt="AI Chat Bot" class="chat-bot-icon">
                         <h3>Welcome to AI Assistant</h3>
                         <p>I'm your visa and immigration consultant assistant. How can I help you today?</p>
-                        <?php if ($user_type != 'admin' && $chats_remaining <= 0): ?>
+                        <?php if ($user_type != 'admin' && $messages_remaining <= 0): ?>
                         <div class="limit-warning">
                             <i class="fas fa-exclamation-circle"></i>
-                            <p>You've reached your monthly chat limit. Please upgrade your plan for more chats.</p>
+                            <p>You've reached your monthly message limit. Please upgrade your plan for more messages.</p>
                         </div>
                         <?php endif; ?>
                     </div>
@@ -139,8 +139,8 @@ if ($user_type != 'admin') {
                 <!-- Chat Input -->
                 <div class="chat-input-container">
                     <form id="chat-form">
-                        <input type="text" id="user-input" placeholder="Type your message here..." required <?php echo ($user_type != 'admin' && $chats_remaining <= 0) ? 'disabled' : ''; ?>>
-                        <button type="submit" id="send-button" <?php echo ($user_type != 'admin' && $chats_remaining <= 0) ? 'disabled' : ''; ?>>
+                        <input type="text" id="user-input" placeholder="Type your message here..." required <?php echo ($user_type != 'admin' && $messages_remaining <= 0) ? 'disabled' : ''; ?>>
+                        <button type="submit" id="send-button" <?php echo ($user_type != 'admin' && $messages_remaining <= 0) ? 'disabled' : ''; ?>>
                             <i class="fas fa-paper-plane"></i>
                         </button>
                     </form>
@@ -190,7 +190,7 @@ function updateUsageCounter() {
             if (data.success) {
                 const remaining = data.limit - data.usage;
                 document.querySelector('.messages-remaining span').textContent = 
-                    `${remaining} of ${data.limit} chats remaining`;
+                    `${remaining} of ${data.limit} messages remaining`;
                 
                 // Disable input if limit reached
                 const chatInput = document.getElementById('user-input');
@@ -206,7 +206,7 @@ function updateUsageCounter() {
                         warningDiv.className = 'limit-warning';
                         warningDiv.innerHTML = `
                             <i class="fas fa-exclamation-circle"></i>
-                            <p>You've reached your monthly chat limit. Please upgrade your plan for more chats.</p>
+                            <p>You've reached your monthly message limit. Please upgrade your plan for more messages.</p>
                         `;
                         document.getElementById('chat-messages').appendChild(warningDiv);
                     }

@@ -85,6 +85,28 @@ function getMonthlyLimit($conn, $user_id) {
     return 40; // Default to Bronze if no plan found
 }
 
+// Check if user has reached message limit
+function hasReachedMessageLimit($conn, $user_id) {
+    if ($user_id == 'admin') {
+        return false; // Admins have unlimited usage
+    }
+    
+    $month = date('Y-m');
+    $sql = "SELECT chat_count FROM ai_chat_usage 
+            WHERE consultant_id = ? AND month = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("is", $user_id, $month);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $usage = $result->fetch_assoc();
+    $messages_used = $usage ? $usage['chat_count'] : 0;
+    
+    // Get monthly limit based on plan
+    $monthly_limit = getMonthlyLimit($conn, $user_id);
+    
+    return $messages_used >= $monthly_limit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action'])) {
         switch ($_POST['action']) {
@@ -114,44 +136,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $stmt->execute();
                     $result = $stmt->get_result();
                     $usage = $result->fetch_assoc();
-                    $chats_used = $usage ? $usage['chat_count'] : 0;
+                    $messages_used = $usage ? $usage['chat_count'] : 0;
                     
                     // Get monthly limit based on plan
                     $monthly_limit = getMonthlyLimit($conn, $user_id);
                     
                     echo json_encode([
                         'success' => true, 
-                        'usage' => $chats_used,
+                        'usage' => $messages_used,
                         'limit' => $monthly_limit
                     ]);
                 }
                 break;
 
             case 'create_conversation':
-                // Check if user has reached their monthly limit
-                if ($user_type != 'admin') {
-                    $month = date('Y-m');
-                    $sql = "SELECT chat_count FROM ai_chat_usage 
-                            WHERE consultant_id = ? AND month = ?";
-                    $stmt = $conn->prepare($sql);
-                    $stmt->bind_param("is", $user_id, $month);
-                    $stmt->execute();
-                    $result = $stmt->get_result();
-                    $usage = $result->fetch_assoc();
-                    $chats_used = $usage ? $usage['chat_count'] : 0;
-                    
-                    // Get monthly limit based on plan
-                    $monthly_limit = getMonthlyLimit($conn, $user_id);
-                    
-                    if ($chats_used >= $monthly_limit) {
-                        echo json_encode([
-                            'success' => false, 
-                            'error' => "You've reached your monthly limit of $monthly_limit chats. Please upgrade your plan for more chats."
-                        ]);
-                        break;
-                    }
-                }
-                
+                // No need to check limits for creating conversation, only when sending messages
                 $title = "New Chat";
                 $chat_type = isset($_POST['chat_type']) ? $_POST['chat_type'] : 'ircc';
                 
@@ -170,7 +169,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                     $conversation_id = $conn->insert_id;
                     
-                    // Add initial system message
+                    // Add initial system message (this doesn't count against the limit)
                     $welcome_msg = "Hello! I'm your visa and immigration consultant assistant. How can I help you today?";
                     $sql = "INSERT INTO ai_chat_messages (conversation_id, consultant_id, role, content) 
                             VALUES (?, ?, 'assistant', ?)";
@@ -181,19 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         throw new Exception($conn->error);
                     }
                     
-                    // Update usage count for non-admin users
-                    if ($user_type != 'admin') {
-                        $month = date('Y-m');
-                        $sql = "INSERT INTO ai_chat_usage (consultant_id, month, chat_count) 
-                                VALUES (?, ?, 1)
-                                ON DUPLICATE KEY UPDATE chat_count = chat_count + 1";
-                        $stmt = $conn->prepare($sql);
-                        $stmt->bind_param("is", $user_id, $month);
-                        
-                        if (!$stmt->execute()) {
-                            throw new Exception($conn->error);
-                        }
-                    }
+                    // We don't increment chat_count here anymore, only when sending messages
                     
                     $conn->commit();
                     
@@ -260,6 +247,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $conversation_id = (int)$_POST['conversation_id'];
 
                 if (!empty($message)) {
+                    // Check if user has reached their monthly message limit
+                    if ($user_type != 'admin') {
+                        if (hasReachedMessageLimit($conn, $user_id)) {
+                            echo json_encode([
+                                'success' => false, 
+                                'error' => "You've reached your monthly message limit. Please upgrade your plan for more messages."
+                            ]);
+                            break;
+                        }
+                    }
+                    
                     // Verify conversation exists and belongs to user
                     $sql = "SELECT id, chat_type FROM ai_chat_conversations 
                             WHERE id = ? AND consultant_id = ? AND deleted_at IS NULL";
@@ -310,6 +308,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 "role" => $row['role'],
                                 "content" => $row['content']
                             ]);
+                        }
+
+                        // Update usage count for non-admin users - now we count each message
+                        if ($user_type != 'admin') {
+                            $month = date('Y-m');
+                            $sql = "INSERT INTO ai_chat_usage (consultant_id, month, chat_count) 
+                                    VALUES (?, ?, 1)
+                                    ON DUPLICATE KEY UPDATE chat_count = chat_count + 1";
+                            $stmt = $conn->prepare($sql);
+                            $stmt->bind_param("is", $user_id, $month);
+                            
+                            if (!$stmt->execute()) {
+                                throw new Exception('Failed to update usage: ' . $conn->error);
+                            }
                         }
 
                         // Call OpenAI API with error handling
@@ -386,28 +398,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             throw new Exception('Failed to save AI response: ' . $conn->error);
                         }
                         
-                        // Update usage for non-admin users
+                        // Count AI message response separately for token counting
                         if ($user_type != 'admin') {
                             // Calculate tokens for usage tracking
                             $prompt_tokens = isset($result['usage']['prompt_tokens']) ? $result['usage']['prompt_tokens'] : 0;
                             $completion_tokens = isset($result['usage']['completion_tokens']) ? $result['usage']['completion_tokens'] : 0;
                             $total_tokens = $prompt_tokens + $completion_tokens;
                             
-                            // Make sure month is defined
                             $month = date('Y-m');
                             
-                            $sql = "INSERT INTO ai_chat_usage (consultant_id, month, message_count, token_count) 
-                                    VALUES (?, ?, 1, ?)
-                                    ON DUPLICATE KEY UPDATE message_count = message_count + 1, token_count = token_count + ?";
+                            $sql = "UPDATE ai_chat_usage 
+                                    SET token_count = token_count + ?, 
+                                        message_count = message_count + 1
+                                    WHERE consultant_id = ? AND month = ?";
                             $stmt = $conn->prepare($sql);
-                            $stmt->bind_param("isii", $user_id, $month, $total_tokens, $total_tokens);
+                            $stmt->bind_param("iis", $total_tokens, $user_id, $month);
                             if (!$stmt->execute()) {
-                                throw new Exception('Failed to update usage: ' . $conn->error);
+                                throw new Exception('Failed to update token usage: ' . $conn->error);
                             }
                         }
 
                         $conn->commit();
-                        echo json_encode(['success' => true, 'message' => $ai_response]);
+                        echo json_encode([
+                            'success' => true, 
+                            'message' => $ai_response,
+                            'usage_updated' => true
+                        ]);
                         
                     } catch (Exception $e) {
                         $conn->rollback();
