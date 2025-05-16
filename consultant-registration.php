@@ -98,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
     $membership_plan_id = isset($_POST['membership_plan_id']) ? (int)$_POST['membership_plan_id'] : 0;
     
     // Payment Information from hidden fields populated by Stripe.js
-    $stripe_token = isset($_POST['stripe_token']) ? $_POST['stripe_token'] : '';
+    $payment_method_id = isset($_POST['payment_method_id']) ? $_POST['payment_method_id'] : '';
     
     // Validation
     $errors = [];
@@ -112,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
     elseif (strlen($password) < 8) $errors[] = "Password must be at least 8 characters";
     if ($password !== $confirm_password) $errors[] = "Passwords do not match";
     if ($membership_plan_id === 0) $errors[] = "Please select a membership plan";
-    if (empty($stripe_token)) $errors[] = "Payment information is required";
+    if (empty($payment_method_id)) $errors[] = "Payment information is required";
     
     // Validate address fields
     if (empty($address_line1)) $errors[] = "Address Line 1 is required";
@@ -150,12 +150,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
                 // Start transaction
                 $conn->begin_transaction();
                 
-                // 1. Create a Stripe Customer
+                // 1. Create a PaymentMethod from the provided token
+                $payment_method = \Stripe\PaymentMethod::create([
+                    'type' => 'card',
+                    'card' => [
+                        'token' => $payment_method_id,
+                    ],
+                    'billing_details' => [
+                        'email' => $email,
+                        'name' => $first_name . ' ' . $last_name,
+                        'phone' => $phone,
+                        'address' => [
+                            'line1' => $address_line1,
+                            'line2' => $address_line2,
+                            'city' => $city,
+                            'state' => $state,
+                            'postal_code' => $postal_code,
+                            'country' => $country,
+                        ],
+                    ],
+                ]);
+                
+                // 2. Create a Stripe Customer and attach the PaymentMethod
                 $stripe_customer = \Stripe\Customer::create([
                     'email' => $email,
                     'name' => $first_name . ' ' . $last_name,
                     'phone' => $phone,
-                    'source' => $stripe_token, // Attach the payment method
                     'description' => 'Visafy Consultant - ' . ($company_name ?: ($first_name . ' ' . $last_name)),
                     'address' => [
                         'line1' => $address_line1,
@@ -171,25 +191,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
                     ]
                 ]);
                 
-                // 2. Create a subscription
-                $subscription = \Stripe\Subscription::create([
-                    'customer' => $stripe_customer->id,
-                    'items' => [
-                        [
-                            'price_data' => [
-                                'currency' => 'usd',
-                                'product_data' => [
-                                    'name' => $plan['name'] . ' Membership Plan',
-                                    'description' => 'Up to ' . $plan['max_team_members'] . ' team members'
-                                ],
-                                'unit_amount' => $plan['price'] * 100, // Stripe requires amount in cents
-                                'recurring' => [
-                                    'interval' => 'month',
-                                ]
-                            ],
-                        ],
-                    ],
-                ]);
+                // Attach the payment method to the customer
+                \Stripe\PaymentMethod::attach(
+                    $payment_method->id,
+                    ['customer' => $stripe_customer->id]
+                );
+                
+                // Set as default payment method
+                \Stripe\Customer::update(
+                    $stripe_customer->id,
+                    ['invoice_settings' => ['default_payment_method' => $payment_method->id]]
+                );
                 
                 // 3. Create organization first using company name or user name
                 $org_name = !empty($company_name) ? $company_name : $first_name . ' ' . $last_name . "'s Organization";
@@ -232,7 +244,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
                 // 8. Insert payment method
                 $insert_payment_query = "INSERT INTO payment_methods (user_id, method_type, provider, account_number, token, billing_address_line1, billing_address_line2, billing_city, billing_state, billing_postal_code, billing_country, is_default) 
                                         VALUES (?, 'credit_card', 'stripe', ?, ?, ?, ?, ?, ?, ?, ?, 1)";
-                $last_four = substr($stripe_token, -4); // This is simplified - in reality you'd get last4 from Stripe
+                $last_four = substr($payment_method_id, -4); // This is simplified - in reality you'd get last4 from Stripe
                 $stmt = $conn->prepare($insert_payment_query);
                 $stmt->bind_param('issssssssss', $user_id, $last_four, $stripe_customer->id, $address_line1, $address_line2, $city, $state, $postal_code, $country);
                 $stmt->execute();
@@ -430,7 +442,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
                             </div>
                             
                             <input type="hidden" name="membership_plan_id" id="membership_plan_id" value="<?php echo $selected_plan ? $selected_plan['id'] : ''; ?>">
-                            <input type="hidden" name="stripe_token" id="stripe_token">
+                            <input type="hidden" name="payment_method_id" id="stripe_token">
                             
                             <div class="terms-privacy">
                                 <div class="checkbox-group">
@@ -1109,19 +1121,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log("Creating Stripe token...");
                 
                 // Create a token with card info and billing details
-                stripe.createToken(card, {
-                    name: cardholderName,
-                    address_line1: addressLine1,
-                    address_line2: addressLine2,
-                    address_city: city,
-                    address_state: state,
-                    address_zip: postalCode,
-                    address_country: country
+                stripe.createPaymentMethod({
+                    type: 'card',
+                    card: card,
+                    billing_details: {
+                        name: cardholderName,
+                        address: {
+                            line1: addressLine1,
+                            line2: addressLine2,
+                            city: city,
+                            state: state,
+                            postal_code: postalCode,
+                            country: country
+                        }
+                    }
                 }).then(function(result) {
                     const errorElement = document.getElementById('card-errors');
                     
                     if (result.error) {
-                        console.error("Stripe token creation failed:", result.error);
+                        console.error("Stripe payment method creation failed:", result.error);
                         // Inform the user if there was an error
                         if (errorElement) {
                             errorElement.textContent = result.error.message;
@@ -1132,9 +1150,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         submitButton.classList.remove('disabled');
                         submitButton.innerHTML = 'Register Now';
                     } else {
-                        console.log("Stripe token created successfully:", result.token.id.substring(0, 8) + "...");
-                        // Send the token to the server
-                        hiddenInput.value = result.token.id;
+                        console.log("Stripe payment method created successfully:", result.paymentMethod.id.substring(0, 8) + "...");
+                        // Send the payment method ID to the server
+                        hiddenInput.value = result.paymentMethod.id;
                         
                         // Submit the form
                         console.log("Submitting form...");
