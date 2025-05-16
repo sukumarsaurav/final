@@ -21,15 +21,24 @@ if (file_exists(__DIR__ . '/config/.env')) {
     $dotenv->load();
 }
 
+// Get Stripe API keys from environment
+$stripe_publishable_key = $_ENV['STRIPE_PUBLISHABLE_KEY'] ?? '';
+$stripe_secret_key = $_ENV['STRIPE_SECRET_KEY'] ?? '';
+
+// Check if Stripe keys are available
+if (empty($stripe_publishable_key) || empty($stripe_secret_key)) {
+    die("Error: Stripe API keys are not configured. Please check your environment configuration.");
+}
+
 // Initialize Stripe with API key from environment variable
-\Stripe\Stripe::setApiKey($_ENV['STRIPE_SECRET_KEY']);
+\Stripe\Stripe::setApiKey($stripe_secret_key);
 
 $page_title = "Consultant Registration";
 require_once 'includes/header.php';
 require_once 'includes/functions.php';
 
 // Get membership plans
-$query = "SELECT * FROM membership_plans ORDER BY price ASC";
+$query = "SELECT * FROM membership_plans WHERE billing_cycle = 'monthly' ORDER BY price ASC";
 $result = $conn->query($query);
 $plans = [];
 
@@ -51,6 +60,15 @@ if ($selected_plan_id > 0) {
         }
     }
 }
+
+// If no plan is selected and we have plans, select the first one
+if (!$selected_plan && !empty($plans)) {
+    $selected_plan = $plans[0];
+    $selected_plan_id = $selected_plan['id'];
+}
+
+// Initialize form variables
+$first_name = $last_name = $email = $phone = $company_name = $address_line1 = $address_line2 = $city = $state = $postal_code = $country = '';
 
 // Check if form is submitted
 $success_message = "";
@@ -311,7 +329,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
                 <div class="registration-grid">
                     <!-- Registration Form Section -->
                     <div class="registration-form-container">
-                        <form action="" method="POST" id="registrationForm">
+                        <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']) . '?plan_id=' . $selected_plan_id; ?>" method="POST" id="registrationForm">
                             <div class="form-section">
                                 <h3>Personal Information</h3>
                                 <div class="form-row">
@@ -977,102 +995,158 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize Stripe using the publishable key from environment
-    const stripe = Stripe('<?php echo $_ENV['STRIPE_PUBLISHABLE_KEY']; ?>');
-    const elements = stripe.elements();
+    // Get Stripe publishable key
+    const stripePublishableKey = '<?php echo $stripe_publishable_key; ?>';
     
-    // Create card Element and mount it
-    const card = elements.create('card', {
-        style: {
-            base: {
-                color: '#32325d',
-                fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
-                fontSmoothing: 'antialiased',
-                fontSize: '16px',
-                '::placeholder': {
-                    color: '#aab7c4'
+    // Only initialize Stripe if key exists and we're on the registration form
+    if (stripePublishableKey && document.getElementById('registrationForm')) {
+        // Initialize Stripe using the publishable key
+        const stripe = Stripe(stripePublishableKey);
+        const elements = stripe.elements();
+        
+        // Create card Element
+        const card = elements.create('card', {
+            style: {
+                base: {
+                    color: '#32325d',
+                    fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+                    fontSmoothing: 'antialiased',
+                    fontSize: '16px',
+                    '::placeholder': {
+                        color: '#aab7c4'
+                    }
+                },
+                invalid: {
+                    color: '#e74a3b',
+                    iconColor: '#e74a3b'
                 }
-            },
-            invalid: {
-                color: '#e74a3b',
-                iconColor: '#e74a3b'
             }
-        }
-    });
-    
-    // Mount the card element right away
-    card.mount('#card-element');
-    
-    // Handle real-time validation errors
-    card.addEventListener('change', function(event) {
-        const displayError = document.getElementById('card-errors');
-        if (event.error) {
-            displayError.textContent = event.error.message;
-        } else {
-            displayError.textContent = '';
-        }
-    });
-    
-    // Handle form submission
-    const form = document.getElementById('registrationForm');
-    const submitButton = document.getElementById('register_member_btn');
-    
-    if (form) {
-        form.addEventListener('submit', function(event) {
-            event.preventDefault();
+        });
+        
+        // Mount the card element
+        const cardElement = document.getElementById('card-element');
+        if (cardElement) {
+            card.mount(cardElement);
             
-            // Disable the submit button to prevent multiple submissions
-            submitButton.disabled = true;
-            submitButton.classList.add('disabled');
-            submitButton.innerHTML = 'Processing Payment... <span class="processing-payment"><i class="fas fa-spinner fa-spin"></i></span>';
-            
-            // Get the cardholder name from the form
-            const cardholderName = document.getElementById('first_name').value + ' ' + document.getElementById('last_name').value;
-            
-            // Create a token with card info and billing details
-            stripe.createToken(card, {
-                name: cardholderName,
-                address_line1: document.getElementById('address_line1').value,
-                address_line2: document.getElementById('address_line2').value,
-                address_city: document.getElementById('city').value,
-                address_state: document.getElementById('state').value,
-                address_zip: document.getElementById('postal_code').value,
-                address_country: document.getElementById('country').value
-            }).then(function(result) {
-                if (result.error) {
-                    // Inform the user if there was an error
-                    const errorElement = document.getElementById('card-errors');
-                    errorElement.textContent = result.error.message;
-                    
-                    // Re-enable the submit button
-                    submitButton.disabled = false;
-                    submitButton.classList.remove('disabled');
-                    submitButton.innerHTML = 'Register Now';
-                } else {
-                    // Send the token to your server
-                    stripeTokenHandler(result.token);
+            // Handle real-time validation errors
+            card.addEventListener('change', function(event) {
+                const displayError = document.getElementById('card-errors');
+                if (displayError) {
+                    if (event.error) {
+                        displayError.textContent = event.error.message;
+                    } else {
+                        displayError.textContent = '';
+                    }
                 }
             });
-        });
-    }
-    
-    // Function to handle the token submission
-    function stripeTokenHandler(token) {
-        // Insert the token ID into the form so it gets submitted to the server
-        const hiddenInput = document.getElementById('stripe_token');
-        if (hiddenInput) {
-            hiddenInput.value = token.id;
         }
         
-        // Submit the form
-        form.submit();
+        // Handle form submission
+        const form = document.getElementById('registrationForm');
+        if (form) {
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                
+                const submitButton = document.getElementById('register_member_btn');
+                if (submitButton) {
+                    // Disable the submit button to prevent multiple submissions
+                    submitButton.disabled = true;
+                    submitButton.classList.add('disabled');
+                    submitButton.innerHTML = 'Processing Payment... <span class="processing-payment"><i class="fas fa-spinner fa-spin"></i></span>';
+                }
+                
+                // Get the cardholder name from the form
+                const firstNameInput = document.getElementById('first_name');
+                const lastNameInput = document.getElementById('last_name');
+                
+                if (!firstNameInput || !lastNameInput) {
+                    console.error('First name or last name input not found');
+                    return;
+                }
+                
+                const cardholderName = firstNameInput.value + ' ' + lastNameInput.value;
+                
+                // Get billing address details
+                const addressLine1 = document.getElementById('address_line1').value;
+                const addressLine2 = document.getElementById('address_line2').value || '';
+                const city = document.getElementById('city').value;
+                const state = document.getElementById('state').value;
+                const postalCode = document.getElementById('postal_code').value;
+                const country = document.getElementById('country').value;
+                
+                // Create a token with card info and billing details
+                stripe.createToken(card, {
+                    name: cardholderName,
+                    address_line1: addressLine1,
+                    address_line2: addressLine2,
+                    address_city: city,
+                    address_state: state,
+                    address_zip: postalCode,
+                    address_country: country
+                }).then(function(result) {
+                    const errorElement = document.getElementById('card-errors');
+                    
+                    if (result.error) {
+                        // Inform the user if there was an error
+                        if (errorElement) {
+                            errorElement.textContent = result.error.message;
+                        }
+                        
+                        // Re-enable the submit button
+                        if (submitButton) {
+                            submitButton.disabled = false;
+                            submitButton.classList.remove('disabled');
+                            submitButton.innerHTML = 'Register Now';
+                        }
+                    } else {
+                        // Send the token to the server
+                        const hiddenInput = document.getElementById('stripe_token');
+                        if (hiddenInput) {
+                            hiddenInput.value = result.token.id;
+                            
+                            // Submit the form
+                            form.submit();
+                        } else {
+                            console.error('Stripe token input field not found');
+                            if (errorElement) {
+                                errorElement.textContent = 'An error occurred. Please try again.';
+                            }
+                            
+                            // Re-enable the submit button
+                            if (submitButton) {
+                                submitButton.disabled = false;
+                                submitButton.classList.remove('disabled');
+                                submitButton.innerHTML = 'Register Now';
+                            }
+                        }
+                    }
+                }).catch(function(error) {
+                    console.error('Stripe error:', error);
+                    
+                    if (errorElement) {
+                        errorElement.textContent = 'An error occurred with the payment processor. Please try again later.';
+                    }
+                    
+                    // Re-enable the submit button
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.classList.remove('disabled');
+                        submitButton.innerHTML = 'Register Now';
+                    }
+                });
+            });
+        }
     }
 });
 
 // Function to update selected plan
 function updateSelectedPlan(planId) {
-    document.getElementById('membership_plan_id').value = planId;
-    // Optional: redirect to same page with plan_id parameter to refresh the view
+    const planIdInput = document.getElementById('membership_plan_id');
+    if (planIdInput) {
+        planIdInput.value = planId;
+    }
+    
+    // Redirect to same page with plan_id parameter to refresh the view
     window.location.href = 'consultant-registration.php?plan_id=' + planId;
 }
 </script>
