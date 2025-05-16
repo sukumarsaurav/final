@@ -92,8 +92,23 @@ if (isset($_GET['code'])) {
                             mysqli_stmt_close($stmt_token);
                         }
                         
-                        // Redirect to dashboard
-                        header("location: dashboard.php");
+                        // Redirect to appropriate dashboard based on user type
+                        switch($user_type) {
+                            case "applicant":
+                                header("location: dashboard/applicant/index.php");
+                                break;
+                            case "consultant":
+                            case "member":
+                            case "custom":
+                                header("location: dashboard/consultant/index.php");
+                                break;
+                            case "admin":
+                                header("location: dashboard/admin/index.php");
+                                break;
+                            default:
+                                // Fallback to applicant dashboard
+                                header("location: dashboard/applicant/index.php");
+                        }
                         exit;
                     } else {
                         // User doesn't exist, create a new account
@@ -162,8 +177,8 @@ if (isset($_GET['code'])) {
                                 $_SESSION["last_activity"] = time();
                                 $_SESSION["created_at"] = time();
                                 
-                                // Redirect to dashboard
-                                header("location: dashboard.php");
+                                // Redirect to applicant dashboard (since new users are always applicants)
+                                header("location: dashboard/applicant/index.php");
                                 exit;
                             } else {
                                 echo "Oops! Something went wrong. Please try again later.";

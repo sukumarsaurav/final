@@ -4,7 +4,28 @@ require_once "includes/session.php";
 
 // Check if the user is already logged in, if yes then redirect to dashboard
 if(is_logged_in()) {
-    header("location: dashboard.php");
+    // Redirect based on user type
+    if(isset($_SESSION["user_type"])) {
+        switch($_SESSION["user_type"]) {
+            case "applicant":
+                header("location: dashboard/applicant/index.php");
+                break;
+            case "consultant":
+            case "member":
+            case "custom":
+                header("location: dashboard/consultant/index.php");
+                break;
+            case "admin":
+                header("location: dashboard/admin/index.php");
+                break;
+            default:
+                // Fallback to applicant dashboard
+                header("location: dashboard/applicant/index.php");
+        }
+    } else {
+        // Default to applicant dashboard if user_type is not set
+        header("location: dashboard/applicant/index.php");
+    }
     exit;
 }
 
@@ -81,8 +102,23 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
                                 $_SESSION["last_activity"] = time();
                                 $_SESSION["created_at"] = time();
                                 
-                                // Redirect user to dashboard page
-                                header("location: dashboard.php");
+                                // Redirect user based on user_type
+                                switch($user_type) {
+                                    case "applicant":
+                                        header("location: dashboard/applicant/index.php");
+                                        break;
+                                    case "consultant":
+                                    case "member":
+                                    case "custom":
+                                        header("location: dashboard/consultant/index.php");
+                                        break;
+                                    case "admin":
+                                        header("location: dashboard/admin/index.php");
+                                        break;
+                                    default:
+                                        // Fallback to applicant dashboard
+                                        header("location: dashboard/applicant/index.php");
+                                }
                                 exit;
                             }
                         } else {
@@ -145,7 +181,7 @@ include('includes/header.php');
         
         <div class="form-group">
             <a href="<?php echo 'https://accounts.google.com/o/oauth2/v2/auth?scope=email%20profile&redirect_uri='.$google_redirect_url.'&response_type=code&client_id='.$google_client_id; ?>" class="btn btn-google btn-block">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google logo"> 
+                <img src="assets/images/google.svg" alt="Google logo"> 
                 Sign in with Google
             </a>
         </div>

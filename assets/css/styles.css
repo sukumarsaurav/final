@@ -857,7 +857,7 @@ img {
 
 /* Footer */
 .footer {
-    background-color: var(--color-primary);
+    background-color: rgba(234, 170, 52, 0.05);;
     color: var(--color-light);
     padding: 50px 0 20px;
 }
