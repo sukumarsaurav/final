@@ -10,6 +10,22 @@ require_once "config/db_connect.php";
 require_once "config/email_config.php";
 require_once "includes/email_function.php";
 
+// Load Composer's autoloader
+require_once __DIR__ . '/vendor/autoload.php';
+
+// Load environment variables from .env file
+if (file_exists(__DIR__ . '/config/.env')) {
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/config');
+    $dotenv->load();
+}
+
+// Stripe API Keys - get from environment variables or fallback to test keys
+$stripe_publishable_key = $_ENV['STRIPE_PUBLISHABLE_KEY'] ?? 'pk_test_51KOPdxSFv85B7DwKRJlqHA6GhJ3VVzDxvtpwCk2ANgCtxfi7lG8Rs3iNuCRBMhwja33vVRtcqlsmIOjvMkhalqMA00YC8HK4Zi';
+$stripe_secret_key = $_ENV['STRIPE_SECRET_KEY'] ?? 'sk_test_51KOPdxSFv85B7DwK7hyEvsCCjA1dT87FU3PqFYlzEHfcmtaEpT2HZEqSztQtqrFYZ1R5inH0GuFUFz5YreFtLyU0002Yvaubla';
+
+// Initialize Stripe
+\Stripe\Stripe::setApiKey($stripe_secret_key);
+
 $page_title = "Become a Member";
 require_once 'includes/header.php';
 require_once 'includes/functions.php';
@@ -41,8 +57,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
     // Company Information
     $company_name = trim($_POST['company_name'] ?? '');
     
+    // Billing Address Information
+    $address_line1 = trim($_POST['address_line1'] ?? '');
+    $address_line2 = trim($_POST['address_line2'] ?? '');
+    $city = trim($_POST['city'] ?? '');
+    $state = trim($_POST['state'] ?? '');
+    $postal_code = trim($_POST['postal_code'] ?? '');
+    $country = trim($_POST['country'] ?? '');
+    
     // Plan Selection
     $membership_plan_id = isset($_POST['membership_plan_id']) ? (int)$_POST['membership_plan_id'] : 0;
+    
+    // Payment Information from hidden fields populated by Stripe.js
+    $stripe_token = isset($_POST['stripe_token']) ? $_POST['stripe_token'] : '';
     
     // Validation
     $errors = [];
@@ -56,6 +83,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
     elseif (strlen($password) < 8) $errors[] = "Password must be at least 8 characters";
     if ($password !== $confirm_password) $errors[] = "Passwords do not match";
     if ($membership_plan_id === 0) $errors[] = "Please select a membership plan";
+    if (empty($stripe_token)) $errors[] = "Payment information is required";
+    
+    // Validate address fields
+    if (empty($address_line1)) $errors[] = "Address Line 1 is required";
+    if (empty($city)) $errors[] = "City is required";
+    if (empty($state)) $errors[] = "State/Province is required";
+    if (empty($postal_code)) $errors[] = "Postal Code is required";
+    if (empty($country)) $errors[] = "Country is required";
     
     // Check if email already exists
     $check_email_query = "SELECT id FROM users WHERE email = ?";
@@ -70,80 +105,168 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
     $stmt->close();
     
     if (empty($errors)) {
-        // Start transaction
-        $conn->begin_transaction();
+        // Get the selected plan details from the database
+        $plan_query = "SELECT * FROM membership_plans WHERE id = ?";
+        $stmt = $conn->prepare($plan_query);
+        $stmt->bind_param('i', $membership_plan_id);
+        $stmt->execute();
+        $plan_result = $stmt->get_result();
+        $plan = $plan_result->fetch_assoc();
+        $stmt->close();
         
-        try {
-            // Create organization first using company name or user name
-            $org_name = !empty($company_name) ? $company_name : $first_name . ' ' . $last_name . "'s Organization";
-            $org_description = "Organization for " . $first_name . " " . $last_name;
-            
-            $insert_org_query = "INSERT INTO organizations (name, description) VALUES (?, ?)";
-            $stmt = $conn->prepare($insert_org_query);
-            $stmt->bind_param('ss', $org_name, $org_description);
-            $stmt->execute();
-            
-            // Get organization ID
-            $organization_id = $conn->insert_id;
-            
-            // Hash password
-            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            
-            // Insert user with organization_id
-            $insert_user_query = "INSERT INTO users (first_name, last_name, email, phone, password, user_type, email_verified, organization_id) 
-                                 VALUES (?, ?, ?, ?, ?, 'consultant', 0, ?)";
-            $stmt = $conn->prepare($insert_user_query);
-            $stmt->bind_param('sssssi', $first_name, $last_name, $email, $phone, $hashed_password, $organization_id);
-            $stmt->execute();
-            
-            // Get user ID
-            $user_id = $conn->insert_id;
-            
-            // Insert consultant
-            $insert_consultant_query = "INSERT INTO consultants (user_id, membership_plan_id, company_name) 
-                                       VALUES (?, ?, ?)";
-            $stmt = $conn->prepare($insert_consultant_query);
-            $stmt->bind_param('iis', $user_id, $membership_plan_id, $company_name);
-            $stmt->execute();
-            
-            // Add an entry in consultant_profiles table with default values
-            $insert_profile_query = "INSERT INTO consultant_profiles (consultant_id) VALUES (?)";
-            $stmt = $conn->prepare($insert_profile_query);
-            $stmt->bind_param('i', $user_id);
-            $stmt->execute();
-            
-            // Generate verification token
-            $token = bin2hex(random_bytes(32));
-            $expires = date('Y-m-d H:i:s', strtotime('+24 hours'));
-            
-            // Update user with verification token
-            $update_token_query = "UPDATE users SET email_verification_token = ?, email_verification_expires = ? WHERE id = ?";
-            $stmt = $conn->prepare($update_token_query);
-            $stmt->bind_param('ssi', $token, $expires, $user_id);
-            $stmt->execute();
-            
-            // Commit transaction
-            $conn->commit();
-            
-            // Send verification email (this is a placeholder - implement actual email sending)
-            $verification_link = "https://visafy.io/verify_email.php?token=" . $token;
-            $email_subject = "Verify Your Email Address";
-            $email_body = "Hi $first_name,\n\nPlease click the following link to verify your email address:\n$verification_link\n\nThis link will expire in 24 hours.\n\nThank you,\nThe Visafy Team";
-            
-            // Use your email function to send verification email
-            if(function_exists('send_email')) {
-                send_email($email, $email_subject, $email_body);
+        if (!$plan) {
+            $errors[] = "Selected plan not found.";
+        } else {
+            try {
+                // Start transaction
+                $conn->begin_transaction();
+                
+                // 1. Create a Stripe Customer
+                $stripe_customer = \Stripe\Customer::create([
+                    'email' => $email,
+                    'name' => $first_name . ' ' . $last_name,
+                    'phone' => $phone,
+                    'source' => $stripe_token, // Attach the payment method
+                    'description' => 'Visafy Consultant - ' . ($company_name ?: ($first_name . ' ' . $last_name)),
+                    'address' => [
+                        'line1' => $address_line1,
+                        'line2' => $address_line2,
+                        'city' => $city,
+                        'state' => $state,
+                        'postal_code' => $postal_code,
+                        'country' => $country,
+                    ],
+                    'metadata' => [
+                        'membership_plan_id' => $membership_plan_id,
+                        'company_name' => $company_name,
+                    ]
+                ]);
+                
+                // 2. Create a subscription
+                $subscription = \Stripe\Subscription::create([
+                    'customer' => $stripe_customer->id,
+                    'items' => [
+                        [
+                            'price_data' => [
+                                'currency' => 'usd',
+                                'product_data' => [
+                                    'name' => $plan['name'] . ' Membership Plan',
+                                    'description' => 'Up to ' . $plan['max_team_members'] . ' team members'
+                                ],
+                                'unit_amount' => $plan['price'] * 100, // Stripe requires amount in cents
+                                'recurring' => [
+                                    'interval' => 'month',
+                                ]
+                            ],
+                        ],
+                    ],
+                ]);
+                
+                // 3. Create organization first using company name or user name
+                $org_name = !empty($company_name) ? $company_name : $first_name . ' ' . $last_name . "'s Organization";
+                $org_description = "Organization for " . $first_name . " " . $last_name;
+                
+                $insert_org_query = "INSERT INTO organizations (name, description) VALUES (?, ?)";
+                $stmt = $conn->prepare($insert_org_query);
+                $stmt->bind_param('ss', $org_name, $org_description);
+                $stmt->execute();
+                
+                // Get organization ID
+                $organization_id = $conn->insert_id;
+                
+                // 4. Hash password
+                $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+                
+                // 5. Insert user with organization_id
+                $insert_user_query = "INSERT INTO users (first_name, last_name, email, phone, password, user_type, email_verified, organization_id) 
+                                     VALUES (?, ?, ?, ?, ?, 'consultant', 0, ?)";
+                $stmt = $conn->prepare($insert_user_query);
+                $stmt->bind_param('sssssi', $first_name, $last_name, $email, $phone, $hashed_password, $organization_id);
+                $stmt->execute();
+                
+                // Get user ID
+                $user_id = $conn->insert_id;
+                
+                // 6. Insert consultant
+                $insert_consultant_query = "INSERT INTO consultants (user_id, membership_plan_id, company_name) 
+                                           VALUES (?, ?, ?)";
+                $stmt = $conn->prepare($insert_consultant_query);
+                $stmt->bind_param('iis', $user_id, $membership_plan_id, $company_name);
+                $stmt->execute();
+                
+                // 7. Add an entry in consultant_profiles table with default values
+                $insert_profile_query = "INSERT INTO consultant_profiles (consultant_id) VALUES (?)";
+                $stmt = $conn->prepare($insert_profile_query);
+                $stmt->bind_param('i', $user_id);
+                $stmt->execute();
+                
+                // 8. Insert payment method
+                $insert_payment_query = "INSERT INTO payment_methods (user_id, method_type, provider, account_number, token, billing_address_line1, billing_address_line2, billing_city, billing_state, billing_postal_code, billing_country, is_default) 
+                                        VALUES (?, 'credit_card', 'stripe', ?, ?, ?, ?, ?, ?, ?, ?, 1)";
+                $last_four = substr($stripe_token, -4); // This is simplified - in reality you'd get last4 from Stripe
+                $stmt = $conn->prepare($insert_payment_query);
+                $stmt->bind_param('issssssssss', $user_id, $last_four, $stripe_customer->id, $address_line1, $address_line2, $city, $state, $postal_code, $country);
+                $stmt->execute();
+                
+                // 9. Insert subscription
+                $insert_subscription_query = "INSERT INTO subscriptions (user_id, membership_plan_id, payment_method_id, status, start_date, end_date, auto_renew) 
+                                             VALUES (?, ?, LAST_INSERT_ID(), 'active', NOW(), DATE_ADD(NOW(), INTERVAL 1 MONTH), 1)";
+                $stmt = $conn->prepare($insert_subscription_query);
+                $stmt->bind_param('ii', $user_id, $membership_plan_id);
+                $stmt->execute();
+                
+                // 10. Generate verification token
+                $token = bin2hex(random_bytes(32));
+                $expires = date('Y-m-d H:i:s', strtotime('+24 hours'));
+                
+                // Update user with verification token
+                $update_token_query = "UPDATE users SET email_verification_token = ?, email_verification_expires = ? WHERE id = ?";
+                $stmt = $conn->prepare($update_token_query);
+                $stmt->bind_param('ssi', $token, $expires, $user_id);
+                $stmt->execute();
+                
+                // Commit transaction
+                $conn->commit();
+                
+                // Send verification email
+                $verification_link = "https://visafy.io/verify_email.php?token=" . $token;
+                $email_subject = "Verify Your Email Address";
+                $email_body = "Hi $first_name,\n\nPlease click the following link to verify your email address:\n$verification_link\n\nThis link will expire in 24 hours.\n\nThank you,\nThe Visafy Team";
+                
+                // Use your email function to send verification email
+                if(function_exists('send_email')) {
+                    send_email($email, $email_subject, $email_body);
+                }
+                
+                $success_message = "Registration successful! Please check your email to verify your account.";
+                
+                // Clear form data
+                $first_name = $last_name = $email = $phone = $company_name = $address_line1 = $address_line2 = $city = $state = $postal_code = $country = '';
+                
+            } catch (\Stripe\Exception\CardException $e) {
+                // Rollback transaction on error
+                $conn->rollback();
+                $error_message = "Payment error: " . $e->getMessage();
+            } catch (\Stripe\Exception\RateLimitException $e) {
+                $conn->rollback();
+                $error_message = "Too many requests to Stripe. Please try again later.";
+            } catch (\Stripe\Exception\InvalidRequestException $e) {
+                $conn->rollback();
+                $error_message = "Invalid payment information: " . $e->getMessage();
+            } catch (\Stripe\Exception\AuthenticationException $e) {
+                $conn->rollback();
+                $error_message = "Authentication with Stripe failed. Please contact support.";
+            } catch (\Stripe\Exception\ApiConnectionException $e) {
+                $conn->rollback();
+                $error_message = "Network error. Please try again later.";
+            } catch (\Stripe\Exception\ApiErrorException $e) {
+                $conn->rollback();
+                $error_message = "Payment error: " . $e->getMessage();
+            } catch (Exception $e) {
+                // Rollback transaction on error
+                $conn->rollback();
+                $error_message = "Registration failed: " . $e->getMessage();
             }
-            
-            $success_message = "Registration successful! Please check your email to verify your account.";
-            
-            // Clear form data
-            $first_name = $last_name = $email = $phone = $company_name = '';
-            
-        } catch (Exception $e) {
-            // Rollback transaction on error
-            $conn->rollback();
-            $error_message = "Registration failed: " . $e->getMessage();
         }
     } else {
         $error_message = implode("<br>", $errors);
@@ -476,14 +599,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
                             <input type="password" name="confirm_password" id="modal_confirm_password" class="form-control" required>
                         </div>
                     </div>
-                    
                     <h3>Company Information</h3>
                     <div class="form-group">
                         <label for="modal_company_name">Company Name (Optional)</label>
                         <input type="text" name="company_name" id="modal_company_name" class="form-control">
                     </div>
                     
+                    <h3>Billing Address</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="modal_address_line1">Address Line 1*</label>
+                            <input type="text" name="address_line1" id="modal_address_line1" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="modal_address_line2">Address Line 2</label>
+                            <input type="text" name="address_line2" id="modal_address_line2" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="modal_city">City*</label>
+                            <input type="text" name="city" id="modal_city" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="modal_state">State/Province*</label>
+                            <input type="text" name="state" id="modal_state" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="modal_postal_code">Postal Code*</label>
+                            <input type="text" name="postal_code" id="modal_postal_code" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="modal_country">Country*</label>
+                            <select name="country" id="modal_country" class="form-control" required>
+                                <option value="">Select Country</option>
+                                <option value="US">United States</option>
+                                <option value="CA">Canada</option>
+                                <option value="GB">United Kingdom</option>
+                                <option value="AU">Australia</option>
+                                <option value="IN">India</option>
+                                <!-- Add more countries as needed -->
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <h3>Payment Information</h3>
+                    <div class="payment-form">
+                        <!-- Stripe Elements Placeholder -->
+                        <div class="form-group">
+                            <label for="card-element">Credit or Debit Card*</label>
+                            <div id="card-element" class="form-control">
+                                <!-- Stripe Element will be inserted here -->
+                            </div>
+                            <!-- Used to display form errors -->
+                            <div id="card-errors" role="alert" class="payment-error-message"></div>
+                        </div>
+                    </div>
+                    
                     <input type="hidden" name="membership_plan_id" id="modal_membership_plan_id">
+                    <input type="hidden" name="stripe_token" id="stripe_token">
                     
                     <div class="terms-privacy">
                         <div class="checkbox-group">
@@ -494,7 +670,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
                     
                     <div class="form-buttons">
                         <button type="button" class="btn cancel-btn" data-dismiss="modal">Cancel</button>
-                        <button type="submit" name="register_member" class="btn submit-btn">Register Now</button>
+                        <button type="submit" name="register_member" id="register_member_btn" class="btn submit-btn">Register Now</button>
                     </div>
                 </form>
             </div>
@@ -524,6 +700,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
     --success-color: #1cc88a;
     --danger-color: #e74a3b;
 }
+
+/* Existing styles... */
 
 .content {
     padding: 20px;
@@ -1222,12 +1400,157 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
         font-size: 1.7rem;
     }
 }
+/* Add Stripe Element Styles */
+.StripeElement {
+    background-color: white;
+    padding: 12px 15px;
+    border-radius: var(--border-radius);
+}
+
+.StripeElement--focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.StripeElement--invalid {
+    border-color: var(--danger-color);
+}
+
+.StripeElement--webkit-autofill {
+    background-color: #fefde5 !important;
+}
+
+.payment-error-message {
+    color: var(--danger-color);
+    font-size: 14px;
+    margin-top: 8px;
+}
+
+.payment-form {
+    margin-bottom: 25px;
+}
+
+/* Disable button styles */
+.submit-btn.disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.processing-payment {
+    display: inline-block;
+    margin-left: 10px;
+}
+
+/* Additional styles remain the same... */
 </style>
+
+<!-- Include Stripe.js -->
+<script src="https://js.stripe.com/v3/"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Debug - log the available plans
-    console.log('Available plans:', document.querySelectorAll('.plan-card').length);
+    // Initialize Stripe
+    const stripe = Stripe('<?php echo $stripe_publishable_key; ?>');
+    const elements = stripe.elements();
+    
+    // Create card Element and mount it
+    const card = elements.create('card', {
+        style: {
+            base: {
+                color: '#32325d',
+                fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+                fontSmoothing: 'antialiased',
+                fontSize: '16px',
+                '::placeholder': {
+                    color: '#aab7c4'
+                }
+            },
+            invalid: {
+                color: '#e74a3b',
+                iconColor: '#e74a3b'
+            }
+        }
+    });
+    
+    // Wait for the modal to be shown before mounting the card element
+    const selectPlanButtons = document.querySelectorAll('.select-plan-btn');
+    
+    if (selectPlanButtons.length > 0) {
+        selectPlanButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Allow time for modal to be visible before mounting
+                setTimeout(() => {
+                    card.mount('#card-element');
+                }, 100);
+            });
+        });
+    }
+    
+    // Handle real-time validation errors
+    card.addEventListener('change', function(event) {
+        const displayError = document.getElementById('card-errors');
+        if (event.error) {
+            displayError.textContent = event.error.message;
+        } else {
+            displayError.textContent = '';
+        }
+    });
+    
+    // Handle form submission
+    const form = document.getElementById('planRegistrationForm');
+    const submitButton = document.getElementById('register_member_btn');
+    
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            // Disable the submit button to prevent multiple submissions
+            submitButton.disabled = true;
+            submitButton.classList.add('disabled');
+            submitButton.innerHTML = 'Processing Payment... <span class="processing-payment"><i class="fas fa-spinner fa-spin"></i></span>';
+            
+            // Get the cardholder name from the form
+            const cardholderName = document.getElementById('modal_first_name').value + ' ' + document.getElementById('modal_last_name').value;
+            
+            // Create a token with card info and billing details
+            stripe.createToken(card, {
+                name: cardholderName,
+                address_line1: document.getElementById('modal_address_line1').value,
+                address_line2: document.getElementById('modal_address_line2').value,
+                address_city: document.getElementById('modal_city').value,
+                address_state: document.getElementById('modal_state').value,
+                address_zip: document.getElementById('modal_postal_code').value,
+                address_country: document.getElementById('modal_country').value
+            }).then(function(result) {
+                if (result.error) {
+                    // Inform the user if there was an error
+                    const errorElement = document.getElementById('card-errors');
+                    errorElement.textContent = result.error.message;
+                    
+                    // Re-enable the submit button
+                    submitButton.disabled = false;
+                    submitButton.classList.remove('disabled');
+                    submitButton.innerHTML = 'Register Now';
+                } else {
+                    // Send the token to your server
+                    stripeTokenHandler(result.token);
+                }
+            });
+        });
+    }
+    
+    // Function to handle the token submission
+    function stripeTokenHandler(token) {
+        // Insert the token ID into the form so it gets submitted to the server
+        const hiddenInput = document.getElementById('stripe_token');
+        if (hiddenInput) {
+            hiddenInput.value = token.id;
+        }
+        
+        // Submit the form
+        form.submit();
+    }
     
     // Initialize AOS animations if available
     if (typeof AOS !== 'undefined') {
@@ -1241,7 +1564,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Modal functionality
     const modal = document.getElementById('planSelectionModal');
     const closeButtons = document.querySelectorAll('[data-dismiss="modal"]');
-    const selectPlanButtons = document.querySelectorAll('.select-plan-btn');
     
     if (modal && selectPlanButtons.length > 0) {
         // Open modal when clicking "Select Plan" button
@@ -1268,6 +1590,8 @@ document.addEventListener('DOMContentLoaded', function() {
             closeButtons.forEach(button => {
                 button.addEventListener('click', function() {
                     modal.style.display = 'none';
+                    // Unmount card element when closing modal to avoid issues when reopening
+                    card.unmount();
                 });
             });
         }
@@ -1275,6 +1599,8 @@ document.addEventListener('DOMContentLoaded', function() {
         window.addEventListener('click', function(event) {
             if (event.target === modal) {
                 modal.style.display = 'none';
+                // Unmount card element when closing modal
+                card.unmount();
             }
         });
     }
