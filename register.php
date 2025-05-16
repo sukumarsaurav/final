@@ -126,7 +126,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
         $token = bin2hex(random_bytes(32));
         $expires = date('Y-m-d H:i:s', strtotime('+24 hours'));
         
-        // Prepare an insert statement
+        // Prepare an insert statement for the users table
         $sql = "INSERT INTO users (first_name, last_name, email, phone, password, user_type, email_verification_token, email_verification_expires) VALUES (?, ?, ?, ?, ?, 'applicant', ?, ?)";
          
         if($stmt = mysqli_prepare($conn, $sql)) {
@@ -142,7 +142,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
             $param_token = $token;
             $param_expires = $expires;
             
-            // Attempt to execute the prepared statement
+            // Attempt to execute the prepared statement for users table
             if(mysqli_stmt_execute($stmt)) {
                 // Get the new user's ID
                 $user_id = mysqli_insert_id($conn);
@@ -188,12 +188,12 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 // Set page title and include header
-$page_title = "Register - Visafy";
+$page_title = "Register as Applicant - Visafy";
 include('includes/header.php');
 ?>
 
 <div class="wrapper">
-    <h2 class="text-center mb-4">Create Your Account</h2>
+    <h2 class="text-center mb-4">Create Your Applicant Account</h2>
     <p class="text-center mb-4">Register as an applicant to start your visa journey</p>
     
     <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
@@ -235,7 +235,7 @@ include('includes/header.php');
             <span class="invalid-feedback"><?php echo $confirm_password_err; ?></span>
         </div>
         <div class="form-group">
-            <input type="submit" class="btn btn-primary btn-block" value="Sign Up">
+            <input type="submit" class="btn btn-primary btn-block" value="Sign Up as Applicant">
         </div>
         
         <div class="divider">

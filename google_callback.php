@@ -133,58 +133,90 @@ if (isset($_GET['code'])) {
                             mysqli_stmt_close($stmt_email);
                         }
                         
-                        // Create new user account
-                        $sql_insert = "INSERT INTO users (first_name, last_name, email, password, user_type, email_verified, google_id, auth_provider, profile_picture) 
-                                      VALUES (?, ?, ?, '', 'applicant', 1, ?, 'google', ?)";
+                        // Begin transaction
+                        mysqli_begin_transaction($conn);
                         
-                        if ($stmt_insert = mysqli_prepare($conn, $sql_insert)) {
-                            // Extract first and last name from Google profile
-                            $first_name = isset($profile_data['given_name']) ? $profile_data['given_name'] : '';
-                            $last_name = isset($profile_data['family_name']) ? $profile_data['family_name'] : '';
-                            $profile_picture = isset($profile_data['picture']) ? $profile_data['picture'] : '';
+                        try {
+                            // Create new user account
+                            $sql_insert = "INSERT INTO users (first_name, last_name, email, password, user_type, email_verified, google_id, auth_provider, profile_picture) 
+                                        VALUES (?, ?, ?, '', 'applicant', 1, ?, 'google', ?)";
                             
-                            mysqli_stmt_bind_param($stmt_insert, "sssss", $first_name, $last_name, $profile_data['email'], $profile_data['id'], $profile_picture);
-                            
-                            if (mysqli_stmt_execute($stmt_insert)) {
-                                $user_id = mysqli_insert_id($conn);
+                            if ($stmt_insert = mysqli_prepare($conn, $sql_insert)) {
+                                // Extract first and last name from Google profile
+                                $first_name = isset($profile_data['given_name']) ? $profile_data['given_name'] : '';
+                                $last_name = isset($profile_data['family_name']) ? $profile_data['family_name'] : '';
+                                $profile_picture = isset($profile_data['picture']) ? $profile_data['picture'] : '';
                                 
-                                // Insert into applicants table
-                                $sql_applicant = "INSERT INTO applicants (user_id) VALUES (?)";
+                                mysqli_stmt_bind_param($stmt_insert, "sssss", $first_name, $last_name, $profile_data['email'], $profile_data['id'], $profile_picture);
                                 
-                                if ($stmt_applicant = mysqli_prepare($conn, $sql_applicant)) {
-                                    mysqli_stmt_bind_param($stmt_applicant, "i", $user_id);
-                                    mysqli_stmt_execute($stmt_applicant);
-                                    mysqli_stmt_close($stmt_applicant);
+                                if (mysqli_stmt_execute($stmt_insert)) {
+                                    $user_id = mysqli_insert_id($conn);
+                                    
+                                    // Insert into applicants table
+                                    $sql_applicant = "INSERT INTO applicants (user_id) VALUES (?)";
+                                    
+                                    if ($stmt_applicant = mysqli_prepare($conn, $sql_applicant)) {
+                                        mysqli_stmt_bind_param($stmt_applicant, "i", $user_id);
+                                        
+                                        if (!mysqli_stmt_execute($stmt_applicant)) {
+                                            // If applicant creation fails, throw exception
+                                            throw new Exception("Failed to create applicant profile");
+                                        }
+                                        
+                                        mysqli_stmt_close($stmt_applicant);
+                                    } else {
+                                        // If prepare fails, throw exception
+                                        throw new Exception("Failed to prepare applicant statement");
+                                    }
+                                    
+                                    // Insert OAuth token
+                                    $sql_token = "INSERT INTO oauth_tokens (user_id, provider, provider_user_id, access_token, token_expires) 
+                                                VALUES (?, 'google', ?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))";
+                                    
+                                    if ($stmt_token = mysqli_prepare($conn, $sql_token)) {
+                                        mysqli_stmt_bind_param($stmt_token, "iss", $user_id, $profile_data['id'], $access_token);
+                                        
+                                        if (!mysqli_stmt_execute($stmt_token)) {
+                                            // If OAuth token creation fails, throw exception
+                                            throw new Exception("Failed to store OAuth token");
+                                        }
+                                        
+                                        mysqli_stmt_close($stmt_token);
+                                    } else {
+                                        // If prepare fails, throw exception
+                                        throw new Exception("Failed to prepare OAuth token statement");
+                                    }
+                                    
+                                    // Commit transaction
+                                    mysqli_commit($conn);
+                                    
+                                    // Create session
+                                    $_SESSION["loggedin"] = true;
+                                    $_SESSION["id"] = $user_id;
+                                    $_SESSION["email"] = $profile_data['email'];
+                                    $_SESSION["first_name"] = $first_name;
+                                    $_SESSION["last_name"] = $last_name;
+                                    $_SESSION["user_type"] = 'applicant';
+                                    $_SESSION["last_activity"] = time();
+                                    $_SESSION["created_at"] = time();
+                                    
+                                    // Redirect to applicant dashboard
+                                    header("location: dashboard/applicant/index.php");
+                                    exit;
+                                } else {
+                                    // If user creation fails, throw exception
+                                    throw new Exception("Failed to create user account");
                                 }
                                 
-                                // Insert OAuth token
-                                $sql_token = "INSERT INTO oauth_tokens (user_id, provider, provider_user_id, access_token, token_expires) 
-                                             VALUES (?, 'google', ?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))";
-                                
-                                if ($stmt_token = mysqli_prepare($conn, $sql_token)) {
-                                    mysqli_stmt_bind_param($stmt_token, "iss", $user_id, $profile_data['id'], $access_token);
-                                    mysqli_stmt_execute($stmt_token);
-                                    mysqli_stmt_close($stmt_token);
-                                }
-                                
-                                // Create session
-                                $_SESSION["loggedin"] = true;
-                                $_SESSION["id"] = $user_id;
-                                $_SESSION["email"] = $profile_data['email'];
-                                $_SESSION["first_name"] = $first_name;
-                                $_SESSION["last_name"] = $last_name;
-                                $_SESSION["user_type"] = 'applicant';
-                                $_SESSION["last_activity"] = time();
-                                $_SESSION["created_at"] = time();
-                                
-                                // Redirect to applicant dashboard (since new users are always applicants)
-                                header("location: dashboard/applicant/index.php");
-                                exit;
+                                mysqli_stmt_close($stmt_insert);
                             } else {
-                                echo "Oops! Something went wrong. Please try again later.";
+                                // If prepare fails, throw exception
+                                throw new Exception("Failed to prepare user statement");
                             }
-                            
-                            mysqli_stmt_close($stmt_insert);
+                        } catch (Exception $e) {
+                            // Rollback transaction on error
+                            mysqli_rollback($conn);
+                            echo "Error: " . $e->getMessage() . ". Please try again later.";
                         }
                     }
                 }
