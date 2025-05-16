@@ -246,11 +246,7 @@ $dashboard_title = 'Applicant Dashboard';
                     <span class="nav-item-text">Applications</span>
                 </a>
                 
-                <a href="documents.php" class="nav-item <?php echo $current_page == 'documents' ? 'active' : ''; ?>">
-                    <i class="fas fa-file-alt"></i>
-                    <span class="nav-item-text">Documents</span>
-                </a>
-
+               
                 <div class="sidebar-divider"></div>
                 
                 <a href="messages.php" class="nav-item <?php echo $current_page == 'messages' ? 'active' : ''; ?>">
@@ -285,8 +281,4 @@ $dashboard_title = 'Applicant Dashboard';
         <main class="main-content <?php echo $main_content_class; ?>">
             <div class="content-wrapper">
                 <!-- Page content will be inserted here -->
-            </div>
-        </main>
-    </div>
-</body>
-</html>
+  
