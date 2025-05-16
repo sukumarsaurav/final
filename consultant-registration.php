@@ -995,56 +995,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    console.log("DOM loaded, checking for registration form...");
+    const registrationForm = document.getElementById('registrationForm');
+    
+    if (!registrationForm) {
+        console.log("Registration form not found - likely on success page or error state");
+        return; // Exit early if form doesn't exist
+    }
+    
+    console.log("Registration form found, proceeding with Stripe setup");
+    
     // Get Stripe publishable key
     const stripePublishableKey = '<?php echo $stripe_publishable_key; ?>';
     
     // Only initialize Stripe if key exists and we're on the registration form
-    if (stripePublishableKey && document.getElementById('registrationForm')) {
-        // Initialize Stripe using the publishable key
-        const stripe = Stripe(stripePublishableKey);
-        const elements = stripe.elements();
-        
-        // Create card Element
-        const card = elements.create('card', {
-            style: {
-                base: {
-                    color: '#32325d',
-                    fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
-                    fontSmoothing: 'antialiased',
-                    fontSize: '16px',
-                    '::placeholder': {
-                        color: '#aab7c4'
-                    }
-                },
-                invalid: {
-                    color: '#e74a3b',
-                    iconColor: '#e74a3b'
-                }
-            }
-        });
-        
-        // Mount the card element
-        const cardElement = document.getElementById('card-element');
-        if (cardElement) {
-            card.mount(cardElement);
+    if (stripePublishableKey) {
+        try {
+            // Initialize Stripe using the publishable key
+            const stripe = Stripe(stripePublishableKey);
+            const elements = stripe.elements();
             
-            // Handle real-time validation errors
-            card.addEventListener('change', function(event) {
-                const displayError = document.getElementById('card-errors');
-                if (displayError) {
-                    if (event.error) {
-                        displayError.textContent = event.error.message;
-                    } else {
-                        displayError.textContent = '';
+            // Create card Element
+            const card = elements.create('card', {
+                style: {
+                    base: {
+                        color: '#32325d',
+                        fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+                        fontSmoothing: 'antialiased',
+                        fontSize: '16px',
+                        '::placeholder': {
+                            color: '#aab7c4'
+                        }
+                    },
+                    invalid: {
+                        color: '#e74a3b',
+                        iconColor: '#e74a3b'
                     }
                 }
             });
-        }
-        
-        // Handle form submission
-        const form = document.getElementById('registrationForm');
-        if (form) {
-            form.addEventListener('submit', function(event) {
+            
+            // Mount the card element
+            const cardElement = document.getElementById('card-element');
+            if (cardElement) {
+                card.mount(cardElement);
+                
+                // Handle real-time validation errors
+                card.addEventListener('change', function(event) {
+                    const displayError = document.getElementById('card-errors');
+                    if (displayError) {
+                        if (event.error) {
+                            displayError.textContent = event.error.message;
+                        } else {
+                            displayError.textContent = '';
+                        }
+                    }
+                });
+            } else {
+                console.error("Card element not found");
+            }
+            
+            // Handle form submission
+            registrationForm.addEventListener('submit', function(event) {
                 event.preventDefault();
                 
                 const submitButton = document.getElementById('register_member_btn');
@@ -1067,12 +1078,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 const cardholderName = firstNameInput.value + ' ' + lastNameInput.value;
                 
                 // Get billing address details
-                const addressLine1 = document.getElementById('address_line1').value;
+                const addressLine1 = document.getElementById('address_line1').value || '';
                 const addressLine2 = document.getElementById('address_line2').value || '';
-                const city = document.getElementById('city').value;
-                const state = document.getElementById('state').value;
-                const postalCode = document.getElementById('postal_code').value;
-                const country = document.getElementById('country').value;
+                const city = document.getElementById('city').value || '';
+                const state = document.getElementById('state').value || '';
+                const postalCode = document.getElementById('postal_code').value || '';
+                const country = document.getElementById('country').value || '';
                 
                 // Create a token with card info and billing details
                 stripe.createToken(card, {
@@ -1090,6 +1101,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         // Inform the user if there was an error
                         if (errorElement) {
                             errorElement.textContent = result.error.message;
+                        } else {
+                            console.error("Error element not found");
                         }
                         
                         // Re-enable the submit button
@@ -1104,8 +1117,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (hiddenInput) {
                             hiddenInput.value = result.token.id;
                             
+                            console.log("Token created successfully, submitting form...");
                             // Submit the form
-                            form.submit();
+                            registrationForm.submit();
                         } else {
                             console.error('Stripe token input field not found');
                             if (errorElement) {
@@ -1123,11 +1137,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 }).catch(function(error) {
                     console.error('Stripe error:', error);
                     
+                    const errorElement = document.getElementById('card-errors');
                     if (errorElement) {
                         errorElement.textContent = 'An error occurred with the payment processor. Please try again later.';
                     }
                     
                     // Re-enable the submit button
+                    const submitButton = document.getElementById('register_member_btn');
                     if (submitButton) {
                         submitButton.disabled = false;
                         submitButton.classList.remove('disabled');
@@ -1135,7 +1151,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
             });
+        } catch (error) {
+            console.error("Error initializing Stripe:", error);
         }
+    } else {
+        console.error("Stripe publishable key not available");
     }
 });
 
