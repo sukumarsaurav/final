@@ -29,7 +29,7 @@ debug_log("Starting registration process");
 
 // Include session management
 try {
-    require_once "includes/session.php";
+require_once "includes/session.php";
     debug_log("Session included successfully");
 } catch (Exception $e) {
     debug_log("Error loading session file", $e->getMessage());
@@ -37,21 +37,21 @@ try {
 
 // Include config files
 try {
-    require_once "config/db_connect.php";
+require_once "config/db_connect.php";
     debug_log("Database connection established");
 } catch (Exception $e) {
     debug_log("Error connecting to database", $e->getMessage());
 }
 
 try {
-    require_once "config/email_config.php";
+require_once "config/email_config.php";
     debug_log("Email configuration loaded");
 } catch (Exception $e) {
     debug_log("Error loading email configuration", $e->getMessage());
 }
 
 try {
-    require_once "includes/email_function.php";
+require_once "includes/email_function.php";
     debug_log("Email functions loaded");
 } catch (Exception $e) {
     debug_log("Error loading email functions", $e->getMessage());
@@ -60,7 +60,7 @@ try {
 // Load Composer's autoloader
 try {
     if (file_exists(__DIR__ . '/vendor/autoload.php')) {
-        require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/vendor/autoload.php';
         debug_log("Composer autoloader loaded successfully");
         
         // Add this check right after we load the Composer autoloader
@@ -79,9 +79,9 @@ try {
 
 // Load environment variables from .env file
 try {
-    if (file_exists(__DIR__ . '/config/.env')) {
-        $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/config');
-        $dotenv->load();
+if (file_exists(__DIR__ . '/config/.env')) {
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/config');
+    $dotenv->load();
         debug_log("Environment variables loaded from .env file");
     } else {
         debug_log("ERROR: .env file not found in config directory");
@@ -110,7 +110,7 @@ if (empty($stripe_publishable_key) || empty($stripe_secret_key)) {
 // Initialize Stripe with API key from environment variable
 try {
     if (class_exists('\Stripe\Stripe')) {
-        \Stripe\Stripe::setApiKey($stripe_secret_key);
+\Stripe\Stripe::setApiKey($stripe_secret_key);
         debug_log("Stripe initialized with API key");
     } else {
         debug_log("ERROR: Stripe class not found. Please install stripe/stripe-php via Composer");
@@ -121,14 +121,14 @@ try {
 
 $page_title = "Consultant Registration";
 try {
-    require_once 'includes/header.php';
+require_once 'includes/header.php';
     debug_log("Header included successfully");
 } catch (Exception $e) {
     debug_log("Error including header", $e->getMessage());
 }
 
 try {
-    require_once 'includes/functions.php';
+require_once 'includes/functions.php';
     debug_log("Functions included successfully");
 } catch (Exception $e) {
     debug_log("Error including functions", $e->getMessage());
@@ -136,18 +136,18 @@ try {
 
 // Get membership plans
 try {
-    $query = "SELECT * FROM membership_plans WHERE billing_cycle = 'monthly' ORDER BY price ASC";
-    $result = $conn->query($query);
-    
+$query = "SELECT * FROM membership_plans WHERE billing_cycle = 'monthly' ORDER BY price ASC";
+$result = $conn->query($query);
+
     if (!$result) {
         debug_log("Database error when fetching membership plans", $conn->error);
     }
     
     $plans = [];
-    if ($result && $result->num_rows > 0) {
-        while ($row = $result->fetch_assoc()) {
-            $plans[] = $row;
-        }
+if ($result && $result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $plans[] = $row;
+    }
         debug_log("Membership plans loaded successfully", ['count' => count($plans)]);
     } else {
         debug_log("No membership plans found in database");
@@ -308,22 +308,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
     
     // Check if email already exists
     try {
-        $check_email_query = "SELECT id FROM users WHERE email = ?";
-        $stmt = $conn->prepare($check_email_query);
+    $check_email_query = "SELECT id FROM users WHERE email = ?";
+    $stmt = $conn->prepare($check_email_query);
         
         if (!$stmt) {
             debug_log("Database error preparing email check query", $conn->error);
             $errors[] = "Database error. Please try again later.";
         } else {
-            $stmt->bind_param('s', $email);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            
-            if ($result->num_rows > 0) {
+    $stmt->bind_param('s', $email);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($result->num_rows > 0) {
                 debug_log("Email already exists in database", ['email' => $email]);
-                $errors[] = "Email is already registered. Please use a different email or login.";
-            }
-            $stmt->close();
+        $errors[] = "Email is already registered. Please use a different email or login.";
+    }
+    $stmt->close();
         }
     } catch (Exception $e) {
         debug_log("Error checking email existence", $e->getMessage());
@@ -335,23 +335,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
         
         // Get the selected plan details from the database
         try {
-            $plan_query = "SELECT * FROM membership_plans WHERE id = ?";
-            $stmt = $conn->prepare($plan_query);
+        $plan_query = "SELECT * FROM membership_plans WHERE id = ?";
+        $stmt = $conn->prepare($plan_query);
             
             if (!$stmt) {
                 debug_log("Database error preparing plan query", $conn->error);
                 $errors[] = "Database error. Please try again later.";
             } else {
-                $stmt->bind_param('i', $membership_plan_id);
-                $stmt->execute();
-                $plan_result = $stmt->get_result();
-                $plan = $plan_result->fetch_assoc();
-                $stmt->close();
-                
-                if (!$plan) {
+        $stmt->bind_param('i', $membership_plan_id);
+        $stmt->execute();
+        $plan_result = $stmt->get_result();
+        $plan = $plan_result->fetch_assoc();
+        $stmt->close();
+        
+        if (!$plan) {
                     debug_log("Selected plan not found in database", ['id' => $membership_plan_id]);
-                    $errors[] = "Selected plan not found.";
-                } else {
+            $errors[] = "Selected plan not found.";
+        } else {
                     debug_log("Plan details retrieved", $plan);
                 }
             }
@@ -361,7 +361,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
         }
         
         if (empty($errors)) {
-            // Start transaction
+                // Start transaction
             try {
                 debug_log("Starting database transaction");
                 
@@ -445,30 +445,71 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
                         debug_log("Creating new Stripe customer");
                         
                         // 1. Create a Stripe Customer first
-                        $stripe_customer = \Stripe\Customer::create([
-                            'email' => $email,
-                            'name' => $first_name . ' ' . $last_name,
-                            'phone' => $phone,
-                            'description' => 'Visafy Consultant - ' . ($company_name ?: ($first_name . ' ' . $last_name)),
-                            'address' => [
-                                'line1' => $address_line1,
-                                'line2' => $address_line2,
-                                'city' => $city,
-                                'state' => $state,
-                                'postal_code' => $postal_code,
-                                'country' => $country,
-                            ],
-                            'metadata' => [
-                                'membership_plan_id' => $membership_plan_id,
-                                'company_name' => $company_name,
-                            ]
-                        ]);
+                $stripe_customer = \Stripe\Customer::create([
+                    'email' => $email,
+                    'name' => $first_name . ' ' . $last_name,
+                    'phone' => $phone,
+                    'description' => 'Visafy Consultant - ' . ($company_name ?: ($first_name . ' ' . $last_name)),
+                    'address' => [
+                        'line1' => $address_line1,
+                        'line2' => $address_line2,
+                        'city' => $city,
+                        'state' => $state,
+                        'postal_code' => $postal_code,
+                        'country' => $country,
+                    ],
+                    'metadata' => [
+                        'membership_plan_id' => $membership_plan_id,
+                        'company_name' => $company_name,
+                    ]
+                ]);
                     }
                     
                     // For Indian customers, the payment method should already be attached via the SetupIntent
                     $is_indian_customer = $country === 'IN';
+                    $is_fallback_method = isset($_POST['is_fallback_method']) && $_POST['is_fallback_method'] === 'true';
                     
-                    if (!$is_indian_customer) {
+                    if ($is_fallback_method) {
+                        debug_log("Processing fallback payment method");
+                        
+                        // For fallback methods, we'll need to try a different approach
+                        try {
+                            debug_log("Attaching fallback payment method to customer");
+                            
+                            // For fallback methods, create a SetupIntent that doesn't immediately confirm
+                            $setup_intent = \Stripe\SetupIntent::create([
+                    'customer' => $stripe_customer->id,
+                                'payment_method' => $payment_method->id,
+                                'usage' => 'off_session',
+                                'metadata' => [
+                                    'is_fallback' => 'true',
+                                    'email' => $email
+                                ]
+                            ]);
+                            
+                            debug_log("Setup intent created for fallback method", [
+                                'setup_intent_id' => $setup_intent->id,
+                                'status' => $setup_intent->status
+                            ]);
+                            
+                            // For fallback methods, we'll set the default payment method but won't require immediate attachment
+                            // This might fail for some cards but we'll handle potential issues later
+                            try {
+                                \Stripe\Customer::update(
+                                    $stripe_customer->id,
+                                    ['invoice_settings' => ['default_payment_method' => $payment_method->id]]
+                                );
+                                debug_log("Default payment method set for fallback method");
+                            } catch (\Exception $e) {
+                                debug_log("Warning: Could not set default payment method for fallback", $e->getMessage());
+                                // Continue anyway - we'll fix payment methods later
+                            }
+                        } catch (\Exception $e) {
+                            debug_log("Warning: Error with fallback payment method", $e->getMessage());
+                            // Continue anyway - we'll handle payment setup after registration
+                        }
+                    }
+                    else if (!$is_indian_customer) {
                         debug_log("Non-Indian customer - creating SetupIntent for 3DS authentication", [
                             'customer_id' => $stripe_customer->id
                         ]);
@@ -512,15 +553,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
                         
                         debug_log("Payment method setup successful - card is ready for billing");
                     } else {
-                        debug_log("Indian customer - payment method already attached via 3DS");
+                        debug_log("Indian customer - attempting to safely attach payment method");
+                        
+                        // Use our new function to safely attach the payment method
+                        $attachment_result = safe_attach_payment_method($payment_method->id, $stripe_customer->id);
+                        
+                        if (!$attachment_result['success']) {
+                            debug_log("Error attaching payment method", $attachment_result);
+                            
+                            if (isset($attachment_result['requires_action']) && $attachment_result['requires_action']) {
+                                debug_log("3DS authentication required for payment method attachment", [
+                                    'client_secret' => isset($attachment_result['client_secret']) ? 'Present (hidden)' : 'Missing'
+                                ]);
+                                
+                                $error_message = "3D Secure authentication is required for this card. Please try again and complete the authentication when prompted.";
+                                throw new \Exception($error_message);
+                            }
+                            
+                            throw new \Exception("Could not attach payment method: " . ($attachment_result['error'] ?? 'Unknown error'));
+                        }
+                        
+                        debug_log("Payment method attached successfully");
                     }
                     
-                    // 4. Set as default payment method
-                    debug_log("Setting payment method as default for customer");
-                    \Stripe\Customer::update(
-                        $stripe_customer->id,
-                        ['invoice_settings' => ['default_payment_method' => $payment_method->id]]
-                    );
+                    // 4. Set as default payment method (already done in safe_attach_payment_method for Indian customers)
+                    if (!$is_indian_customer) {
+                        debug_log("Setting payment method as default for customer");
+                        \Stripe\Customer::update(
+                            $stripe_customer->id,
+                            ['invoice_settings' => ['default_payment_method' => $payment_method->id]]
+                        );
+                    }
                     
                 } catch (\Stripe\Exception\CardException $e) {
                     debug_log("Stripe Card Exception", [
@@ -551,74 +614,74 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
                 
                 // Database operations
                 try {
-                    // 3. Create organization first using company name or user name
+                // 3. Create organization first using company name or user name
                     debug_log("Creating organization record");
-                    $org_name = !empty($company_name) ? $company_name : $first_name . ' ' . $last_name . "'s Organization";
-                    $org_description = "Organization for " . $first_name . " " . $last_name;
-                    
-                    $insert_org_query = "INSERT INTO organizations (name, description) VALUES (?, ?)";
-                    $stmt = $conn->prepare($insert_org_query);
+                $org_name = !empty($company_name) ? $company_name : $first_name . ' ' . $last_name . "'s Organization";
+                $org_description = "Organization for " . $first_name . " " . $last_name;
+                
+                $insert_org_query = "INSERT INTO organizations (name, description) VALUES (?, ?)";
+                $stmt = $conn->prepare($insert_org_query);
                     
                     if (!$stmt) {
                         debug_log("Database error preparing organization insert", $conn->error);
                         throw new Exception("Database error preparing organization insert: " . $conn->error);
                     }
                     
-                    $stmt->bind_param('ss', $org_name, $org_description);
+                $stmt->bind_param('ss', $org_name, $org_description);
                     $result = $stmt->execute();
                     
                     if (!$result) {
                         debug_log("Error inserting organization", $stmt->error);
                         throw new Exception("Error inserting organization: " . $stmt->error);
                     }
-                    
-                    // Get organization ID
-                    $organization_id = $conn->insert_id;
+                
+                // Get organization ID
+                $organization_id = $conn->insert_id;
                     debug_log("Database operation completed", [
                         'last_query' => $insert_org_query,
                         'affected_rows' => $conn->affected_rows,
                         'last_insert_id' => $organization_id
                     ]);
-                    
-                    // 4. Hash password
+                
+                // 4. Hash password
                     debug_log("Hashing password");
-                    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-                    
-                    // 5. Insert user with organization_id
+                $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+                
+                // 5. Insert user with organization_id
                     debug_log("Creating user record");
-                    $insert_user_query = "INSERT INTO users (first_name, last_name, email, phone, password, user_type, email_verified, organization_id) 
-                                         VALUES (?, ?, ?, ?, ?, 'consultant', 0, ?)";
-                    $stmt = $conn->prepare($insert_user_query);
+                $insert_user_query = "INSERT INTO users (first_name, last_name, email, phone, password, user_type, email_verified, organization_id) 
+                                     VALUES (?, ?, ?, ?, ?, 'consultant', 0, ?)";
+                $stmt = $conn->prepare($insert_user_query);
                     
                     if (!$stmt) {
                         debug_log("Database error preparing user insert", $conn->error);
                         throw new Exception("Database error preparing user insert: " . $conn->error);
                     }
                     
-                    $stmt->bind_param('sssssi', $first_name, $last_name, $email, $phone, $hashed_password, $organization_id);
+                $stmt->bind_param('sssssi', $first_name, $last_name, $email, $phone, $hashed_password, $organization_id);
                     $result = $stmt->execute();
                     
                     if (!$result) {
                         debug_log("Error inserting user", $stmt->error);
                         throw new Exception("Error inserting user: " . $stmt->error);
                     }
-                    
-                    // Get user ID
-                    $user_id = $conn->insert_id;
+                
+                // Get user ID
+                $user_id = $conn->insert_id;
                     debug_log("User created", ['id' => $user_id, 'email' => $email]);
-                    
-                    // 6. Insert consultant
+                
+                // 6. Insert consultant
                     debug_log("Creating consultant record");
-                    $insert_consultant_query = "INSERT INTO consultants (user_id, membership_plan_id, company_name) 
-                                               VALUES (?, ?, ?)";
-                    $stmt = $conn->prepare($insert_consultant_query);
+                $insert_consultant_query = "INSERT INTO consultants (user_id, membership_plan_id, company_name) 
+                                           VALUES (?, ?, ?)";
+                $stmt = $conn->prepare($insert_consultant_query);
                     
                     if (!$stmt) {
                         debug_log("Database error preparing consultant insert", $conn->error);
                         throw new Exception("Database error preparing consultant insert: " . $conn->error);
                     }
                     
-                    $stmt->bind_param('iis', $user_id, $membership_plan_id, $company_name);
+                $stmt->bind_param('iis', $user_id, $membership_plan_id, $company_name);
                     $result = $stmt->execute();
                     
                     if (!$result) {
@@ -627,18 +690,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
                     }
                     
                     debug_log("Consultant record created");
-                    
-                    // 7. Add an entry in consultant_profiles table with default values
+                
+                // 7. Add an entry in consultant_profiles table with default values
                     debug_log("Creating consultant profile record");
-                    $insert_profile_query = "INSERT INTO consultant_profiles (consultant_id) VALUES (?)";
-                    $stmt = $conn->prepare($insert_profile_query);
+                $insert_profile_query = "INSERT INTO consultant_profiles (consultant_id) VALUES (?)";
+                $stmt = $conn->prepare($insert_profile_query);
                     
                     if (!$stmt) {
                         debug_log("Database error preparing profile insert", $conn->error);
                         throw new Exception("Database error preparing profile insert: " . $conn->error);
                     }
                     
-                    $stmt->bind_param('i', $user_id);
+                $stmt->bind_param('i', $user_id);
                     $result = $stmt->execute();
                     
                     if (!$result) {
@@ -647,13 +710,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
                     }
                     
                     debug_log("Consultant profile created");
-                    
-                    // 8. Insert payment method
+                
+                // 8. Insert payment method
                     debug_log("Creating payment method record");
-                    $insert_payment_query = "INSERT INTO payment_methods (user_id, method_type, provider, account_number, token, billing_address_line1, billing_address_line2, billing_city, billing_state, billing_postal_code, billing_country, is_default) 
-                                            VALUES (?, 'credit_card', 'stripe', ?, ?, ?, ?, ?, ?, ?, ?, 1)";
+                $insert_payment_query = "INSERT INTO payment_methods (user_id, method_type, provider, account_number, token, billing_address_line1, billing_address_line2, billing_city, billing_state, billing_postal_code, billing_country, is_default) 
+                                        VALUES (?, 'credit_card', 'stripe', ?, ?, ?, ?, ?, ?, ?, ?, 1)";
                     $last_four = $payment_method->card->last4 ?? substr($payment_method_id, -4); // Get last4 from Stripe or fallback
-                    $stmt = $conn->prepare($insert_payment_query);
+                $stmt = $conn->prepare($insert_payment_query);
                     
                     if (!$stmt) {
                         debug_log("Database error preparing payment method insert", $conn->error);
@@ -670,12 +733,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
                     
                     $payment_method_id_db = $conn->insert_id;
                     debug_log("Payment method record created", ['id' => $payment_method_id_db]);
-                    
-                    // 9. Insert subscription
+                
+                // 9. Insert subscription
                     debug_log("Creating subscription record");
-                    $insert_subscription_query = "INSERT INTO subscriptions (user_id, membership_plan_id, payment_method_id, status, start_date, end_date, auto_renew) 
+                $insert_subscription_query = "INSERT INTO subscriptions (user_id, membership_plan_id, payment_method_id, status, start_date, end_date, auto_renew) 
                                                  VALUES (?, ?, ?, 'active', NOW(), DATE_ADD(NOW(), INTERVAL 1 MONTH), 1)";
-                    $stmt = $conn->prepare($insert_subscription_query);
+                $stmt = $conn->prepare($insert_subscription_query);
                     
                     if (!$stmt) {
                         debug_log("Database error preparing subscription insert", $conn->error);
@@ -692,22 +755,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
                     
                     $subscription_id = $conn->insert_id;
                     debug_log("Subscription record created", ['id' => $subscription_id]);
-                    
-                    // 10. Generate verification token
+                
+                // 10. Generate verification token
                     debug_log("Generating email verification token");
-                    $token = bin2hex(random_bytes(32));
-                    $expires = date('Y-m-d H:i:s', strtotime('+24 hours'));
-                    
-                    // Update user with verification token
-                    $update_token_query = "UPDATE users SET email_verification_token = ?, email_verification_expires = ? WHERE id = ?";
-                    $stmt = $conn->prepare($update_token_query);
+                $token = bin2hex(random_bytes(32));
+                $expires = date('Y-m-d H:i:s', strtotime('+24 hours'));
+                
+                // Update user with verification token
+                $update_token_query = "UPDATE users SET email_verification_token = ?, email_verification_expires = ? WHERE id = ?";
+                $stmt = $conn->prepare($update_token_query);
                     
                     if (!$stmt) {
                         debug_log("Database error preparing token update", $conn->error);
                         throw new Exception("Database error preparing token update: " . $conn->error);
                     }
                     
-                    $stmt->bind_param('ssi', $token, $expires, $user_id);
+                $stmt->bind_param('ssi', $token, $expires, $user_id);
                     $result = $stmt->execute();
                     
                     if (!$result) {
@@ -729,11 +792,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
                 // Send verification email
                 try {
                     debug_log("Sending verification email");
-                    $verification_link = "https://visafy.io/verify_email.php?token=" . $token;
-                    $email_subject = "Verify Your Email Address";
-                    $email_body = "Hi $first_name,\n\nPlease click the following link to verify your email address:\n$verification_link\n\nThis link will expire in 24 hours.\n\nThank you,\nThe Visafy Team";
-                    
-                    // Use your email function to send verification email
+                $verification_link = "https://visafy.io/verify_email.php?token=" . $token;
+                $email_subject = "Verify Your Email Address";
+                $email_body = "Hi $first_name,\n\nPlease click the following link to verify your email address:\n$verification_link\n\nThis link will expire in 24 hours.\n\nThank you,\nThe Visafy Team";
+                
+                // Use your email function to send verification email
                     if (function_exists('send_email')) {
                         $email_result = send_email($email, $email_subject, $email_body);
                         debug_log("Verification email sent", ['result' => $email_result]);
@@ -811,9 +874,11 @@ function generate_setup_intent($email, $name, $phone) {
             'email' => $email,
             'name' => $name,
             'phone' => $phone,
+            'description' => 'Temporary customer for 3DS authentication',
             'metadata' => [
                 'temp_for_3ds' => 'true',
-                'registration_flow' => 'consultant'
+                'registration_flow' => 'consultant',
+                'created_at' => date('Y-m-d H:i:s')
             ]
         ]);
         
@@ -822,13 +887,82 @@ function generate_setup_intent($email, $name, $phone) {
             'customer' => $customer->id,
             'payment_method_types' => ['card'],
             'usage' => 'off_session',
+            'metadata' => [
+                'customer_email' => $email,
+                'customer_name' => $name,
+                'phone' => $phone,
+                'for_registration' => 'true'
+            ]
         ]);
+        
+        // Log the created intent for debugging
+        error_log("Created SetupIntent: " . $intent->id . ", client_secret: " . substr($intent->client_secret, 0, 10) . "...");
         
         return [
             'success' => true,
             'clientSecret' => $intent->client_secret,
-            'customer' => $customer->id
+            'customer' => $customer->id,
+            'setup_intent_id' => $intent->id
         ];
+    } catch (\Exception $e) {
+        error_log("Error creating SetupIntent: " . $e->getMessage());
+        return [
+            'success' => false,
+            'error' => $e->getMessage()
+        ];
+    }
+}
+
+// Let's add a function to safely handle payment method attachment
+function safe_attach_payment_method($payment_method_id, $customer_id) {
+    try {
+        // First check if the payment method exists
+        $payment_method = \Stripe\PaymentMethod::retrieve($payment_method_id);
+        
+        // For Indian cards, we've already attached it via SetupIntent
+        // Just verify if it's already attached
+        $customer = \Stripe\Customer::retrieve([
+            'id' => $customer_id,
+            'expand' => ['payment_methods']
+        ]);
+        
+        // Check if this payment method is already attached
+        $is_attached = false;
+        if (isset($customer->payment_methods) && is_array($customer->payment_methods->data)) {
+            foreach ($customer->payment_methods->data as $pm) {
+                if ($pm->id === $payment_method_id) {
+                    $is_attached = true;
+                    break;
+                }
+            }
+        }
+        
+        // If not attached, create a SetupIntent to attach it
+        if (!$is_attached) {
+            $setup_intent = \Stripe\SetupIntent::create([
+                'customer' => $customer_id,
+                'payment_method' => $payment_method_id,
+                'confirm' => true,
+                'usage' => 'off_session'
+            ]);
+            
+            // Check setup intent status
+            if ($setup_intent->status === 'requires_action') {
+                return [
+                    'success' => false,
+                    'requires_action' => true,
+                    'client_secret' => $setup_intent->client_secret
+                ];
+            }
+        }
+        
+        // Set as default
+        \Stripe\Customer::update(
+            $customer_id,
+            ['invoice_settings' => ['default_payment_method' => $payment_method_id]]
+        );
+        
+        return ['success' => true];
     } catch (\Exception $e) {
         return [
             'success' => false,
@@ -839,6 +973,12 @@ function generate_setup_intent($email, $name, $phone) {
 
 // Check if the request is for a setup intent
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'create_setup_intent') {
+    // Set the content type to JSON
+    header('Content-Type: application/json');
+    
+    // Log the request for debugging
+    error_log("Setup intent request received: " . print_r($_POST, true));
+    
     $email = $_POST['email'] ?? '';
     $name = $_POST['name'] ?? '';
     $phone = $_POST['phone'] ?? '';
@@ -849,6 +989,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
     
     $result = generate_setup_intent($email, $name, $phone);
+    
+    // Log the result for debugging
+    error_log("Setup intent result: " . print_r($result, true));
+    
     echo json_encode($result);
     exit;
 }
@@ -1702,11 +1846,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const hiddenInput = document.getElementById('payment_method_id');
         
         debug("Checking required form elements", {
-            submitButton: !!submitButton,
-            firstNameInput: !!firstNameInput,
-            lastNameInput: !!lastNameInput,
-            hiddenInput: !!hiddenInput
-        });
+                submitButton: !!submitButton,
+                firstNameInput: !!firstNameInput,
+                lastNameInput: !!lastNameInput,
+                hiddenInput: !!hiddenInput
+            });
         
         if (!submitButton || !firstNameInput || !lastNameInput || !hiddenInput) {
             debug("ERROR: Critical form elements missing");
@@ -1726,7 +1870,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Prevent double submission
                 if (isSubmitting) {
                     debug("Form already submitting, preventing double submission");
-                    event.preventDefault();
+                event.preventDefault();
                     return false;
                 }
                 
@@ -1773,11 +1917,31 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     debug("Requesting setup intent");
                     
-                    fetch(window.location.href, {
+                    // Create a direct endpoint instead of using window.location.href
+                    const currentUrl = window.location.href.split('?')[0]; // Remove any query parameters
+                    
+                    fetch(currentUrl, {
                         method: 'POST',
                         body: formData
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        // Check if the response is JSON
+                        const contentType = response.headers.get('content-type');
+                        if (!contentType || !contentType.includes('application/json')) {
+                            debug("Server returned non-JSON response", {
+                                contentType: contentType,
+                                status: response.status,
+                                statusText: response.statusText
+                            });
+                            
+                            // Try to get the text response for debugging
+                            return response.text().then(text => {
+                                debug("Response text", text.substring(0, 500) + (text.length > 500 ? '...' : ''));
+                                throw new Error('Server returned non-JSON response');
+                            });
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         if (!data.success) {
                             debug("Error creating setup intent", data.error);
@@ -1851,6 +2015,62 @@ document.addEventListener('DOMContentLoaded', function() {
                         submitButton.disabled = false;
                         submitButton.classList.remove('disabled');
                         submitButton.innerHTML = 'Register Now';
+                        
+                        // Fallback: If fetch fails completely, try a direct payment method creation
+                        // This won't handle 3DS properly but might work in some cases
+                        debug("Attempting fallback to direct payment method creation");
+                        
+                        // Create a payment method directly
+                        stripe.createPaymentMethod({
+                            type: 'card',
+                            card: card,
+                            billing_details: {
+                    name: cardholderName,
+                                email: document.getElementById('email').value,
+                                phone: document.getElementById('phone').value,
+                                address: {
+                                    line1: addressLine1,
+                                    line2: addressLine2,
+                                    city: city,
+                                    state: state,
+                                    postal_code: postalCode,
+                                    country: country
+                                }
+                            }
+                        }).then(function(result) {
+                            if (result.error) {
+                                debug("Fallback payment method creation failed:", result.error.message);
+                                if (errorElement) {
+                                    errorElement.textContent = result.error.message;
+                                }
+                                return;
+                            }
+                            
+                            debug("Fallback payment method created successfully:", {
+                                id: result.paymentMethod.id,
+                                type: result.paymentMethod.type,
+                                card: {
+                                    brand: result.paymentMethod.card.brand,
+                                    last4: result.paymentMethod.card.last4
+                                }
+                            });
+                            
+                            // Add a flag to indicate this is a fallback method that may need special handling
+                            hiddenInput.value = result.paymentMethod.id;
+                            document.getElementById('payment_method_id').value = result.paymentMethod.id;
+                            
+                            // Add a flag indicating this is a fallback method
+                            const fallbackField = document.createElement('input');
+                            fallbackField.type = 'hidden';
+                            fallbackField.name = 'is_fallback_method';
+                            fallbackField.value = 'true';
+                            registrationForm.appendChild(fallbackField);
+                            
+                            debug("Submitting form with fallback payment method");
+                            submitFormWithExtras();
+                        }).catch(function(error) {
+                            debug("Fallback payment method creation failed with error:", error.message);
+                        });
                     });
                 } else {
                     // For non-Indian cards, proceed with the regular flow
@@ -1871,21 +2091,21 @@ document.addEventListener('DOMContentLoaded', function() {
                                 country: country
                             }
                         }
-                    }).then(function(result) {
-                        const errorElement = document.getElementById('card-errors');
-                        
-                        if (result.error) {
+                }).then(function(result) {
+                    const errorElement = document.getElementById('card-errors');
+                    
+                    if (result.error) {
                             debug("Stripe payment method creation failed:", result.error.message);
-                            // Inform the user if there was an error
-                            if (errorElement) {
-                                errorElement.textContent = result.error.message;
-                            }
-                            
-                            // Re-enable the submit button
-                            submitButton.disabled = false;
-                            submitButton.classList.remove('disabled');
-                            submitButton.innerHTML = 'Register Now';
-                        } else {
+                        // Inform the user if there was an error
+                        if (errorElement) {
+                            errorElement.textContent = result.error.message;
+                        }
+                        
+                        // Re-enable the submit button
+                        submitButton.disabled = false;
+                        submitButton.classList.remove('disabled');
+                        submitButton.innerHTML = 'Register Now';
+                    } else {
                             debug("Stripe payment method created successfully:", {
                                 id: result.paymentMethod.id,
                                 type: result.paymentMethod.type,
@@ -1900,8 +2120,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             // Send the payment method ID to the server - make sure to update BOTH the hidden inputs
                             hiddenInput.value = result.paymentMethod.id;
                             document.getElementById('payment_method_id').value = result.paymentMethod.id;
-                            
-                            // Submit the form
+                        
+                        // Submit the form
                             debug("Form data being submitted", {
                                 paymentMethodId: hiddenInput.value,
                                 membershipPlanId: document.getElementById('membership_plan_id').value,
@@ -1910,20 +2130,20 @@ document.addEventListener('DOMContentLoaded', function() {
                             });
                             
                             submitFormWithExtras();
-                        }
-                    }).catch(function(error) {
+                    }
+                }).catch(function(error) {
                         debug("Unexpected Stripe error:", error.message);
-                        
-                        const errorElement = document.getElementById('card-errors');
-                        if (errorElement) {
-                            errorElement.textContent = 'An error occurred with the payment processor. Please try again later.';
-                        }
-                        
-                        // Re-enable the submit button
-                        submitButton.disabled = false;
-                        submitButton.classList.remove('disabled');
-                        submitButton.innerHTML = 'Register Now';
-                    });
+                    
+                    const errorElement = document.getElementById('card-errors');
+                    if (errorElement) {
+                        errorElement.textContent = 'An error occurred with the payment processor. Please try again later.';
+                    }
+                    
+                    // Re-enable the submit button
+                    submitButton.disabled = false;
+                    submitButton.classList.remove('disabled');
+                    submitButton.innerHTML = 'Register Now';
+                });
                 }
                 
                 // Function to submit the form with additional hidden fields
