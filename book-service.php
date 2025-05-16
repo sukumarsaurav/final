@@ -66,22 +66,28 @@ if ($result && $result->num_rows > 0) {
 }
 ?>
 
-<div class="container">
-    <div class="page-header">
-        <h1>Book a Consultation</h1>
-        <p>Choose from our network of professional visa consultants</p>
-    </div>
-    
-    <!-- Search and Filter Controls -->
-    <div class="search-filters">
-        <div class="row">
-            <div class="col-md-4">
-                <div class="form-group">
-                    <input type="text" id="search-consultant" class="form-control" placeholder="Search by name or specialization">
+<!-- Hero Section -->
+<section class="hero consultant-hero">
+    <div class="container">
+        <div class="hero-grid">
+            <div class="hero-content">
+                <h1 class="hero-title">Book a Professional Consultation</h1>
+                <p class="hero-subtitle">Connect with our network of experienced visa consultants to guide your immigration journey</p>
+            </div>
+            <div class="hero-image-container">
+                <div class="floating-image-hero">
+                    <img src="assets/images/consultation-hero.png" alt="Book a Consultation">
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="form-group">
+        </div>
+        
+        <!-- Search and Filter Controls (inline at bottom of hero) -->
+        <div class="search-filters">
+            <div class="filter-container">
+                <div class="filter-item">
+                    <input type="text" id="search-consultant" class="form-control" placeholder="Search by name or specialization">
+                </div>
+                <div class="filter-item">
                     <select id="filter-rating" class="form-control">
                         <option value="">Filter by Rating</option>
                         <option value="4">4+ Stars</option>
@@ -89,21 +95,21 @@ if ($result && $result->num_rows > 0) {
                         <option value="2">2+ Stars</option>
                     </select>
                 </div>
-            </div>
-            <div class="col-md-3">
-                <div class="form-group">
+                <div class="filter-item">
                     <select id="filter-verified" class="form-control">
                         <option value="">All Consultants</option>
                         <option value="1">Verified by Visafy</option>
                     </select>
                 </div>
-            </div>
-            <div class="col-md-2">
-                <button id="reset-filters" class="btn btn-secondary w-100">Reset</button>
+                <div class="filter-item">
+                    <button id="reset-filters" class="btn btn-secondary">Reset</button>
+                </div>
             </div>
         </div>
     </div>
-    
+</section>
+
+<div class="container">
     <!-- Consultants List -->
     <div class="consultants-list">
         <?php if (empty($consultants)): ?>
@@ -130,7 +136,23 @@ if ($result && $result->num_rows > 0) {
                             <div class="consultant-header">
                                 <div class="consultant-img">
                                     <?php if (!empty($consultant['profile_picture'])): ?>
-                                        <img src="<?php echo htmlspecialchars($consultant['profile_picture']); ?>" alt="<?php echo htmlspecialchars($consultant['consultant_name']); ?>">
+                                        <?php 
+                                        // Fix profile picture path - add 'uploads/' if not present
+                                        $profile_picture = $consultant['profile_picture'];
+                                        if (strpos($profile_picture, 'users/') === 0) {
+                                            if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/uploads/' . $profile_picture)) {
+                                                $profile_img = '/uploads/' . $profile_picture;
+                                            }
+                                        // } else {
+                                        //     // Legacy structure
+                                        //     if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/uploads/profiles/' . $profile_picture)) {
+                                        //         $profile_img = '/uploads/profiles/' . $profile_picture;
+                                        //     } else if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/uploads/profile/' . $profile_picture)) {
+                                        //         $profile_img = '/uploads/profile/' . $profile_picture;
+                                        //     }
+                                        }
+                                        ?>
+                                        <img src="<?php echo htmlspecialchars($profile_img); ?>" alt="<?php echo htmlspecialchars($consultant['consultant_name']); ?>">
                                     <?php else: ?>
                                         <div class="default-avatar">
                                             <?php echo strtoupper(substr($consultant['consultant_name'], 0, 1)); ?>
@@ -204,28 +226,165 @@ if ($result && $result->num_rows > 0) {
 
 <!-- CSS -->
 <style>
-.page-header {
-    text-align: center;
+:root {
+    --primary-color: #eaaa34;
+    --primary-light: rgba(234, 170, 52, 0.1);
+    --primary-medium: rgba(234, 170, 52, 0.2);
+    --dark-blue: #042167;
+    --text-color: #333;
+    --text-light: #666;
+    --background-light: #f8f9fa;
+    --white: #fff;
+    --border-color: #e5e7eb;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --border-radius: 0.5rem;
+    --border-radius-lg: 1rem;
+    --transition: all 0.3s ease;
+}
+
+/* Hero Section Styles */
+.hero {
+    padding: 60px 0 30px;
+    background-color: var(--background-light);
+    overflow: hidden;
+    position: relative;
+}
+
+.hero.consultant-hero {
+    background-color: rgba(234, 170, 52, 0.05);
+}
+
+.hero-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: center;
     margin-bottom: 30px;
-    padding: 20px 0;
 }
 
-.page-header h1 {
-    color: #042167;
-    margin-bottom: 10px;
+.hero-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--dark-blue);
+    margin-bottom: 20px;
+    line-height: 1.2;
 }
 
-.page-header p {
-    color: #666;
-    font-size: 18px;
+.hero-subtitle {
+    font-size: 1.2rem;
+    color: var(--text-light);
+    margin-bottom: 30px;
+    line-height: 1.5;
 }
 
+.hero-image-container {
+    position: relative;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.floating-image-hero {
+    animation: float 3s ease-in-out infinite;
+    max-width: 100%;
+}
+
+.floating-image-hero img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: var(--shadow-lg);
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-15px);
+    }
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+/* Search Filters */
 .search-filters {
-    background-color: #f8f9fa;
+    background-color: var(--white);
     padding: 20px;
-    border-radius: 5px;
+    border-radius: var(--border-radius);
     margin-bottom: 30px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    box-shadow: var(--shadow);
+}
+
+.filter-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.filter-item {
+    flex: 1;
+    min-width: 200px;
+}
+
+.filter-item:last-child {
+    flex: 0 0 auto;
+    min-width: 100px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: 14px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.btn {
+    padding: 12px 25px;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    text-decoration: none;
+    transition: var(--transition);
+    display: inline-block;
+    cursor: pointer;
+    border: none;
+    width: 100%;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--dark-blue);
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background-color: var(--white);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    background-color: var(--background-light);
+    transform: translateY(-2px);
 }
 
 .empty-state {
@@ -377,42 +536,35 @@ if ($result && $result->num_rows > 0) {
     justify-content: space-between;
 }
 
-.btn {
-    padding: 8px 16px;
-    border-radius: 4px;
-    font-weight: 500;
-    text-decoration: none;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    font-size: 14px;
-    border: none;
+.consultant-footer .btn {
+    width: 48%;
 }
 
-.btn-primary {
-    background-color: #042167;
-    color: white;
-}
-
-.btn-primary:hover {
-    background-color: #031854;
-}
-
-.btn-secondary {
-    background-color: #f0f0f0;
-    color: #333;
-}
-
-.btn-secondary:hover {
-    background-color: #e0e0e0;
+@media (max-width: 991px) {
+    .hero-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .hero-image-container {
+        order: -1;
+    }
+    
+    .filter-container {
+        flex-direction: column;
+    }
+    
+    .filter-item {
+        width: 100%;
+    }
 }
 
 @media (max-width: 768px) {
-    .consultant-card-wrapper {
-        margin-bottom: 20px;
+    .hero-title {
+        font-size: 2rem;
     }
     
-    .search-filters .row {
-        gap: 10px;
+    .consultant-card-wrapper {
+        margin-bottom: 20px;
     }
     
     .meta-info {

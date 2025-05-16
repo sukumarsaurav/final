@@ -4,7 +4,7 @@ include('includes/header.php');
 ?>
 
 <!-- Hero Section -->
-<section class="about-hero" style="padding: 80px 0; background-color: #f8f9fa;">
+<section class="about-hero" style="padding: 80px 0; background-color: rgba(234, 170, 52, 0.05);">
     <div class="container">
         <div class="about-hero-grid">
             <div class="about-hero-content">

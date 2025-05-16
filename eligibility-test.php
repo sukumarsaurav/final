@@ -24,7 +24,7 @@ try {
 ?>
 
 <!-- Hero Section -->
-<section class="hero" style="background-color: #f8f9fc;">
+<section class="hero">
     <div class="container">
         <div class="hero-content text-center">
             <h1 class="hero-title">
@@ -110,7 +110,7 @@ try {
 /* Service Cards Styling */
 .hero {
     padding: 80px 0;
-    background-color:rgb(255, 255, 255);
+    background-color: rgba(234, 170, 52, 0.05);
     color: var(--color-light);
     overflow: hidden;
     position: relative;

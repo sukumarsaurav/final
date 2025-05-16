@@ -557,7 +557,7 @@ body {
     min-height: 60vh;
     display: flex;
     align-items: center;
-    background-color: #042167;
+    background-color: rgba(234, 170, 52, 0.05);
     color: var(--color-light);
     position: relative;
     overflow: hidden;
