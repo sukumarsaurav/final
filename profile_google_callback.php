@@ -8,7 +8,7 @@ require_once "config/db_connect.php";
 // Google OAuth Configuration
 $google_client_id = getenv('GOOGLE_CLIENT_ID');
 $google_client_secret = getenv('GOOGLE_CLIENT_SECRET');
-$google_redirect_url = "https://visafy.io/profile_google_callback.php";
+$google_redirect_url = "https://visafy.io/dashboard/consultant/profile_google_callback.php";
 
 // Check if code parameter exists
 if (isset($_GET['code'])) {
