@@ -123,12 +123,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_category'])) {
     
     // Get and validate name
     if (isset($_POST['name'])) {
-        $name = trim($_POST['name']);
+    $name = trim($_POST['name']);
     }
     
     // Get and validate description
     if (isset($_POST['description'])) {
-        $description = trim($_POST['description']);
+    $description = trim($_POST['description']);
     }
     
     // Validate inputs
@@ -204,12 +204,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_document_type']))
     if (empty($errors)) {
         // Check if document type already exists for this organization
         $check_query = "SELECT id FROM document_types WHERE name = ? AND organization_id = ?";
-        $check_stmt = $conn->prepare($check_query);
-        $check_stmt->bind_param('si', $name, $organization_id);
-        $check_stmt->execute();
-        $check_result = $check_stmt->get_result();
-        
-        if ($check_result->num_rows > 0) {
+    $check_stmt = $conn->prepare($check_query);
+    $check_stmt->bind_param('si', $name, $organization_id);
+    $check_stmt->execute();
+    $check_result = $check_stmt->get_result();
+    
+    if ($check_result->num_rows > 0) {
             $errors[] = "Document type with this name already exists in your organization";
         }
         $check_stmt->close();
@@ -246,7 +246,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_template'])) {
     
     // Get and validate inputs
     if (isset($_POST['template_name'])) {
-        $template_name = trim($_POST['template_name']);
+    $template_name = trim($_POST['template_name']);
     }
     
     if (isset($_POST['document_type_id'])) {
@@ -254,7 +254,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_template'])) {
     }
     
     if (isset($_POST['content'])) {
-        $content = trim($_POST['content']);
+    $content = trim($_POST['content']);
     }
     
     // Validate inputs
@@ -486,15 +486,15 @@ if (isset($_GET['success'])) {
             <p>Manage document categories, types, templates and generate documents</p>
         </div>
     </div>
-
+    
     <?php if (isset($error_message)): ?>
-    <div class="alert alert-danger"><?php echo $error_message; ?></div>
+        <div class="alert alert-danger"><?php echo $error_message; ?></div>
     <?php endif; ?>
-
+    
     <?php if (isset($success_message)): ?>
-    <div class="alert alert-success"><?php echo $success_message; ?></div>
+        <div class="alert alert-success"><?php echo $success_message; ?></div>
     <?php endif; ?>
-
+    
     <!-- Tab Navigation -->
     <div class="tabs-container">
         <div class="tabs">
@@ -503,7 +503,7 @@ if (isset($_GET['success'])) {
             <button class="tab-btn" data-tab="document-types">Document Types</button>
             <button class="tab-btn" data-tab="categories">Categories</button>
         </div>
-
+        
         <!-- Generated Documents Tab -->
         <div class="tab-content active" id="generated-documents-tab">
             <div class="tab-header">
@@ -512,23 +512,23 @@ if (isset($_GET['success'])) {
                     <i class="fas fa-plus"></i> Generate Document
                 </button>
             </div>
-
+            
             <div class="tab-body">
                 <?php if (empty($generated_documents)): ?>
-                <div class="empty-state">
-                    <i class="fas fa-file-alt"></i>
-                    <p>No documents generated yet. Generate a document to get started!</p>
-                </div>
+                    <div class="empty-state">
+                        <i class="fas fa-file-alt"></i>
+                        <p>No documents generated yet. Generate a document to get started!</p>
+                    </div>
                 <?php else: ?>
-                <div class="documents-container">
-                    <div class="documents-list">
-                        <div class="filter-controls">
-                            <div class="filter-row">
-                                <div class="filter-group">
-                                    <label for="filter-type">Filter by Type:</label>
-                                    <select id="filter-type" class="form-control">
-                                        <option value="">All Types</option>
-                                        <?php 
+                    <div class="documents-container">
+                        <div class="documents-list">
+                            <div class="filter-controls">
+                                <div class="filter-row">
+                                    <div class="filter-group">
+                                        <label for="filter-type">Filter by Type:</label>
+                                        <select id="filter-type" class="form-control">
+                                            <option value="">All Types</option>
+                                            <?php 
                                             $unique_types = [];
                                             foreach ($generated_documents as $doc) {
                                                 if (!in_array($doc['type_name'], $unique_types)) {
@@ -538,13 +538,13 @@ if (isset($_GET['success'])) {
                                                 }
                                             }
                                             ?>
-                                    </select>
-                                </div>
-                                <div class="filter-group">
-                                    <label for="filter-client">Filter by Client:</label>
-                                    <select id="filter-client" class="form-control">
-                                        <option value="">All Clients</option>
-                                        <?php 
+                                        </select>
+                                    </div>
+                                    <div class="filter-group">
+                                        <label for="filter-client">Filter by Client:</label>
+                                        <select id="filter-client" class="form-control">
+                                            <option value="">All Clients</option>
+                                            <?php 
                                             $unique_clients = [];
                                             foreach ($generated_documents as $doc) {
                                                 if (!in_array($doc['client_name'], $unique_clients)) {
@@ -554,56 +554,56 @@ if (isset($_GET['success'])) {
                                                 }
                                             }
                                             ?>
-                                    </select>
-                                </div>
-                                <div class="filter-group">
-                                    <button id="reset-filters" class="btn btn-secondary">Reset Filters</button>
+                                        </select>
+                                    </div>
+                                    <div class="filter-group">
+                                        <button id="reset-filters" class="btn btn-secondary">Reset Filters</button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Document Name</th>
-                                    <th>Document Type</th>
-                                    <th>Template</th>
-                                    <th>Client</th>
-                                    <th>Generated Date</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($generated_documents as $document): ?>
-                                <tr class="document-row" data-id="<?php echo $document['id']; ?>">
-                                    <td><?php echo htmlspecialchars($document['document_name']); ?></td>
-                                    <td><?php echo htmlspecialchars($document['type_name']); ?></td>
-                                    <td><?php echo htmlspecialchars($document['template_name']); ?></td>
-                                    <td><?php echo htmlspecialchars($document['client_name']); ?></td>
-                                    <td><?php echo date('M d, Y H:i', strtotime($document['generated_date'])); ?></td>
-                                    <td class="actions-cell">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Document Name</th>
+                                        <th>Document Type</th>
+                                        <th>Template</th>
+                                        <th>Client</th>
+                                        <th>Generated Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($generated_documents as $document): ?>
+                                        <tr class="document-row" data-id="<?php echo $document['id']; ?>">
+                                            <td><?php echo htmlspecialchars($document['document_name']); ?></td>
+                                            <td><?php echo htmlspecialchars($document['type_name']); ?></td>
+                                            <td><?php echo htmlspecialchars($document['template_name']); ?></td>
+                                            <td><?php echo htmlspecialchars($document['client_name']); ?></td>
+                                            <td><?php echo date('M d, Y H:i', strtotime($document['generated_date'])); ?></td>
+                                            <td class="actions-cell">
                                         <a href="<?php echo htmlspecialchars($document['file_path']); ?>"
                                             class="btn-action btn-view" title="View Document" target="_blank">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <button type="button" class="btn-action btn-details" title="View Details"
-                                            onclick="showDocumentDetails(<?php echo htmlspecialchars(json_encode($document)); ?>)">
-                                            <i class="fas fa-info-circle"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <button type="button" class="btn-action btn-details" title="View Details" 
+                                                        onclick="showDocumentDetails(<?php echo htmlspecialchars(json_encode($document)); ?>)">
+                                                    <i class="fas fa-info-circle"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="document-details-container" id="document-details-container">
+                            <!-- Document details will be loaded here via JavaScript -->
+                        </div>
                     </div>
-
-                    <div class="document-details-container" id="document-details-container">
-                        <!-- Document details will be loaded here via JavaScript -->
-                    </div>
-                </div>
                 <?php endif; ?>
             </div>
         </div>
-
+        
         <!-- Document Templates Tab -->
         <div class="tab-content" id="templates-tab">
             <div class="tab-header">
@@ -612,57 +612,57 @@ if (isset($_GET['success'])) {
                     <i class="fas fa-plus"></i> Add Template
                 </button>
             </div>
-
+            
             <div class="tab-body">
                 <?php if (empty($templates)): ?>
-                <div class="empty-state">
-                    <i class="fas fa-file-code"></i>
-                    <p>No document templates yet. Add a template to get started!</p>
-                </div>
+                    <div class="empty-state">
+                        <i class="fas fa-file-code"></i>
+                        <p>No document templates yet. Add a template to get started!</p>
+                    </div>
                 <?php else: ?>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Template Name</th>
-                            <th>Document Type</th>
-                            <th>Created By</th>
-                            <th>Created Date</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($templates as $template): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($template['name']); ?></td>
-                            <td><?php echo htmlspecialchars($template['document_type_name']); ?></td>
-                            <td><?php echo htmlspecialchars($template['created_by_name']); ?></td>
-                            <td><?php echo date('M d, Y', strtotime($template['created_at'])); ?></td>
-                            <td>
-                                <?php if ($template['is_active']): ?>
-                                <span class="status-badge active"><i class="fas fa-circle"></i> Active</span>
-                                <?php else: ?>
-                                <span class="status-badge inactive"><i class="fas fa-circle"></i> Inactive</span>
-                                <?php endif; ?>
-                            </td>
-                            <td class="actions-cell">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Template Name</th>
+                                <th>Document Type</th>
+                                <th>Created By</th>
+                                <th>Created Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($templates as $template): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($template['name']); ?></td>
+                                    <td><?php echo htmlspecialchars($template['document_type_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($template['created_by_name']); ?></td>
+                                    <td><?php echo date('M d, Y', strtotime($template['created_at'])); ?></td>
+                                    <td>
+                                        <?php if ($template['is_active']): ?>
+                                            <span class="status-badge active"><i class="fas fa-circle"></i> Active</span>
+                                        <?php else: ?>
+                                            <span class="status-badge inactive"><i class="fas fa-circle"></i> Inactive</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="actions-cell">
                                 <a href="edit_template.php?id=<?php echo $template['id']; ?>"
                                     class="btn-action btn-edit" title="Edit">
-                                    <i class="fas fa-edit"></i>
-                                </a>
+                                            <i class="fas fa-edit"></i>
+                                        </a>
                                 <a href="view_template.php?id=<?php echo $template['id']; ?>"
                                     class="btn-action btn-view" title="View Template">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
                 <?php endif; ?>
             </div>
         </div>
-
+        
         <!-- Document Types Tab -->
         <div class="tab-content" id="document-types-tab">
             <div class="tab-header">
@@ -671,61 +671,61 @@ if (isset($_GET['success'])) {
                     <i class="fas fa-plus"></i> Add Document Type
                 </button>
             </div>
-
+            
             <div class="tab-body">
                 <?php if (empty($document_types)): ?>
-                <div class="empty-state">
-                    <i class="fas fa-list-alt"></i>
-                    <p>No document types yet. Add a document type to get started!</p>
-                </div>
+                    <div class="empty-state">
+                        <i class="fas fa-list-alt"></i>
+                        <p>No document types yet. Add a document type to get started!</p>
+                    </div>
                 <?php else: ?>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Document Type</th>
-                            <th>Category</th>
-                            <th>Description</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($document_types as $type): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($type['name']); ?></td>
-                            <td><?php echo htmlspecialchars($type['category_name']); ?></td>
-                            <td>
-                                <?php 
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Document Type</th>
+                                <th>Category</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($document_types as $type): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($type['name']); ?></td>
+                                    <td><?php echo htmlspecialchars($type['category_name']); ?></td>
+                                    <td>
+                                        <?php 
                                             echo !empty($type['description']) 
                                                 ? htmlspecialchars(substr($type['description'], 0, 100)) . (strlen($type['description']) > 100 ? '...' : '') 
                                                 : '-'; 
                                         ?>
-                            </td>
-                            <td>
-                                <?php if ($type['is_active']): ?>
-                                <span class="status-badge active"><i class="fas fa-circle"></i> Active</span>
-                                <?php else: ?>
-                                <span class="status-badge inactive"><i class="fas fa-circle"></i> Inactive</span>
-                                <?php endif; ?>
-                            </td>
-                            <td class="actions-cell">
-                                <button type="button" class="btn-action btn-edit"
-                                    onclick="editDocumentType(<?php echo $type['id']; ?>, '<?php echo addslashes($type['name']); ?>', '<?php echo addslashes($type['description']); ?>', <?php echo $type['category_id']; ?>, <?php echo $type['is_active']; ?>)">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button type="button" class="btn-action btn-deactivate"
-                                    onclick="confirmDeleteDocumentType(<?php echo $type['id']; ?>, '<?php echo addslashes($type['name']); ?>')">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                                    </td>
+                                    <td>
+                                        <?php if ($type['is_active']): ?>
+                                            <span class="status-badge active"><i class="fas fa-circle"></i> Active</span>
+                                        <?php else: ?>
+                                            <span class="status-badge inactive"><i class="fas fa-circle"></i> Inactive</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="actions-cell">
+                                        <button type="button" class="btn-action btn-edit" 
+                                                onclick="editDocumentType(<?php echo $type['id']; ?>, '<?php echo addslashes($type['name']); ?>', '<?php echo addslashes($type['description']); ?>', <?php echo $type['category_id']; ?>, <?php echo $type['is_active']; ?>)">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button type="button" class="btn-action btn-deactivate" 
+                                                onclick="confirmDeleteDocumentType(<?php echo $type['id']; ?>, '<?php echo addslashes($type['name']); ?>')">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
                 <?php endif; ?>
             </div>
         </div>
-
+        
         <!-- Categories Tab -->
         <div class="tab-content" id="categories-tab">
             <div class="tab-header">
@@ -734,47 +734,47 @@ if (isset($_GET['success'])) {
                     <i class="fas fa-plus"></i> Add Category
                 </button>
             </div>
-
+            
             <div class="tab-body">
                 <?php if (empty($categories)): ?>
-                <div class="empty-state">
-                    <i class="fas fa-folder"></i>
-                    <p>No document categories yet. Add a category to get started!</p>
-                </div>
+                    <div class="empty-state">
+                        <i class="fas fa-folder"></i>
+                        <p>No document categories yet. Add a category to get started!</p>
+                    </div>
                 <?php else: ?>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Category Name</th>
-                            <th>Description</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($categories as $category): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($category['name']); ?></td>
-                            <td>
-                                <?php 
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Category Name</th>
+                                <th>Description</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($categories as $category): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($category['name']); ?></td>
+                                    <td>
+                                        <?php 
                                             echo !empty($category['description']) 
                                                 ? htmlspecialchars(substr($category['description'], 0, 100)) . (strlen($category['description']) > 100 ? '...' : '') 
                                                 : '-'; 
                                         ?>
-                            </td>
-                            <td class="actions-cell">
-                                <button type="button" class="btn-action btn-edit"
-                                    onclick="editCategory(<?php echo $category['id']; ?>, '<?php echo addslashes($category['name']); ?>', '<?php echo addslashes($category['description']); ?>')">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button type="button" class="btn-action btn-deactivate"
-                                    onclick="confirmDeleteCategory(<?php echo $category['id']; ?>, '<?php echo addslashes($category['name']); ?>')">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                                    </td>
+                                    <td class="actions-cell">
+                                        <button type="button" class="btn-action btn-edit" 
+                                                onclick="editCategory(<?php echo $category['id']; ?>, '<?php echo addslashes($category['name']); ?>', '<?php echo addslashes($category['description']); ?>')">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button type="button" class="btn-action btn-deactivate" 
+                                                onclick="confirmDeleteCategory(<?php echo $category['id']; ?>, '<?php echo addslashes($category['name']); ?>')">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
                 <?php endif; ?>
             </div>
         </div>
@@ -872,9 +872,9 @@ if (isset($_GET['success'])) {
                         <select name="document_type_id" id="document_type_id" class="form-control" required>
                             <option value="">Select Document Type</option>
                             <?php foreach ($document_types as $type): ?>
-                            <?php if ($type['is_active']): ?>
-                            <option value="<?php echo $type['id']; ?>"><?php echo htmlspecialchars($type['name']); ?></option>
-                            <?php endif; ?>
+                                <?php if ($type['is_active']): ?>
+                                    <option value="<?php echo $type['id']; ?>"><?php echo htmlspecialchars($type['name']); ?></option>
+                                <?php endif; ?>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -922,10 +922,10 @@ if (isset($_GET['success'])) {
                         <select name="document_type_id" id="gen_document_type_id" class="form-control" required>
                             <option value="">Select Document Type</option>
                             <?php foreach ($document_types as $type): ?>
-                            <?php if ($type['is_active']): ?>
+                                <?php if ($type['is_active']): ?>
                             <option value="<?php echo $type['id']; ?>"><?php echo htmlspecialchars($type['name']); ?>
                             </option>
-                            <?php endif; ?>
+                                <?php endif; ?>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -1448,21 +1448,21 @@ if (isset($_GET['success'])) {
         align-items: flex-start;
         gap: 15px;
     }
-
+    
     .form-row {
         flex-direction: column;
         gap: 0;
     }
-
+    
     .tabs {
         overflow-x: auto;
     }
-
+    
     .data-table {
         display: block;
         overflow-x: auto;
     }
-
+    
     .modal-dialog {
         margin: 60px 15px;
     }
@@ -1675,15 +1675,15 @@ document.querySelectorAll('.tab-btn').forEach(function(tab) {
         document.querySelectorAll('.tab-btn').forEach(function(t) {
             t.classList.remove('active');
         });
-
+        
         // Add active class to clicked tab
         this.classList.add('active');
-
+        
         // Hide all tab content
         document.querySelectorAll('.tab-content').forEach(function(content) {
             content.classList.remove('active');
         });
-
+        
         // Show corresponding tab content
         const tabId = this.getAttribute('data-tab');
         document.getElementById(tabId + '-tab').classList.add('active');
@@ -1758,10 +1758,10 @@ function editCategory(id, name, description) {
     document.getElementById('category_id').value = id;
     document.getElementById('name').value = name;
     document.getElementById('description').value = description;
-
+    
     document.querySelector('#addCategoryModal .modal-title').textContent = 'Edit Document Category';
     document.querySelector('#addCategoryForm button[type="submit"]').textContent = 'Update Category';
-
+    
     openModal('addCategoryModal');
 }
 
@@ -1772,11 +1772,11 @@ function editDocumentType(id, name, description, categoryId, isActive) {
     document.getElementById('type_description').value = description;
     document.getElementById('category_id').value = categoryId;
     document.getElementById('type_is_active').checked = isActive === 1;
-
+    
     document.querySelector('#addDocumentTypeModal .modal-title').textContent = 'Edit Document Type';
     document.querySelector('#addDocumentTypeForm button[type="submit"]').textContent = 'Update Document Type';
-
-
+    
+    
     openModal('addDocumentTypeModal');
 }
 
@@ -1813,17 +1813,17 @@ function confirmDeleteDocumentType(id, name) {
 document.getElementById('gen_document_type_id').addEventListener('change', function() {
     const documentTypeId = this.value;
     const templateSelect = document.getElementById('template_id');
-
+    
     if (documentTypeId) {
         // Enable the template select
         templateSelect.disabled = false;
-
+        
         // Use AJAX to fetch templates for the selected document type
         fetch('ajax/get_templates.php?document_type_id=' + documentTypeId)
             .then(response => response.json())
             .then(data => {
                 templateSelect.innerHTML = '<option value="">Select Template</option>';
-
+                
                 if (data.length > 0) {
                     data.forEach(function(template) {
                         const option = document.createElement('option');
@@ -1912,34 +1912,34 @@ $(document).ready(function() {
     // Initialize tabs
     $('.tabs-container .tab-link').click(function() {
         var tabId = $(this).attr('data-tab');
-
+        
         $('.tabs-container .tab-link').removeClass('active');
         $('.tab-content').removeClass('active');
-
+        
         $(this).addClass('active');
         $("#" + tabId).addClass('active');
     });
-
+    
     // Show the first tab by default
     $('.tabs-container .tab-link:first-child').click();
-
+    
     // Add click handler for document rows
     $(document).on('click', '.document-row', function() {
         var documentId = $(this).data('id');
         var document = null;
-
+        
         // Find the document data
         <?php foreach ($generated_documents as $index => $document): ?>
         if (documentId == <?php echo $document['id']; ?>) {
             document = <?php echo json_encode($document); ?>;
         }
         <?php endforeach; ?>
-
+        
         if (document) {
             showDocumentDetails(document);
         }
     });
-
+    
     // Show first document details by default if available
     <?php if (!empty($generated_documents)): ?>
     showDocumentDetails(<?php echo json_encode($generated_documents[0]); ?>);
@@ -1949,31 +1949,31 @@ $(document).ready(function() {
     $('#filter-type, #filter-client').on('change', function() {
         filterDocuments();
     });
-
+    
     $('#reset-filters').on('click', function() {
         $('#filter-type, #filter-client').val('');
         filterDocuments();
     });
-
+    
     function filterDocuments() {
         var typeFilter = $('#filter-type').val().toLowerCase();
         var clientFilter = $('#filter-client').val().toLowerCase();
-
+        
         $('.document-row').each(function() {
             var row = $(this);
             var typeText = row.find('td:nth-child(2)').text().toLowerCase();
             var clientText = row.find('td:nth-child(4)').text().toLowerCase();
-
+            
             var typeMatch = typeFilter === '' || typeText.includes(typeFilter);
             var clientMatch = clientFilter === '' || clientText.includes(clientFilter);
-
+            
             if (typeMatch && clientMatch) {
                 row.show();
             } else {
                 row.hide();
             }
         });
-
+        
         // Show first visible document details
         if ($('.document-row:visible').length > 0) {
             $('.document-row:visible:first').click();
@@ -1986,7 +1986,7 @@ $(document).ready(function() {
     $(document).on('click', '.delete-btn', function() {
         if (confirm('Are you sure you want to delete this document? This action cannot be undone.')) {
             var documentId = $(this).data('id');
-
+            
             $.ajax({
                 url: 'ajax/delete_document.php',
                 type: 'POST',
@@ -1999,13 +1999,13 @@ $(document).ready(function() {
                         if (result.success) {
                             // Remove the document row from the table
                             $('.document-row[data-id="' + documentId + '"]').remove();
-
+                            
                             // Clear the document details container
                             $('#document-details-container').empty();
-
+                            
                             // Show success message
                             alert('Document deleted successfully.');
-
+                            
                             // If no documents left, reload the page to show empty state
                             if ($('.document-row').length === 0) {
                                 location.reload();
@@ -2037,15 +2037,15 @@ function showDocumentDetails(document) {
             <p><strong>Template:</strong> ${escapeHtml(document.template_name)}</p>
             <p><strong>Type:</strong> ${escapeHtml(document.type_name)}</p>
             <p><strong>Client:</strong> ${escapeHtml(document.client_name)}</p>`;
-
+            
     if (document.application_id && document.application_reference) {
         detailsHtml += `<p><strong>Application:</strong> ${escapeHtml(document.application_reference)}</p>`;
     }
-
+    
     if (document.booking_id && document.booking_reference) {
         detailsHtml += `<p><strong>Booking:</strong> ${escapeHtml(document.booking_reference)}</p>`;
     }
-
+    
     detailsHtml += `
             <p><strong>Generated by:</strong> ${escapeHtml(document.generated_by)}</p>
             <p><strong>Date:</strong> ${formatDate(document.generated_date)}</p>
@@ -2055,10 +2055,10 @@ function showDocumentDetails(document) {
             </div>
         </div>
     `;
-
+    
     detailsContainer.html(detailsHtml);
     detailsContainer.show();
-
+    
     // Highlight the selected document row
     $('.document-row').removeClass('selected');
     $(`.document-row[data-id="${document.id}"]`).addClass('selected');
@@ -2078,9 +2078,9 @@ function escapeHtml(text) {
 // Helper function to format date
 function formatDate(dateString) {
     var date = new Date(dateString);
-    return date.toLocaleDateString('en-GB', {
-        day: '2-digit',
-        month: 'short',
+    return date.toLocaleDateString('en-GB', { 
+        day: '2-digit', 
+        month: 'short', 
         year: 'numeric',
         hour: '2-digit',
         minute: '2-digit'

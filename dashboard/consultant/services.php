@@ -639,71 +639,71 @@ if (isset($_GET['success'])) {
                 <h2>Bookable Services</h2>
             </div>
             <div class="tab-body">
-                <?php if (empty($visa_services) || !array_filter($visa_services, function($s) { return $s['is_bookable'] == 1; })): ?>
-                <div class="empty-state">
-                    <i class="fas fa-calendar-check"></i>
-                    <p>No bookable services yet. Make a service bookable to manage its availability.</p>
-                </div>
-                <?php else: ?>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Service</th>
-                            <th>Visa Type</th>
-                            <th>Consultation Modes</th>
-                            <th>Available Slots</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($visa_services as $service): ?>
-                        <?php if ($service['is_bookable']): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($service['service_name']); ?></td>
-                            <td><?php echo htmlspecialchars($service['visa_type']); ?></td>
-                            <td>
-                                <?php if (!empty($service['available_modes'])): ?>
-                                <?php echo htmlspecialchars($service['available_modes']); ?>
-                                <?php else: ?>
-                                <span class="text-muted">None</span>
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <?php
+        <?php if (empty($visa_services) || !array_filter($visa_services, function($s) { return $s['is_bookable'] == 1; })): ?>
+        <div class="empty-state">
+            <i class="fas fa-calendar-check"></i>
+            <p>No bookable services yet. Make a service bookable to manage its availability.</p>
+        </div>
+        <?php else: ?>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Service</th>
+                    <th>Visa Type</th>
+                    <th>Consultation Modes</th>
+                    <th>Available Slots</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($visa_services as $service): ?>
+                <?php if ($service['is_bookable']): ?>
+                <tr>
+                    <td><?php echo htmlspecialchars($service['service_name']); ?></td>
+                    <td><?php echo htmlspecialchars($service['visa_type']); ?></td>
+                    <td>
+                        <?php if (!empty($service['available_modes'])): ?>
+                        <?php echo htmlspecialchars($service['available_modes']); ?>
+                        <?php else: ?>
+                        <span class="text-muted">None</span>
+                        <?php endif; ?>
+                    </td>
+                    <td>
+                        <?php
                                 $slots_query = "SELECT COUNT(*) as slot_count 
                                               FROM service_availability_slots 
                                               WHERE consultant_id = ? 
                                               AND visa_service_id = ? 
                                               AND is_available = 1 
                                               AND slot_date >= CURDATE() 
-                                              AND current_bookings < max_bookings";
-                                $slots_stmt = $conn->prepare($slots_query);
-                                $slots_stmt->bind_param('ii', $consultant_id, $service['visa_service_id']);
-                                $slots_stmt->execute();
-                                $slots_result = $slots_stmt->get_result()->fetch_assoc();
-                                $slot_count = $slots_result['slot_count'];
-                                $slots_stmt->close();
-                                echo $slot_count > 0 ? $slot_count . ' available' : '<span class="text-warning">No slots</span>';
-                                ?>
-                            </td>
-                            <td class="actions-cell">
-                                <a href="service_availability.php?id=<?php echo $service['visa_service_id']; ?>"
-                                    class="btn-action btn-calendar" title="Manage Availability">
-                                    <i class="fas fa-calendar-alt"></i>
-                                </a>
-                                <a href="generate_slots.php?id=<?php echo $service['visa_service_id']; ?>"
-                                    class="btn-action btn-generate" title="Generate Slots">
-                                    <i class="fas fa-magic"></i>
-                                </a>
-                            </td>
-                        </tr>
-                        <?php endif; ?>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+AND current_bookings < max_bookings";
+$slots_stmt = $conn->prepare($slots_query);
+$slots_stmt->bind_param('ii', $consultant_id, $service['visa_service_id']);
+$slots_stmt->execute();
+$slots_result = $slots_stmt->get_result()->fetch_assoc();
+$slot_count = $slots_result['slot_count'];
+$slots_stmt->close();
+echo $slot_count > 0 ? $slot_count . ' available' : '<span class="text-warning">No slots</span>';
+?>
+                    </td>
+                    <td class="actions-cell">
+                        <a href="service_availability.php?id=<?php echo $service['visa_service_id']; ?>"
+                            class="btn-action btn-calendar" title="Manage Availability">
+                            <i class="fas fa-calendar-alt"></i>
+                        </a>
+                        <a href="generate_slots.php?id=<?php echo $service['visa_service_id']; ?>"
+                            class="btn-action btn-generate" title="Generate Slots">
+                            <i class="fas fa-magic"></i>
+                        </a>
+                    </td>
+                </tr>
                 <?php endif; ?>
-            </div>
-        </div>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+        <?php endif; ?>
+    </div>
+</div>
 
         <!-- Availability Tab -->
         <div class="tab-content" id="availability-tab">
