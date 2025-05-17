@@ -329,7 +329,7 @@ CREATE TABLE `applicant_consultant_relationships` (
     FOREIGN KEY (`organization_id`) REFERENCES `organizations`(`id`) ON DELETE CASCADE,
     UNIQUE KEY (`applicant_id`, `consultant_id`),
     KEY `idx_applicant_consultant_organization` (`organization_id`)
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Add a notification preferences table for booking-related notifications
 CREATE TABLE `notification_preferences` (
@@ -348,7 +348,7 @@ CREATE TABLE `notification_preferences` (
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
     UNIQUE KEY (`user_id`)
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Add a view to show consultants with their booking statistics
 CREATE OR REPLACE VIEW consultant_booking_stats_view AS
@@ -400,19 +400,17 @@ CREATE TABLE `consultant_profiles` (
     `social_facebook` VARCHAR(255),
     `is_featured` BOOLEAN DEFAULT FALSE,
     `is_verified` BOOLEAN DEFAULT FALSE,
+    `verified_by` INT NULL,
+    `verified_at` DATETIME NULL,
     `display_order` INT DEFAULT 0,
     `seo_title` VARCHAR(255),
     `seo_description` TEXT,
     `seo_keywords` VARCHAR(255),
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (`consultant_id`) REFERENCES `consultants`(`user_id`) ON DELETE CASCADE
-);
--- Add verified_by column to consultant_profiles to track who verified the consultant
-ALTER TABLE `consultant_profiles` 
-ADD COLUMN `verified_by` INT NULL AFTER `is_verified`,
-ADD COLUMN `verified_at` DATETIME NULL AFTER `verified_by`,
-ADD CONSTRAINT `verified_by_fk` FOREIGN KEY (`verified_by`) REFERENCES `users`(`id`);
+    FOREIGN KEY (`consultant_id`) REFERENCES `consultants`(`user_id`) ON DELETE CASCADE,
+    FOREIGN KEY (`verified_by`) REFERENCES `users`(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Create a table to track verification documents
 CREATE TABLE IF NOT EXISTS `consultant_verifications` (
@@ -430,6 +428,7 @@ CREATE TABLE IF NOT EXISTS `consultant_verifications` (
   CONSTRAINT `consultant_verifications_fk` FOREIGN KEY (`consultant_id`) REFERENCES `consultants`(`user_id`) ON DELETE CASCADE,
   CONSTRAINT `verification_verified_by_fk` FOREIGN KEY (`verified_by`) REFERENCES `users`(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci; 
+
 -- Add consultant availability settings table
 CREATE TABLE `consultant_availability_settings` (
     `consultant_id` INT PRIMARY KEY,
@@ -443,7 +442,7 @@ CREATE TABLE `consultant_availability_settings` (
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (`consultant_id`) REFERENCES `consultants`(`user_id`) ON DELETE CASCADE
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Add view for consultant public profiles
 CREATE OR REPLACE VIEW consultant_public_profiles_view AS

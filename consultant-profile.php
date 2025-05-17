@@ -67,21 +67,11 @@ $stmt->close();
 // Get profile picture URL
 $profile_img = '/assets/images/default-profile.jpg';
 if (!empty($consultant['profile_picture'])) {
-    // Check for new structure first (users/{user_id}/profile/...)
-    if (strpos($consultant['profile_picture'], 'users/') === 0) {
-        if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/uploads/' . $consultant['profile_picture'])) {
-            $profile_img = '/uploads/' . $consultant['profile_picture'];
-        }
-    } else if (strpos($consultant['profile_picture'], 'user/') === 0) {
-        if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/uploads/' . $consultant['profile_picture'])) {
-            $profile_img = '/uploads/' . $consultant['profile_picture'];
-        }
-    } else {
-        // Legacy structure
-        if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/uploads/profiles/' . $consultant['profile_picture'])) {
-            $profile_img = '/uploads/profiles/' . $consultant['profile_picture'];
-        } else if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/uploads/profile/' . $consultant['profile_picture'])) {
-            $profile_img = '/uploads/profile/' . $consultant['profile_picture'];
+    // Fix profile picture path - add 'uploads/' if not present
+    $profile_picture = $consultant['profile_picture'];
+    if (strpos($profile_picture, 'users/') === 0) {
+        if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/uploads/' . $profile_picture)) {
+            $profile_img = '/uploads/' . $profile_picture;
         }
     }
 }

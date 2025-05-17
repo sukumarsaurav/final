@@ -2140,6 +2140,11 @@ body {
     background-color: #f8d7da;
     border: 1px solid #f5c6cb;
 }
+.alert.alert-success {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+}
 
 .wrapper .divider {
     position: relative;

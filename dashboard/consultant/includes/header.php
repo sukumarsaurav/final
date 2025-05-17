@@ -74,31 +74,6 @@ if ($user_type == 'member') {
     $stmt->close();
 }
 
-// Check for unread notifications
-// $stmt = $conn->prepare("SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0");
-// $stmt->bind_param("i", $user_id);
-// $stmt->execute();
-// $notif_result = $stmt->get_result();
-// $notification_count = $notif_result->fetch_assoc()['count'];
-// $stmt->close();
-
-// Get recent notifications (limit to 5)
-// $stmt = $conn->prepare("SELECT id, title, content, is_read, created_at FROM notifications 
-//                        WHERE user_id = ? AND is_read = 0 
-//                        ORDER BY created_at DESC LIMIT 5");
-// $stmt->bind_param("i", $user_id);
-// $stmt->execute();
-// $notifications = $stmt->get_result();
-// $notifications_list = [];
-// while ($notification = $notifications->fetch_assoc()) {
-//     $notifications_list[] = $notification;
-// }
-// $stmt->close();
-
-// // Debug: If there are no notifications but we have a count, something's wrong
-// if (empty($notifications_list) && $notification_count > 0) {
-//     error_log("Warning: Notifications count is $notification_count but no notifications were fetched.");
-// }
 
 // Determine if sidebar should be collapsed based on user preference or default
 $sidebar_collapsed = isset($_COOKIE['sidebar_collapsed']) && $_COOKIE['sidebar_collapsed'] === 'true';
