@@ -145,7 +145,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_country'])) {
     }
     
     // Check if country code already exists for other organizations
-    $check_query = "SELECT country_id FROM countries WHERE country_code = ? AND country_id != ?";
+    $check_query = "SELECT country_id FROM countries WHERE country_code = ? AND country_id !=?";
     $check_stmt = $conn->prepare($check_query);
     $check_stmt->bind_param('si', $country_code, $country_id);
     $check_stmt->execute();
@@ -1590,6 +1590,44 @@ document.getElementById('country_code').addEventListener('input', function() {
     this.value = this.value.toUpperCase();
 });
 
+// Function to load document types and categories
+function loadDocumentTypes(visaId) {
+    if (!visaId) {
+        console.error('Visa ID is required');
+        return;
+    }
+
+    // First, get all document types grouped by category
+    fetch('ajax/get_document_types.php')
+        .then(response => response.json())
+        .then(types => {
+            if (!types.success) {
+                throw new Error(types.error || 'Error loading document types');
+            }
+            
+            // Then get currently required documents for this visa
+            return fetch('ajax/get_required_documents.php?visa_id=' + visaId)
+                .then(response => response.json())
+                .then(requiredDocs => {
+                    if (!requiredDocs.success) {
+                        throw new Error(requiredDocs.error || 'Error loading required documents');
+                    }
+                    
+                    // Build the document selection UI
+                    buildDocumentSelectionUI(types.data, requiredDocs.data);
+                    
+                    // Hide loading, show content
+                    document.getElementById('documentsModalLoading').style.display = 'none';
+                    document.getElementById('documentsModalContent').style.display = 'block';
+                });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('documentsModalLoading').style.display = 'none';
+            alert('Error: ' + error.message);
+        });
+}
+
 // Function to manage required documents for a visa
 function manageRequiredDocuments(visaId, visaType) {
     // Set visa ID and title
@@ -1603,36 +1641,8 @@ function manageRequiredDocuments(visaId, visaType) {
     // Show modal
     document.getElementById('manageDocumentsModal').style.display = 'block';
     
-    // Load document categories and types
+    // Load document types and categories
     loadDocumentTypes(visaId);
-}
-
-// Function to load document types and categories
-function loadDocumentTypes(visaId) {
-    // First, get all document types grouped by category
-    fetch('ajax/get_document_types.php')
-        .then(response => response.json())
-        .then(types => {
-            // Then get currently required documents for this visa
-            fetch('get_required_documents.php?visa_id=' + visaId)
-                .then(response => response.json())
-                .then(requiredDocs => {
-                    // Build the document selection UI
-                    buildDocumentSelectionUI(types, requiredDocs);
-                    
-                    // Hide loading, show content
-                    document.getElementById('documentsModalLoading').style.display = 'none';
-                    document.getElementById('documentsModalContent').style.display = 'block';
-                })
-                .catch(error => {
-                    console.error('Error fetching required documents:', error);
-                    alert('Error loading required documents. Please try again.');
-                });
-        })
-        .catch(error => {
-            console.error('Error fetching document types:', error);
-            alert('Error loading document types. Please try again.');
-        });
 }
 
 // Function to build document selection UI

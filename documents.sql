@@ -397,3 +397,19 @@ LEFT JOIN
     document_access_logs dal ON gd.id = dal.document_id AND dal.action = 'view'
 GROUP BY 
     o.id, o.name;
+
+CREATE TABLE `visa_required_documents` (
+    `id` INT PRIMARY KEY AUTO_INCREMENT,
+    `visa_id` INT NOT NULL,
+    `document_type_id` INT NOT NULL,
+    `is_mandatory` BOOLEAN DEFAULT FALSE,
+    `notes` TEXT,
+    `organization_id` INT NOT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (`visa_id`) REFERENCES `visas`(`visa_id`) ON DELETE CASCADE,
+    FOREIGN KEY (`document_type_id`) REFERENCES `document_types`(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`organization_id`) REFERENCES `organizations`(`id`) ON DELETE CASCADE,
+    UNIQUE KEY `visa_document` (`visa_id`, `document_type_id`),
+    KEY `idx_visa_required_documents_organization` (`organization_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
