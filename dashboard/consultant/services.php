@@ -652,7 +652,7 @@ if (isset($_GET['success'])) {
                 </div>
                 <div class="card-body">
                     <p>Set your regular working hours for each day of the week.</p>
-                    <a href="working_hours.php" class="btn secondary-btn">Manage Hours</a>
+                    <a href="#" class="btn secondary-btn" onclick="openModal('workingHoursModal'); return false;">Manage Hours</a>
                 </div>
             </div>
             <div class="availability-card">
@@ -662,7 +662,7 @@ if (isset($_GET['success'])) {
                 </div>
                 <div class="card-body">
                     <p>Mark holidays, time off, or days with special hours.</p>
-                    <a href="special_days.php" class="btn secondary-btn">Manage Special Days</a>
+                    <a href="#" class="btn secondary-btn" onclick="openModal('specialDaysModal'); return false;">Manage Special Days</a>
                 </div>
             </div>
             <div class="availability-card">
@@ -672,7 +672,7 @@ if (isset($_GET['success'])) {
                 </div>
                 <div class="card-body">
                     <p>Configure advance booking, notice periods, and buffer times.</p>
-                    <a href="booking_settings.php" class="btn secondary-btn">Manage Settings</a>
+                    <a href="#" class="btn secondary-btn" onclick="openModal('bookingSettingsModal'); return false;">Manage Settings</a>
                 </div>
             </div>
         </div>
@@ -709,10 +709,13 @@ if (isset($_GET['success'])) {
                     <td>
                         <?php
 // Get count of available slots for this service
-$slots_query = "SELECT COUNT() as slot_count FROM service_availability_slots
-WHERE consultant_id = ? AND visa_service_id = ?
-AND is_available = 1 AND slot_date >= CURDATE()
-AND current_bookings < max_bookings";
+$slots_query = "SELECT COUNT(*) as slot_count 
+                FROM service_availability_slots 
+                WHERE consultant_id = ? 
+                AND visa_service_id = ? 
+                AND is_available = 1 
+                AND slot_date >= CURDATE() 
+                AND current_bookings < max_bookings";
 $slots_stmt = $conn->prepare($slots_query);
 $slots_stmt->bind_param('ii', $consultant_id, $service['visa_service_id']);
 $slots_stmt->execute();
@@ -1613,20 +1616,27 @@ document.getElementById('country_id').addEventListener('change', function() {
         // Enable the visa select
         visaSelect.disabled = false;
         
+        // Debug: Log the country ID being used
+        console.log('Fetching visa types for country ID:', countryId);
+        
         // Use AJAX to fetch visa types for the selected country
         fetch('ajax/get_visa_types.php?country_id=' + countryId)
             .then(response => response.json())
             .then(data => {
+                // Debug: Log the response data
+                console.log('Visa types response:', data);
+                
                 visaSelect.innerHTML = '<option value="">Select Visa Type</option>';
                 
-                if (data.length > 0) {
-                    data.forEach(function(visa) {
+                if (data.success && data.data && data.data.length > 0) {
+                    data.data.forEach(function(visa) {
                         const option = document.createElement('option');
                         option.value = visa.visa_id;
                         option.textContent = visa.visa_type;
                         visaSelect.appendChild(option);
                     });
                 } else {
+                    console.log('No visa types found or error in response');
                     visaSelect.innerHTML = '<option value="">No visa types found</option>';
                 }
             })

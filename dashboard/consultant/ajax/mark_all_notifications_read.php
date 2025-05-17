@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once '../../config/db_connect.php';
+require_once '../../../config/db_connect.php';
 
 // Set content type to JSON
 header('Content-Type: application/json');
