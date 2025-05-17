@@ -16,20 +16,28 @@ $profile_img = '/assets/images/default-profile.svg';
 if ($is_logged_in) {
     // Check for profile image
     $profile_image = !empty($_SESSION['profile_picture']) ? $_SESSION['profile_picture'] : '';
+    $user_id = $_SESSION['id'];
 
     if (!empty($profile_image)) {
         // Check for new structure first (users/{user_id}/profile/...)
         if (strpos($profile_image, 'users/') === 0) {
-            if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/uploads/' . $profile_image)) {
+            $profile_path = $_SERVER['DOCUMENT_ROOT'] . '/uploads/' . $profile_image;
+            if (file_exists($profile_path)) {
                 $profile_img = '/uploads/' . $profile_image;
             }
         } else {
             // Legacy structure
-            // Check if file exists in either location
-            if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/uploads/profiles/' . $profile_image)) {
-                $profile_img = '/uploads/profiles/' . $profile_image;
-            } else if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/uploads/profile/' . $profile_image)) {
-                $profile_img = '/uploads/profile/' . $profile_image;
+            $legacy_paths = [
+                '/uploads/profiles/' . $profile_image,
+                '/uploads/profile/' . $profile_image,
+                '/uploads/users/' . $user_id . '/profile/' . $profile_image
+            ];
+            
+            foreach ($legacy_paths as $path) {
+                if (file_exists($_SERVER['DOCUMENT_ROOT'] . $path)) {
+                    $profile_img = $path;
+                    break;
+                }
             }
         }
     }
@@ -129,12 +137,12 @@ if ($is_logged_in) {
                                 <img src="<?php echo $profile_img; ?>" alt="Profile" class="profile-image">
                             </button>
                             <div class="profile-dropdown-menu">
-                                <?php if($_SESSION["user_type"] == 'admin'): ?>
-                                <a href="/dashboard/admin/index.php" class="dropdown-item">
+                                <?php if($_SESSION["user_type"] == 'consultant'): ?>
+                                <a href="/dashboard/consultant/index.php" class="dropdown-item">
                                     <i class="fas fa-tachometer-alt"></i> Dashboard
                                 </a>
                                 <?php elseif($_SESSION["user_type"] == 'member'): ?>
-                                <a href="/dashboard/member/index.php" class="dropdown-item">
+                                <a href="/dashboard/memberconsultant/index.php" class="dropdown-item">
                                     <i class="fas fa-tachometer-alt"></i> Dashboard
                                 </a>
                                 <?php elseif($_SESSION["user_type"] == 'applicant'): ?>
