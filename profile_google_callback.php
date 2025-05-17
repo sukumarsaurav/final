@@ -19,11 +19,27 @@ if (isset($_GET['code'])) {
     $state = isset($_GET['state']) ? json_decode(base64_decode($_GET['state']), true) : null;
     
     if (!$state || !isset($state['action']) || $state['action'] !== 'link') {
-        header("location: dashboard/consultant/profile.php?error=invalid_state");
+        // Determine redirect based on user type
+        $user_type = isset($_SESSION['user_type']) ? $_SESSION['user_type'] : 'applicant';
+        $redirect_path = $user_type === 'consultant' ? 'dashboard/consultant/profile.php' : 'dashboard/applicant/profile.php';
+        header("location: $redirect_path?error=invalid_state");
         exit;
     }
     
     $user_id = $state['user_id'];
+    
+    // Get user type from database
+    $user_type_query = "SELECT user_type FROM users WHERE id = ?";
+    $stmt = $conn->prepare($user_type_query);
+    $stmt->bind_param('i', $user_id);
+    $stmt->execute();
+    $user_result = $stmt->get_result();
+    $user_data = $user_result->fetch_assoc();
+    $user_type = $user_data['user_type'];
+    $stmt->close();
+    
+    // Set redirect path based on user type
+    $redirect_path = $user_type === 'consultant' ? 'dashboard/consultant/profile.php' : 'dashboard/applicant/profile.php';
     
     // Exchange authorization code for access token
     $token_url = "https://oauth2.googleapis.com/token";
@@ -66,7 +82,7 @@ if (isset($_GET['code'])) {
             $result = $stmt->get_result();
             
             if ($result->num_rows > 0) {
-                header("location: dashboard/consultant/profile.php?error=google_already_linked");
+                header("location: $redirect_path?error=google_already_linked");
                 exit;
             }
             
@@ -100,14 +116,14 @@ if (isset($_GET['code'])) {
                 // Commit transaction
                 mysqli_commit($conn);
                 
-                // Redirect back to profile with success message
-                header("location: dashboard/consultant/profile.php?success=google_linked");
+                // Redirect back to appropriate profile with success message
+                header("location: $redirect_path?success=google_linked");
                 exit;
                 
             } catch (Exception $e) {
                 // Rollback transaction on error
                 mysqli_rollback($conn);
-                header("location: dashboard/consultant/profile.php?error=link_failed");
+                header("location: $redirect_path?error=link_failed");
                 exit;
             }
         }
@@ -115,5 +131,8 @@ if (isset($_GET['code'])) {
 }
 
 // If we get here, something went wrong
-header("location: dashboard/consultant/profile.php?error=unknown");
+// Determine redirect based on user type
+$user_type = isset($_SESSION['user_type']) ? $_SESSION['user_type'] : 'applicant';
+$redirect_path = $user_type === 'consultant' ? 'dashboard/consultant/profile.php' : 'dashboard/applicant/profile.php';
+header("location: $redirect_path?error=unknown");
 exit;

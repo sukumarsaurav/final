@@ -6,6 +6,11 @@ $page_title = "My Profile";
 $page_specific_css = "assets/css/profile.css";
 require_once 'includes/header.php';
 
+// Google OAuth Configuration
+$google_client_id = getenv('GOOGLE_CLIENT_ID');
+$google_client_secret = getenv('GOOGLE_CLIENT_SECRET');
+$google_redirect_url = "https://visafy.io/profile_google_callback.php";
+
 // Get the current user data
 $user_id = isset($_SESSION["user_id"]) ? $_SESSION["user_id"] : (isset($_SESSION["id"]) ? $_SESSION["id"] : 0);
 
@@ -326,9 +331,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Account link with Google
     if (isset($_POST['link_google'])) {
-        // This would redirect to OAuth consent screen
-        // For demo purposes, just showing what would happen
-        $success_message = "Google account linking functionality would be implemented here";
+        // Redirect to Google OAuth consent screen
+        $auth_url = 'https://accounts.google.com/o/oauth2/v2/auth?' . http_build_query([
+            'scope' => 'email profile',
+            'redirect_uri' => $google_redirect_url,
+            'response_type' => 'code',
+            'client_id' => $google_client_id,
+            'state' => base64_encode(json_encode([
+                'action' => 'link',
+                'user_id' => $user_id
+            ]))
+        ]);
+        
+        header('Location: ' . $auth_url);
+        exit;
     }
     
     // Account unlink from Google
@@ -361,9 +377,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Check for success message from redirect
-if (isset($_GET['success']) && $_GET['success'] === 'profile_picture_updated') {
-    $success_message = "Profile picture updated successfully";
+// Check for success/error messages from redirect
+if (isset($_GET['success'])) {
+    switch ($_GET['success']) {
+        case 'google_linked':
+            $success_message = "Google account linked successfully";
+            break;
+        case 'profile_picture_updated':
+            $success_message = "Profile picture updated successfully";
+            break;
+    }
+}
+
+if (isset($_GET['error'])) {
+    switch ($_GET['error']) {
+        case 'google_already_linked':
+            $error_message = "This Google account is already linked to another user";
+            break;
+        case 'link_failed':
+            $error_message = "Failed to link Google account. Please try again.";
+            break;
+        case 'invalid_state':
+            $error_message = "Invalid request. Please try again.";
+            break;
+        case 'unknown':
+            $error_message = "An unknown error occurred. Please try again.";
+            break;
+    }
 }
 
 // Get profile picture URL
