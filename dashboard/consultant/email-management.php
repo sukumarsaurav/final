@@ -1306,6 +1306,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const firstName = document.getElementById('test_first_name').value;
         const lastName = document.getElementById('test_last_name').value;
         
+        // Log form data for debugging
+        console.log('Form data:', {
+            template_id: templateId,
+            email: email,
+            first_name: firstName,
+            last_name: lastName
+        });
+        
         // Prepare form data
         const formData = new FormData();
         formData.append('template_id', templateId);
@@ -1313,13 +1321,22 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.append('first_name', firstName);
         formData.append('last_name', lastName);
         
+        // Log FormData contents for debugging
+        for (let pair of formData.entries()) {
+            console.log(pair[0] + ': ' + pair[1]);
+        }
+        
         // Send test email via AJAX
         fetch('ajax/send_test_email.php', {
             method: 'POST',
             body: formData
         })
-        .then(response => response.json())
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
         .then(data => {
+            console.log('Response data:', data);
             const resultDiv = document.getElementById('testResult');
             resultDiv.innerHTML = data.message;
             

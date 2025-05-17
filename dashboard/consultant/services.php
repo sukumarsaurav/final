@@ -407,7 +407,6 @@ if (isset($_GET['success'])) {
             <button class="tab-btn" data-tab="service-types">Service Types</button>
             <button class="tab-btn" data-tab="consultation-modes">Consultation Modes</button>
             <button class="tab-btn" data-tab="bookable-services">Bookable Services</button>
-            <button class="tab-btn" data-tab="availability">Availability</button>
         </div>
 
         <!-- Visa Services Tab -->
@@ -702,52 +701,6 @@ echo $slot_count > 0 ? $slot_count . ' available' : '<span class="text-warning">
             </tbody>
         </table>
         <?php endif; ?>
-    </div>
-</div>
-
-        <!-- Availability Tab -->
-        <div class="tab-content" id="availability-tab">
-            <div class="tab-header">
-                <h2>Service Availability</h2>
-            </div>
-            <div class="tab-body">
-                <p>Set your availability for each service to control when clients can book appointments with you. You can
-                    set working days, hours, and special dates like holidays or time off.</p>
-                
-                <div class="availability-options">
-                    <div class="availability-card">
-                        <div class="card-header">
-                            <i class="fas fa-clock"></i>
-                            <h3>Working Hours</h3>
-                        </div>
-                        <div class="card-body">
-                            <p>Set your regular working hours for each day of the week.</p>
-                            <a href="#" class="btn secondary-btn" onclick="openModal('workingHoursModal'); return false;">Manage Hours</a>
-                        </div>
-                    </div>
-                    <div class="availability-card">
-                        <div class="card-header">
-                            <i class="fas fa-calendar-times"></i>
-                            <h3>Special Days</h3>
-                        </div>
-                        <div class="card-body">
-                            <p>Mark holidays, time off, or days with special hours.</p>
-                            <a href="#" class="btn secondary-btn" onclick="openModal('specialDaysModal'); return false;">Manage Special Days</a>
-                        </div>
-                    </div>
-                    <div class="availability-card">
-                        <div class="card-header">
-                            <i class="fas fa-sliders-h"></i>
-                            <h3>Booking Settings</h3>
-                        </div>
-                        <div class="card-body">
-                            <p>Configure advance booking, notice periods, and buffer times.</p>
-                            <a href="#" class="btn secondary-btn" onclick="openModal('bookingSettingsModal'); return false;">Manage Settings</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 </div>
@@ -1402,76 +1355,6 @@ color: #4e73df;
 font-size: 20px;
 margin-top: 2px;
 }
-.availability-options {
-display: flex;
-gap: 20px;
-margin-bottom: 30px;
-flex-wrap: wrap;
-}
-.availability-card {
-flex: 1;
-min-width: 250px;
-border: 1px solid var(--border-color);
-border-radius: 5px;
-overflow: hidden;
-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-}
-.card-header {
-background-color: var(--light-color);
-padding: 15px;
-display: flex;
-align-items: center;
-gap: 10px;
-border-bottom: 1px solid var(--border-color);
-}
-.card-header i {
-color: var(--primary-color);
-font-size: 18px;
-}
-.card-header h3 {
-margin: 0;
-font-size: 16px;
-color: var(--primary-color);
-}
-.card-body {
-padding: 15px;
-}
-.card-body p {
-margin-top: 0;
-margin-bottom: 15px;
-color: var(--secondary-color);
-}
-.text-warning {
-color: var(--warning-color);
-font-weight: 500;
-}
-@media (max-width: 768px) {
-.header-container {
-flex-direction: column;
-align-items: flex-start;
-gap: 15px;
-}
-.form-row {
-flex-direction: column;
-gap: 0;
-}
-.tabs {
-overflow-x: auto;
-}
-.data-table {
-display: block;
-overflow-x: auto;
-}
-.modal-dialog {
-margin: 60px 15px;
-}
-.availability-options {
-flex-direction: column;
-}
-.availability-card {
-width: 100%;
-}
-} */
 </style>
 <script>
 // Tab functionality
