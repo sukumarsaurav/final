@@ -406,6 +406,7 @@ if (isset($_GET['success'])) {
             <button class="tab-btn active" data-tab="services">Visa Services</button>
             <button class="tab-btn" data-tab="service-types">Service Types</button>
             <button class="tab-btn" data-tab="consultation-modes">Consultation Modes</button>
+            <button class="tab-btn" data-tab="bookable-services">Bookable Services</button>
             <button class="tab-btn" data-tab="availability">Availability</button>
         </div>
 
@@ -632,115 +633,121 @@ if (isset($_GET['success'])) {
             </div>
         </div>
 
+        <!-- Bookable Services Tab -->
+        <div class="tab-content" id="bookable-services-tab">
+            <div class="tab-header">
+                <h2>Bookable Services</h2>
+            </div>
+            <div class="tab-body">
+                <?php if (empty($visa_services) || !array_filter($visa_services, function($s) { return $s['is_bookable'] == 1; })): ?>
+                <div class="empty-state">
+                    <i class="fas fa-calendar-check"></i>
+                    <p>No bookable services yet. Make a service bookable to manage its availability.</p>
+                </div>
+                <?php else: ?>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Service</th>
+                            <th>Visa Type</th>
+                            <th>Consultation Modes</th>
+                            <th>Available Slots</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($visa_services as $service): ?>
+                        <?php if ($service['is_bookable']): ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($service['service_name']); ?></td>
+                            <td><?php echo htmlspecialchars($service['visa_type']); ?></td>
+                            <td>
+                                <?php if (!empty($service['available_modes'])): ?>
+                                <?php echo htmlspecialchars($service['available_modes']); ?>
+                                <?php else: ?>
+                                <span class="text-muted">None</span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <?php
+                                $slots_query = "SELECT COUNT(*) as slot_count 
+                                              FROM service_availability_slots 
+                                              WHERE consultant_id = ? 
+                                              AND visa_service_id = ? 
+                                              AND is_available = 1 
+                                              AND slot_date >= CURDATE() 
+                                              AND current_bookings < max_bookings";
+                                $slots_stmt = $conn->prepare($slots_query);
+                                $slots_stmt->bind_param('ii', $consultant_id, $service['visa_service_id']);
+                                $slots_stmt->execute();
+                                $slots_result = $slots_stmt->get_result()->fetch_assoc();
+                                $slot_count = $slots_result['slot_count'];
+                                $slots_stmt->close();
+                                echo $slot_count > 0 ? $slot_count . ' available' : '<span class="text-warning">No slots</span>';
+                                ?>
+                            </td>
+                            <td class="actions-cell">
+                                <a href="service_availability.php?id=<?php echo $service['visa_service_id']; ?>"
+                                    class="btn-action btn-calendar" title="Manage Availability">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </a>
+                                <a href="generate_slots.php?id=<?php echo $service['visa_service_id']; ?>"
+                                    class="btn-action btn-generate" title="Generate Slots">
+                                    <i class="fas fa-magic"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        <?php endif; ?>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+                <?php endif; ?>
+            </div>
+        </div>
+
         <!-- Availability Tab -->
         <div class="tab-content" id="availability-tab">
             <div class="tab-header">
                 <h2>Service Availability</h2>
-                <button type="button" class="btn primary-btn" id="manageAvailabilityBtn">
-                    <i class="fas fa-calendar-alt"></i> Manage Availability
-                </button>
             </div>
-
-            <p>Set your availability for each service to control when clients can book appointments with you. You can
-                set working days, hours, and special dates like holidays or time off.</p>
+            <div class="tab-body">
+                <p>Set your availability for each service to control when clients can book appointments with you. You can
+                    set working days, hours, and special dates like holidays or time off.</p>
+                
+                <div class="availability-options">
+                    <div class="availability-card">
+                        <div class="card-header">
+                            <i class="fas fa-clock"></i>
+                            <h3>Working Hours</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>Set your regular working hours for each day of the week.</p>
+                            <a href="#" class="btn secondary-btn" onclick="openModal('workingHoursModal'); return false;">Manage Hours</a>
+                        </div>
+                    </div>
+                    <div class="availability-card">
+                        <div class="card-header">
+                            <i class="fas fa-calendar-times"></i>
+                            <h3>Special Days</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>Mark holidays, time off, or days with special hours.</p>
+                            <a href="#" class="btn secondary-btn" onclick="openModal('specialDaysModal'); return false;">Manage Special Days</a>
+                        </div>
+                    </div>
+                    <div class="availability-card">
+                        <div class="card-header">
+                            <i class="fas fa-sliders-h"></i>
+                            <h3>Booking Settings</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>Configure advance booking, notice periods, and buffer times.</p>
+                            <a href="#" class="btn secondary-btn" onclick="openModal('bookingSettingsModal'); return false;">Manage Settings</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="availability-options">
-            <div class="availability-card">
-                <div class="card-header">
-                    <i class="fas fa-clock"></i>
-                    <h3>Working Hours</h3>
-                </div>
-                <div class="card-body">
-                    <p>Set your regular working hours for each day of the week.</p>
-                    <a href="#" class="btn secondary-btn" onclick="openModal('workingHoursModal'); return false;">Manage Hours</a>
-                </div>
-            </div>
-            <div class="availability-card">
-                <div class="card-header">
-                    <i class="fas fa-calendar-times"></i>
-                    <h3>Special Days</h3>
-                </div>
-                <div class="card-body">
-                    <p>Mark holidays, time off, or days with special hours.</p>
-                    <a href="#" class="btn secondary-btn" onclick="openModal('specialDaysModal'); return false;">Manage Special Days</a>
-                </div>
-            </div>
-            <div class="availability-card">
-                <div class="card-header">
-                    <i class="fas fa-sliders-h"></i>
-                    <h3>Booking Settings</h3>
-                </div>
-                <div class="card-body">
-                    <p>Configure advance booking, notice periods, and buffer times.</p>
-                    <a href="#" class="btn secondary-btn" onclick="openModal('bookingSettingsModal'); return false;">Manage Settings</a>
-                </div>
-            </div>
-        </div>
-        <h3>Bookable Services</h3>
-        <?php if (empty($visa_services) || !array_filter($visa_services, function($s) { return $s['is_bookable'] == 1; })): ?>
-        <div class="empty-state">
-            <i class="fas fa-calendar-check"></i>
-            <p>No bookable services yet. Make a service bookable to manage its availability.</p>
-        </div>
-        <?php else: ?>
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Service</th>
-                    <th>Visa Type</th>
-                    <th>Consultation Modes</th>
-                    <th>Available Slots</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($visa_services as $service): ?>
-                <?php if ($service['is_bookable']): ?>
-                <tr>
-                    <td><?php echo htmlspecialchars($service['service_name']); ?></td>
-                    <td><?php echo htmlspecialchars($service['visa_type']); ?></td>
-                    <td>
-                        <?php if (!empty($service['available_modes'])): ?>
-                        <?php echo htmlspecialchars($service['available_modes']); ?>
-                        <?php else: ?>
-                        <span class="text-muted">None</span>
-                        <?php endif; ?>
-                    </td>
-                    <td>
-                        <?php
-// Get count of available slots for this service
-$slots_query = "SELECT COUNT(*) as slot_count 
-                FROM service_availability_slots 
-                WHERE consultant_id = ? 
-                AND visa_service_id = ? 
-                AND is_available = 1 
-                AND slot_date >= CURDATE() 
-                AND current_bookings < max_bookings";
-$slots_stmt = $conn->prepare($slots_query);
-$slots_stmt->bind_param('ii', $consultant_id, $service['visa_service_id']);
-$slots_stmt->execute();
-$slots_result = $slots_stmt->get_result()->fetch_assoc();
-$slot_count = $slots_result['slot_count'];
-$slots_stmt->close();
-echo $slot_count > 0 ? $slot_count . ' available' : '<span class="text-warning">No slots</span>';
-?>
-                    </td>
-                    <td class="actions-cell">
-                        <a href="service_availability.php?id=<?php echo $service['visa_service_id']; ?>"
-                            class="btn-action btn-calendar" title="Manage Availability">
-                            <i class="fas fa-calendar-alt"></i>
-                        </a>
-                        <a href="generate_slots.php?id=<?php echo $service['visa_service_id']; ?>"
-                            class="btn-action btn-generate" title="Generate Slots">
-                            <i class="fas fa-magic"></i>
-                        </a>
-                    </td>
-                </tr>
-                <?php endif; ?>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-        <?php endif; ?>
     </div>
 </div>
 </div>
@@ -1681,11 +1688,6 @@ document.getElementById('is_bookable').addEventListener('change', function() {
     } else {
         bookingInstructionsContainer.style.display = 'none';
     }
-});
-
-// Redirect to manage availability page
-document.getElementById('manageAvailabilityBtn').addEventListener('click', function() {
-    window.location.href = 'working_hours.php';
 });
 </script>
 <?php

@@ -6,16 +6,30 @@ $page_title = "Create Booking";
 $page_specific_css = "assets/css/create_booking.css";
 require_once 'includes/header.php';
 
-// Get all services
-$services_query = "SELECT * FROM services WHERE organization_id = ? ORDER BY name";
+// Get all visa services for this organization
+$services_query = "SELECT vs.*, v.visa_type, c.country_name, st.service_name 
+                  FROM visa_services vs
+                  JOIN visas v ON vs.visa_id = v.visa_id
+                  JOIN countries c ON v.country_id = c.country_id
+                  JOIN service_types st ON vs.service_type_id = st.service_type_id
+                  WHERE vs.organization_id = ? 
+                  AND vs.is_active = 1 
+                  AND vs.is_bookable = 1
+                  ORDER BY c.country_name, v.visa_type, st.service_name";
 $stmt = $conn->prepare($services_query);
 $stmt->bind_param('i', $_SESSION['organization_id']);
 $stmt->execute();
 $services = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
-// Get all staff members
-$staff_query = "SELECT * FROM staff WHERE organization_id = ? ORDER BY name";
+// Get all staff members (consultants)
+$staff_query = "SELECT u.id, u.first_name, u.last_name, c.company_name 
+                FROM users u
+                JOIN consultants c ON u.id = c.user_id
+                WHERE u.organization_id = ? 
+                AND u.user_type = 'consultant'
+                AND u.status = 'active'
+                ORDER BY u.first_name, u.last_name";
 $stmt = $conn->prepare($staff_query);
 $stmt->bind_param('i', $_SESSION['organization_id']);
 $stmt->execute();
@@ -27,8 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $client_name = trim($_POST['client_name']);
     $client_email = trim($_POST['client_email']);
     $client_phone = trim($_POST['client_phone']);
-    $service_id = intval($_POST['service_id']);
-    $staff_id = intval($_POST['staff_id']);
+    $visa_service_id = intval($_POST['service_id']);
+    $consultant_id = intval($_POST['staff_id']);
     $booking_date = $_POST['booking_date'];
     $booking_time = $_POST['booking_time'];
     $notes = trim($_POST['notes']);
@@ -50,12 +64,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = "Client phone is required.";
     }
     
-    if ($service_id <= 0) {
+    if ($visa_service_id <= 0) {
         $errors[] = "Please select a service.";
     }
     
-    if ($staff_id <= 0) {
-        $errors[] = "Please select a staff member.";
+    if ($consultant_id <= 0) {
+        $errors[] = "Please select a consultant.";
     }
     
     if (empty($booking_date)) {
@@ -70,12 +84,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($errors)) {
         $datetime = $booking_date . ' ' . $booking_time;
         
-        // Get service duration
-        $duration_query = "SELECT duration FROM services WHERE id = ?";
+        // Get service duration from service_consultation_modes
+        $duration_query = "SELECT duration_minutes 
+                          FROM service_consultation_modes 
+                          WHERE visa_service_id = ? 
+                          AND consultant_id = ? 
+                          LIMIT 1";
         $stmt = $conn->prepare($duration_query);
-        $stmt->bind_param('i', $service_id);
+        $stmt->bind_param('ii', $visa_service_id, $consultant_id);
         $stmt->execute();
-        $duration = $stmt->get_result()->fetch_assoc()['duration'];
+        $duration_result = $stmt->get_result()->fetch_assoc();
+        $duration = $duration_result ? $duration_result['duration_minutes'] : 60; // Default to 60 minutes
         $stmt->close();
         
         // Calculate end time
@@ -83,13 +102,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // Check for overlapping bookings
         $overlap_query = "SELECT id FROM bookings 
-                         WHERE staff_id = ? 
+                         WHERE consultant_id = ? 
                          AND ((booking_datetime <= ? AND end_datetime > ?) 
                          OR (booking_datetime < ? AND end_datetime >= ?)
-                         OR (booking_datetime >= ? AND end_datetime <= ?))";
+                         OR (booking_datetime >= ? AND end_datetime <= ?))
+                         AND deleted_at IS NULL";
         
         $stmt = $conn->prepare($overlap_query);
-        $stmt->bind_param('issssss', $staff_id, $end_datetime, $datetime, $datetime, $end_datetime, $datetime, $end_datetime);
+        $stmt->bind_param('issssss', $consultant_id, $end_datetime, $datetime, $datetime, $end_datetime, $datetime, $end_datetime);
         $stmt->execute();
         $result = $stmt->get_result();
         
@@ -104,38 +124,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $conn->begin_transaction();
         
         try {
+            // Get pending status ID
+            $status_query = "SELECT id FROM booking_statuses WHERE name = 'pending' LIMIT 1";
+            $stmt = $conn->prepare($status_query);
+            $stmt->execute();
+            $status_id = $stmt->get_result()->fetch_assoc()['id'];
+            $stmt->close();
+            
             // Insert booking
-            $insert_query = "INSERT INTO bookings (client_name, client_email, client_phone, service_id, 
-                           staff_id, booking_datetime, end_datetime, notes, organization_id) 
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $insert_query = "INSERT INTO bookings (
+                user_id, visa_service_id, consultant_id, 
+                booking_datetime, end_datetime, duration_minutes, 
+                client_notes, organization_id, status_id
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             
             $stmt = $conn->prepare($insert_query);
-            $stmt->bind_param('sssiiissi', $client_name, $client_email, $client_phone, 
-                            $service_id, $staff_id, $datetime, $end_datetime, $notes, 
-                            $_SESSION['organization_id']);
+            $stmt->bind_param('iiissiiii', 
+                $_SESSION['user_id'], 
+                $visa_service_id, 
+                $consultant_id, 
+                $datetime, 
+                $end_datetime, 
+                $duration, 
+                $notes, 
+                $_SESSION['organization_id'],
+                $status_id
+            );
             
             if ($stmt->execute()) {
                 $booking_id = $conn->insert_id;
                 
-                // Send confirmation email
-                $to = $client_email;
-                $subject = "Booking Confirmation";
-                $message = "Dear " . $client_name . ",\n\n";
-                $message .= "Your booking has been confirmed for " . date('F j, Y', strtotime($booking_date)) . " at " . date('g:i A', strtotime($booking_time)) . ".\n\n";
-                $message .= "Service: " . $services[array_search($service_id, array_column($services, 'id'))]['name'] . "\n";
-                $message .= "Staff: " . $staff[array_search($staff_id, array_column($staff, 'id'))]['name'] . "\n\n";
-                $message .= "Thank you for choosing our services!\n\n";
-                $message .= "Best regards,\n";
-                $message .= "Your Organization Name";
+                // Create activity log
+                $log_query = "INSERT INTO booking_activity_logs (
+                    booking_id, user_id, activity_type, description
+                ) VALUES (?, ?, 'created', 'Booking created manually')";
                 
-                $headers = "From: noreply@yourorganization.com\r\n";
-                $headers .= "Reply-To: support@yourorganization.com\r\n";
+                $log_stmt = $conn->prepare($log_query);
+                $log_stmt->bind_param('ii', $booking_id, $_SESSION['user_id']);
+                $log_stmt->execute();
+                $log_stmt->close();
                 
-                mail($to, $subject, $message, $headers);
+                // Schedule reminder
+                $reminder_query = "INSERT INTO booking_reminders (
+                    booking_id, reminder_type, scheduled_time
+                ) VALUES (?, 'email', DATE_SUB(?, INTERVAL 24 HOUR))";
+                
+                $reminder_stmt = $conn->prepare($reminder_query);
+                $reminder_stmt->bind_param('is', $booking_id, $datetime);
+                $reminder_stmt->execute();
+                $reminder_stmt->close();
                 
                 // Commit transaction
                 $conn->commit();
-                $success_message = "Booking created successfully. A confirmation email has been sent to the client.";
+                $success_message = "Booking created successfully.";
                 
                 // Clear form
                 $_POST = array();
@@ -203,21 +244,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <?php foreach ($services as $service): ?>
                             <option value="<?php echo $service['id']; ?>" 
                                     <?php echo (isset($_POST['service_id']) && $_POST['service_id'] == $service['id']) ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($service['name']); ?> 
-                                (<?php echo $service['duration']; ?> minutes)
+                                <?php echo htmlspecialchars($service['service_name']); ?> 
+                                (<?php echo $service['duration_minutes']; ?> minutes)
                             </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
                 
                 <div class="form-group">
-                    <label for="staff_id">Staff Member*</label>
+                    <label for="staff_id">Consultant*</label>
                     <select id="staff_id" name="staff_id" class="form-control" required>
-                        <option value="">Select a staff member</option>
+                        <option value="">Select a consultant</option>
                         <?php foreach ($staff as $member): ?>
                             <option value="<?php echo $member['id']; ?>" 
                                     <?php echo (isset($_POST['staff_id']) && $_POST['staff_id'] == $member['id']) ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($member['name']); ?>
+                                <?php echo htmlspecialchars($member['first_name'] . ' ' . $member['last_name'] . ' (' . $member['company_name'] . ')'); ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
