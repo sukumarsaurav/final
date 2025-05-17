@@ -7,8 +7,13 @@ $page_specific_css = "assets/css/services.css";
 require_once 'includes/header.php';
 
 // Get consultant ID and organization ID from session
-$consultant_id = $_SESSION['user_id']; // Assuming user_id is stored in session
-$organization_id = $_SESSION['organization_id']; // Assuming organization_id is stored in session
+$consultant_id = isset($_SESSION['id']) ? $_SESSION['id'] : (isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0);
+$organization_id = isset($user['organization_id']) ? $user['organization_id'] : null;
+
+// Verify organization ID is set
+if (!$organization_id) {
+    die("Organization ID not set. Please log in again.");
+}
 
 // Get all service types (both global and organization-specific)
 $query = "SELECT * FROM service_types WHERE (is_global = 1 OR organization_id = ?) ORDER BY service_name";

@@ -6,11 +6,34 @@ $page_title = "Visa Management";
 $page_specific_css = "assets/css/visa.css";
 require_once 'includes/header.php';
 
+// Get the consultant ID and organization ID from the session
+$consultant_id = $_SESSION["id"];
+$organization_id = isset($user['organization_id']) ? $user['organization_id'] : null;
+
+// Verify organization ID is set
+if (!$organization_id) {
+    die("Organization ID not set. Please log in again.");
+}
+
+// Get organization details
+$org_query = "SELECT o.*, c.company_name 
+              FROM organizations o 
+              LEFT JOIN consultants c ON c.user_id = ?
+              WHERE o.id = ?";
+$org_stmt = $conn->prepare($org_query);
+$org_stmt->bind_param("ii", $consultant_id, $organization_id);
+$org_stmt->execute();
+$org_result = $org_stmt->get_result();
+$organization = $org_result->fetch_assoc();
+$org_stmt->close();
+
 // Get all countries - Using prepared statement
-$query = "SELECT country_id, country_name, country_code, is_active, inactive_reason, inactive_since 
+$query = "SELECT country_id, country_name, country_code, is_active, inactive_reason, inactive_since, is_global 
           FROM countries 
+          WHERE (is_global = 1 OR organization_id = ?)
           ORDER BY country_name ASC";
 $stmt = $conn->prepare($query);
+$stmt->bind_param('i', $organization_id);
 $stmt->execute();
 $result = $stmt->get_result();
 $countries = [];
@@ -30,13 +53,15 @@ if (!empty($countries)) {
     
     $visa_query = "SELECT v.visa_id, v.country_id, v.visa_type, v.description, v.validity_period, 
                    v.fee, v.requirements, v.is_active, v.inactive_reason, v.inactive_since, 
-                   c.country_name 
+                   v.is_global, v.organization_id, c.country_name 
                    FROM visas v 
                    JOIN countries c ON v.country_id = c.country_id 
                    WHERE v.country_id IN ($country_ids_str) 
+                   AND (v.is_global = 1 OR v.organization_id = ?)
                    ORDER BY c.country_name, v.visa_type";
     
     $stmt = $conn->prepare($visa_query);
+    $stmt->bind_param('i', $organization_id);
     $stmt->execute();
     $visa_result = $stmt->get_result();
     
@@ -68,10 +93,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_country'])) {
         $errors[] = "Country code must be exactly 3 characters";
     }
     
-    // Check if country code already exists
-    $check_query = "SELECT country_id FROM countries WHERE country_code = ?";
+    // Check if country code already exists for this organization
+    $check_query = "SELECT country_id FROM countries WHERE country_code = ? AND (organization_id = ? OR is_global = 1)";
     $check_stmt = $conn->prepare($check_query);
-    $check_stmt->bind_param('s', $country_code);
+    $check_stmt->bind_param('si', $country_code, $organization_id);
     $check_stmt->execute();
     $check_result = $check_stmt->get_result();
     
@@ -81,10 +106,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_country'])) {
     $check_stmt->close();
     
     if (empty($errors)) {
-        // Insert new country
-        $insert_query = "INSERT INTO countries (country_name, country_code, is_active) VALUES (?, ?, ?)";
+        // Insert new country - always organization specific
+        $insert_query = "INSERT INTO countries (country_name, country_code, is_active, organization_id, is_global) 
+                        VALUES (?, ?, ?, ?, 0)";
         $stmt = $conn->prepare($insert_query);
-        $stmt->bind_param('ssi', $country_name, $country_code, $is_active);
+        $stmt->bind_param('ssii', $country_name, $country_code, $is_active, $organization_id);
         
         if ($stmt->execute()) {
             $success_message = "Country added successfully";
@@ -118,7 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_country'])) {
         $errors[] = "Country code must be exactly 3 characters";
     }
     
-    // Check if country code already exists for other countries
+    // Check if country code already exists for other organizations
     $check_query = "SELECT country_id FROM countries WHERE country_code = ? AND country_id != ?";
     $check_stmt = $conn->prepare($check_query);
     $check_stmt->bind_param('si', $country_code, $country_id);
@@ -169,12 +195,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_visa'])) {
         $errors[] = "Visa type is required";
     }
     
+    // Check if country is global or belongs to this organization
+    $check_country = "SELECT is_global FROM countries WHERE country_id = ? AND (is_global = 1 OR organization_id = ?)";
+    $check_stmt = $conn->prepare($check_country);
+    $check_stmt->bind_param('ii', $country_id, $organization_id);
+    $check_stmt->execute();
+    $check_result = $check_stmt->get_result();
+    
+    if ($check_result->num_rows === 0) {
+        $errors[] = "Invalid country selected";
+    }
+    $check_stmt->close();
+    
     if (empty($errors)) {
-        // Insert new visa
-        $insert_query = "INSERT INTO visas (country_id, visa_type, description, validity_period, fee, requirements, is_active) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?)";
+        // Insert new visa - always organization specific
+        $insert_query = "INSERT INTO visas (country_id, visa_type, description, validity_period, fee, 
+                        requirements, is_active, organization_id, is_global) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)";
         $stmt = $conn->prepare($insert_query);
-        $stmt->bind_param('issiisi', $country_id, $visa_type, $description, $validity_period, $fee, $requirements, $is_active);
+        
+        // Convert fee to string to ensure proper decimal handling
+        $fee_str = $fee !== null ? number_format($fee, 2, '.', '') : null;
+        
+        $stmt->bind_param('issiisii', 
+            $country_id,      // i - integer
+            $visa_type,       // s - string
+            $description,     // s - string
+            $validity_period, // i - integer
+            $fee_str,        // s - string (decimal)
+            $requirements,    // s - string
+            $is_active,       // i - integer
+            $organization_id  // i - integer
+        );
         
         if ($stmt->execute()) {
             $success_message = "Visa added successfully";
@@ -336,6 +388,9 @@ if (isset($_GET['success'])) {
                             <h3>
                                 <?php echo htmlspecialchars($country['country_name']); ?>
                                 <span class="country-code">(<?php echo htmlspecialchars($country['country_code']); ?>)</span>
+                                <?php if ($country['is_global']): ?>
+                                    <span class="global-badge"><i class="fas fa-globe"></i> Global</span>
+                                <?php endif; ?>
                             </h3>
                             <?php if ($country['is_active']): ?>
                                 <span class="status-badge active"><i class="fas fa-circle"></i> Active</span>
@@ -347,18 +402,22 @@ if (isset($_GET['success'])) {
                             <?php endif; ?>
                         </div>
                         <div class="country-actions">
-                            <?php if ($country['is_active']): ?>
-                                <button type="button" class="btn-action deactivate-btn" onclick="toggleCountryStatus(<?php echo $country['country_id']; ?>, 0)">
-                                    <i class="fas fa-ban"></i> Deactivate
+                            <?php if (!$country['is_global']): ?>
+                                <?php if ($country['is_active']): ?>
+                                    <button type="button" class="btn-action deactivate-btn" onclick="toggleCountryStatus(<?php echo $country['country_id']; ?>, 0)">
+                                        <i class="fas fa-ban"></i> Deactivate
+                                    </button>
+                                <?php else: ?>
+                                    <button type="button" class="btn-action activate-btn" onclick="toggleCountryStatus(<?php echo $country['country_id']; ?>, 1)">
+                                        <i class="fas fa-check"></i> Activate
+                                    </button>
+                                <?php endif; ?>
+                                <button type="button" class="btn-action edit-btn" onclick="editCountry(<?php echo $country['country_id']; ?>)">
+                                    <i class="fas fa-edit"></i> Edit
                                 </button>
                             <?php else: ?>
-                                <button type="button" class="btn-action activate-btn" onclick="toggleCountryStatus(<?php echo $country['country_id']; ?>, 1)">
-                                    <i class="fas fa-check"></i> Activate
-                                </button>
+                                <span class="read-only-badge">Read Only</span>
                             <?php endif; ?>
-                            <button type="button" class="btn-action edit-btn" onclick="editCountry(<?php echo $country['country_id']; ?>)">
-                                <i class="fas fa-edit"></i> Edit
-                            </button>
                             <button type="button" class="btn-action add-visa-btn" onclick="addVisaForCountry(<?php echo $country['country_id']; ?>)">
                                 <i class="fas fa-plus"></i> Add Visa
                             </button>
@@ -381,7 +440,14 @@ if (isset($_GET['success'])) {
                                     <?php foreach ($visas[$country['country_id']] as $visa): ?>
                                         <tr class="visa-row" data-status="<?php echo $visa['is_active'] ? 'active' : 'inactive'; ?>">
                                             <td>
-                                                <div class="visa-name"><?php echo htmlspecialchars($visa['visa_type']); ?></div>
+                                                <div class="visa-name">
+                                                    <?php echo htmlspecialchars($visa['visa_type']); ?>
+                                                    <?php if ($visa['is_global']): ?>
+                                                        <span class="global-badge"><i class="fas fa-globe"></i> Global</span>
+                                                    <?php else: ?>
+                                                        <span class="org-badge"><i class="fas fa-building"></i> Organization</span>
+                                                    <?php endif; ?>
+                                                </div>
                                                 <?php if (!empty($visa['description'])): ?>
                                                     <div class="visa-description"><?php echo htmlspecialchars(substr($visa['description'], 0, 80)) . (strlen($visa['description']) > 80 ? '...' : ''); ?></div>
                                                 <?php endif; ?>
@@ -1321,6 +1387,40 @@ textarea.form-control {
 
 .modal-lg {
     max-width: 800px;
+}
+
+.global-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    background-color: rgba(78, 115, 223, 0.1);
+    color: #4e73df;
+    margin-left: 8px;
+}
+
+.global-badge i {
+    font-size: 10px;
+}
+
+.org-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    background-color: rgba(28, 200, 138, 0.1);
+    color: #1cc88a;
+    margin-left: 8px;
+}
+
+.org-badge i {
+    font-size: 10px;
 }
 </style>
 
