@@ -1,13 +1,7 @@
 <?php
-// Enable error logging
-error_reporting(E_ALL);
-ini_set('display_errors', 0);
-ini_set('log_errors', 1);
-ini_set('error_log', '../../logs/php_errors.log');
-
-// Create logs directory if it doesn't exist
-if (!is_dir('../../logs')) {
-    mkdir('../../logs', 0755, true);
+// Start session if not already started
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
 }
 
 // Check if required files exist
@@ -28,34 +22,8 @@ require_once '../../config/db_connect.php';
 require_once '../../config/email_config.php';
 require_once '../../vendor/autoload.php';
 
-// Debug information
-$debug_info = [
-    'PHP Version' => phpversion(),
-    'Extensions' => get_loaded_extensions(),
-    'SMTP Settings' => [
-        'Host' => defined('SMTP_HOST') ? SMTP_HOST : 'Not defined', // smtp.hostinger.com
-        'Port' => defined('SMTP_PORT') ? SMTP_PORT : 'Not defined', // 465
-        'Secure' => defined('SMTP_SECURE') ? SMTP_SECURE : 'Not defined', // tsl
-        'Username' => defined('SMTP_USERNAME') ? SMTP_USERNAME : 'Not defined', // info@visafy.io
-        'Password' => defined('SMTP_PASSWORD') ? '******' : 'Not defined',
-        'From Email' => defined('EMAIL_FROM') ? EMAIL_FROM : 'Not defined', // info@visafy.io
-        'From Name' => defined('EMAIL_FROM_NAME') ? EMAIL_FROM_NAME : 'Not defined', // Visafy
-        'Reply To' => defined('EMAIL_REPLY_TO') ? EMAIL_REPLY_TO : 'Not defined' // info@visafy.io
-    ],
-    'Email Config File' => file_exists('../../config/email_config.php') ? 'Exists' : 'Missing',
-    'PHPMailer' => class_exists('PHPMailer\PHPMailer\PHPMailer') ? 'Available' : 'Not available'
-];
-
-// Log debug information
-error_log("Email System Debug Info: " . print_r($debug_info, true));
-
 // Start output buffering to prevent 'headers already sent' errors
 ob_start();
-
-// Start session if not already started
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
 
 // Ensure user is logged in and has a valid user_id
 if (!isset($_SESSION['id']) || empty($_SESSION['id'])) {
@@ -111,45 +79,25 @@ $template_types = [
 
 // Handle form submission to create/update template
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Debug POST data
-    error_log("Form Submission Debug - POST Data: " . print_r($_POST, true));
-    
     $template_id = isset($_POST['template_id']) ? (int)$_POST['template_id'] : 0;
     $template_name = isset($_POST['template_name']) ? trim($_POST['template_name']) : '';
     $template_subject = isset($_POST['template_subject']) ? trim($_POST['template_subject']) : '';
     $template_type = isset($_POST['template_type']) ? trim($_POST['template_type']) : '';
     $template_content = isset($_POST['template_content']) ? trim($_POST['template_content']) : '';
     
-    // Debug processed form data
-    error_log("Form Submission Debug - Processed Data:");
-    error_log("template_id: " . $template_id);
-    error_log("template_name: " . $template_name);
-    error_log("template_subject: " . $template_subject);
-    error_log("template_type: " . $template_type);
-    error_log("template_content length: " . strlen($template_content));
-    
     // Validate inputs
     $errors = [];
     if (empty($template_name)) {
         $errors[] = "Template name is required";
-        error_log("Validation Error: Template name is empty");
     }
     if (empty($template_subject)) {
         $errors[] = "Subject is required";
-        error_log("Validation Error: Subject is empty");
     }
     if (empty($template_content)) {
         $errors[] = "Content is required";
-        error_log("Validation Error: Content is empty");
     }
     if (empty($template_type)) {
         $errors[] = "Template type is required";
-        error_log("Validation Error: Template type is empty");
-    }
-    
-    // Debug validation errors
-    if (!empty($errors)) {
-        error_log("Validation Errors: " . print_r($errors, true));
     }
     
     if (empty($errors)) {

@@ -1,8 +1,4 @@
 <?php
-// Prevent PHP errors from being displayed
-error_reporting(0);
-ini_set('display_errors', 0);
-
 // Set content type to JSON
 header('Content-Type: application/json');
 
@@ -13,7 +9,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 try {
     // Include database connection
-    require_once '../../includes/db_connect.php';
+    require_once '../../../config/db_connect.php';
 
     // Check if user is logged in
     if (!isset($_SESSION['id'])) {

@@ -28,7 +28,6 @@ try {
 
     foreach ($required_files as $file => $description) {
         if (!file_exists($file)) {
-            error_log("Required file missing: $description ($file)");
             throw new Exception("Required file missing: $description ($file)");
         }
     }
@@ -39,7 +38,6 @@ try {
 
     // Check if PHPMailer is available
     if (!file_exists('../../../vendor/autoload.php')) {
-        error_log("Composer autoload file not found");
         throw new Exception("Composer autoload file not found. Please run 'composer install' in the project root.");
     }
     
@@ -47,28 +45,20 @@ try {
     require_once '../../../vendor/autoload.php';
     
     if (!class_exists('PHPMailer\PHPMailer\PHPMailer')) {
-        error_log("PHPMailer class not found");
         throw new Exception("PHPMailer class not found. Please make sure phpmailer/phpmailer is installed via Composer.");
     }
 
-    // Log POST data for debugging
-    error_log("Test Email Debug - POST Data: " . print_r($_POST, true));
-
     // Check if user is logged in
     if (!isset($_SESSION['id'])) {
-        error_log("User not authenticated - Session ID not set");
         throw new Exception('Not authenticated');
     }
 
     // Get organization ID
     if (isset($_SESSION['organization_id'])) {
         $organization_id = $_SESSION['organization_id'];
-        error_log("Organization ID from session: " . $organization_id);
     } else {
         // If not in session, get it from the database
         $user_id = $_SESSION['id'];
-        error_log("Getting organization ID from database for user_id: " . $user_id);
-        
         $query = "SELECT organization_id FROM users WHERE id = ?";
         $stmt = $conn->prepare($query);
         $stmt->bind_param('i', $user_id);
@@ -79,9 +69,7 @@ try {
             $user_data = $result->fetch_assoc();
             $organization_id = $user_data['organization_id'];
             $_SESSION['organization_id'] = $organization_id;
-            error_log("Organization ID retrieved from database: " . $organization_id);
         } else {
-            error_log("Organization ID not found in database for user_id: " . $user_id);
             throw new Exception('Organization ID not set');
         }
     }
@@ -92,37 +80,23 @@ try {
     $first_name = isset($_POST['first_name']) ? trim($_POST['first_name']) : '';
     $last_name = isset($_POST['last_name']) ? trim($_POST['last_name']) : '';
 
-    // Log processed data for debugging
-    error_log("Test Email Debug - Processed Data:");
-    error_log("template_id: " . $template_id);
-    error_log("email: " . $email);
-    error_log("first_name: " . $first_name);
-    error_log("last_name: " . $last_name);
-
     // Validate inputs
     if (!$template_id) {
-        error_log("Validation Error: Missing template ID");
         throw new Exception('Template ID is required');
     }
 
     if (!$email) {
-        error_log("Validation Error: Missing email address");
         throw new Exception('Email address is required');
     }
 
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        error_log("Validation Error: Invalid email address - " . $email);
         throw new Exception('Invalid email address');
     }
 
     // Get template details
     $query = "SELECT * FROM email_templates WHERE id = ? AND (organization_id = ? OR is_global = 1)";
-    error_log("Executing query: " . $query);
-    error_log("Query parameters - template_id: " . $template_id . ", organization_id: " . $organization_id);
-    
     $stmt = $conn->prepare($query);
     if (!$stmt) {
-        error_log("Database prepare error: " . $conn->error);
         throw new Exception('Database error: ' . $conn->error);
     }
     
@@ -131,10 +105,7 @@ try {
     $result = $stmt->get_result();
     $template = $result->fetch_assoc();
 
-    error_log("Template query result: " . print_r($template, true));
-
     if (!$template) {
-        error_log("Template not found or access denied for template_id: " . $template_id);
         throw new Exception('Template not found or access denied');
     }
 
@@ -150,22 +121,11 @@ try {
         '{company_name}' => 'Visafy'
     ];
 
-    error_log("Variable replacements: " . print_r($replacements, true));
-
     $content = str_replace(array_keys($replacements), array_values($replacements), $content);
     $subject = str_replace(array_keys($replacements), array_values($replacements), $subject);
 
-    error_log("Processed content length: " . strlen($content));
-    error_log("Processed subject: " . $subject);
-
     // Initialize PHPMailer
     $mail = new PHPMailer(true);
-
-    // Enable debug output
-    $mail->SMTPDebug = 2; // Enable verbose debug output
-    $mail->Debugoutput = function($str, $level) {
-        error_log("PHPMailer Debug: $str");
-    };
 
     // Server settings
     $mail->isSMTP();
@@ -177,8 +137,8 @@ try {
     $mail->Port = SMTP_PORT;
 
     // Set shorter timeouts
-    $mail->Timeout = 15; // Connection timeout
-    $mail->SMTPKeepAlive = true; // Keep connection alive
+    $mail->Timeout = 15;
+    $mail->SMTPKeepAlive = true;
     $mail->SMTPOptions = array(
         'ssl' => array(
             'verify_peer' => false,
@@ -187,21 +147,10 @@ try {
         )
     );
 
-    error_log("SMTP Configuration:");
-    error_log("Host: " . SMTP_HOST);
-    error_log("Port: " . SMTP_PORT);
-    error_log("Secure: " . SMTP_SECURE);
-    error_log("Username: " . SMTP_USERNAME);
-
     // Recipients
     $mail->setFrom(EMAIL_FROM, EMAIL_FROM_NAME);
     $mail->addAddress($email);
     $mail->addReplyTo(EMAIL_REPLY_TO);
-
-    error_log("Email Configuration:");
-    error_log("From: " . EMAIL_FROM . " (" . EMAIL_FROM_NAME . ")");
-    error_log("To: " . $email);
-    error_log("Reply-To: " . EMAIL_REPLY_TO);
 
     // Content
     $mail->isHTML(true);
@@ -209,24 +158,20 @@ try {
     $mail->Body = $content;
     $mail->AltBody = strip_tags($content);
 
-    // Send email with timeout handling
-    error_log("Attempting to send email...");
+    // Send email
     try {
         $mail->send();
-        error_log("Email sent successfully");
 
         // Log the email in queue
         $query = "INSERT INTO email_queue (recipient_email, subject, content, status, scheduled_time, created_by, organization_id) 
                   VALUES (?, ?, ?, 'sent', NOW(), ?, ?)";
         $stmt = $conn->prepare($query);
         if (!$stmt) {
-            error_log("Database prepare error for queue insert: " . $conn->error);
             throw new Exception('Database error: ' . $conn->error);
         }
         
         $stmt->bind_param('sssii', $email, $subject, $content, $_SESSION['id'], $organization_id);
         $stmt->execute();
-        error_log("Email logged in queue successfully");
 
         // Return success response
         echo json_encode([
@@ -239,9 +184,6 @@ try {
             ]
         ]);
     } catch (PHPMailerException $e) {
-        error_log("PHPMailer Error: " . $e->getMessage());
-        error_log("PHPMailer Error Details: " . print_r($e, true));
-        
         // Log the failed email
         if (isset($conn) && isset($email) && isset($subject) && isset($content)) {
             $query = "INSERT INTO email_queue (recipient_email, subject, content, status, error_message, scheduled_time, created_by, organization_id) 
@@ -251,31 +193,18 @@ try {
                 $error_message = $e->getMessage();
                 $stmt->bind_param('ssssii', $email, $subject, $content, $error_message, $_SESSION['id'], $organization_id);
                 $stmt->execute();
-                error_log("Failed email logged in queue");
             }
         }
         
         echo json_encode([
             'success' => false, 
-            'error' => 'Failed to send email: ' . $e->getMessage(),
-            'details' => [
-                'smtp_host' => defined('SMTP_HOST') ? SMTP_HOST : 'Not defined',
-                'smtp_port' => defined('SMTP_PORT') ? SMTP_PORT : 'Not defined',
-                'from_email' => defined('EMAIL_FROM') ? EMAIL_FROM : 'Not defined',
-                'recipient' => isset($email) ? $email : 'Not set'
-            ]
+            'error' => 'Failed to send email: ' . $e->getMessage()
         ]);
     }
 
 } catch (Exception $e) {
-    error_log("General Error: " . $e->getMessage());
-    error_log("Error Details: " . print_r($e, true));
     echo json_encode([
         'success' => false, 
-        'error' => $e->getMessage(),
-        'details' => [
-            'error_type' => 'General Exception',
-            'error_message' => $e->getMessage()
-        ]
+        'error' => $e->getMessage()
     ]);
 }

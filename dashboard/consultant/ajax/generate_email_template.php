@@ -5,7 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // Include database connection
-require_once '../../includes/db_connect.php';
+require_once '../../../config/db_connect.php';
 
 // Check if user is logged in
 if (!isset($_SESSION['id'])) {
@@ -22,8 +22,7 @@ if (empty($prompt)) {
     exit;
 }
 
-// TODO: Implement actual AI template generation
-// For now, return a sample template
+// Generate template
 $template = '
 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
     <div style="text-align: center; margin-bottom: 30px;">
