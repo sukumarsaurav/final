@@ -49,6 +49,18 @@ $_SESSION['user_id'] = $_SESSION['id'];
 $page_title = "Email Management";
 require_once 'includes/header.php';
 
+// Get consultant ID and organization ID from session and user data
+$consultant_id = isset($_SESSION['id']) ? $_SESSION['id'] : (isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0);
+$organization_id = isset($user['organization_id']) ? $user['organization_id'] : null;
+
+// Verify organization ID is set
+if (!$organization_id) {
+    die("Organization ID not set. Please log in again.");
+}
+
+// Store organization_id in session for use in AJAX calls
+$_SESSION['organization_id'] = $organization_id;
+
 // Get all email templates
 $query = "SELECT et.*, CONCAT(u.first_name, ' ', u.last_name) as created_by_name 
           FROM email_templates et

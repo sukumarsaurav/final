@@ -46,8 +46,27 @@ try {
         throw new Exception('Not authenticated');
     }
 
-    // Check if organization_id is set - provide a default if not
-    $organization_id = isset($_SESSION['organization_id']) ? $_SESSION['organization_id'] : 1;
+    // Check if organization_id is set
+    if (isset($_SESSION['organization_id'])) {
+        $organization_id = $_SESSION['organization_id'];
+    } else {
+        // If not in session, try to get it from the database
+        $user_id = $_SESSION['id'];
+        $query = "SELECT organization_id FROM users WHERE id = ?";
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param('i', $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result && $result->num_rows > 0) {
+            $user_data = $result->fetch_assoc();
+            $organization_id = $user_data['organization_id'];
+            // Store in session for future use
+            $_SESSION['organization_id'] = $organization_id;
+        } else {
+            throw new Exception('Organization ID not set');
+        }
+    }
 
     // Get POST data
     $template_id = isset($_POST['template_id']) ? intval($_POST['template_id']) : 0;
