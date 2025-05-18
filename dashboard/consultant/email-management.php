@@ -1,4 +1,33 @@
 <?php
+// Enable error logging
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+ini_set('error_log', '../../logs/php_errors.log');
+
+// Create logs directory if it doesn't exist
+if (!is_dir('../../logs')) {
+    mkdir('../../logs', 0755, true);
+}
+
+// Debug information
+$debug_info = [
+    'PHP Version' => phpversion(),
+    'Extensions' => get_loaded_extensions(),
+    'SMTP Settings' => [
+        'Host' => defined('SMTP_HOST') ? SMTP_HOST : 'Not defined',
+        'Port' => defined('SMTP_PORT') ? SMTP_PORT : 'Not defined',
+        'Secure' => defined('SMTP_SECURE') ? SMTP_SECURE : 'Not defined',
+        'Username' => defined('SMTP_USERNAME') ? SMTP_USERNAME : 'Not defined',
+        'Password' => defined('SMTP_PASSWORD') ? (defined('SMTP_PASSWORD') ? '******' : 'Not defined') : 'Not defined'
+    ],
+    'Email Config File' => file_exists('../../config/email_config.php') ? 'Exists' : 'Missing',
+    'PHPMailer' => class_exists('PHPMailer\PHPMailer\PHPMailer') ? 'Available' : 'Not available'
+];
+
+// Log debug information
+error_log("Email System Debug Info: " . print_r($debug_info, true));
+
 // Start output buffering to prevent 'headers already sent' errors
 ob_start();
 
