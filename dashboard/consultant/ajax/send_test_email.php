@@ -46,10 +46,8 @@ try {
         throw new Exception('Not authenticated');
     }
 
-    // Check if organization_id is set
-    if (!isset($_SESSION['organization_id'])) {
-        throw new Exception('Organization ID not set');
-    }
+    // Check if organization_id is set - provide a default if not
+    $organization_id = isset($_SESSION['organization_id']) ? $_SESSION['organization_id'] : 1;
 
     // Get POST data
     $template_id = isset($_POST['template_id']) ? intval($_POST['template_id']) : 0;
@@ -102,8 +100,8 @@ try {
 
     $mail = new PHPMailer(true);
 
-    // Enable debug output
-    $mail->SMTPDebug = SMTP::DEBUG_SERVER;
+    // Change debug level to off for production
+    $mail->SMTPDebug = 0; // Changed from SMTP::DEBUG_SERVER to 0
     $mail->Debugoutput = function($str, $level) {
         error_log("PHPMailer Debug: $str");
     };
@@ -142,10 +140,19 @@ try {
         throw new Exception('Database error: ' . $conn->error);
     }
     
-    $stmt->bind_param('sssii', $email, $subject, $content, $_SESSION['id'], $_SESSION['organization_id']);
+    $stmt->bind_param('sssii', $email, $subject, $content, $_SESSION['id'], $organization_id);
     $stmt->execute();
 
-    echo json_encode(['success' => true, 'message' => 'Test email sent successfully']);
+    // Return a more detailed success response
+    echo json_encode([
+        'success' => true, 
+        'message' => 'Test email sent successfully to ' . $email,
+        'details' => [
+            'template' => $template['name'],
+            'recipient' => $email,
+            'subject' => $subject
+        ]
+    ]);
 
 } catch (PHPMailerException $e) {
     error_log("PHPMailer Error: " . $e->getMessage());
@@ -157,14 +164,32 @@ try {
         $stmt = $conn->prepare($query);
         if ($stmt) {
             $error_message = $e->getMessage();
-            $stmt->bind_param('ssssii', $email, $subject, $content, $error_message, $_SESSION['id'], $_SESSION['organization_id']);
+            $organization_id = isset($_SESSION['organization_id']) ? $_SESSION['organization_id'] : 1;
+            $stmt->bind_param('ssssii', $email, $subject, $content, $error_message, $_SESSION['id'], $organization_id);
             $stmt->execute();
         }
     }
     
-    echo json_encode(['success' => false, 'error' => 'Failed to send email: ' . $e->getMessage()]);
+    // Return a more detailed error response
+    echo json_encode([
+        'success' => false, 
+        'error' => 'Failed to send email: ' . $e->getMessage(),
+        'details' => [
+            'smtp_host' => defined('SMTP_HOST') ? SMTP_HOST : 'Not defined',
+            'smtp_port' => defined('SMTP_PORT') ? SMTP_PORT : 'Not defined',
+            'from_email' => defined('EMAIL_FROM') ? EMAIL_FROM : 'Not defined',
+            'recipient' => isset($email) ? $email : 'Not set'
+        ]
+    ]);
     
 } catch (Exception $e) {
     error_log("General Error: " . $e->getMessage());
-    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
-} 
+    echo json_encode([
+        'success' => false, 
+        'error' => $e->getMessage(),
+        'details' => [
+            'error_type' => 'General Exception',
+            'error_message' => $e->getMessage()
+        ]
+    ]);
+}

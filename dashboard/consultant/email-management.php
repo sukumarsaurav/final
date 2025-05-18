@@ -996,8 +996,8 @@ $queue_stats = $conn->query($queue_stats_query)->fetch_assoc();
 }
 
 .test-result {
-    margin-top: 20px;
-    padding: 15px;
+    margin-top: 15px;
+    padding: 10px;
     border-radius: 4px;
 }
 
@@ -1011,6 +1011,33 @@ $queue_stats = $conn->query($queue_stats_query)->fetch_assoc();
     background-color: rgba(231, 74, 59, 0.1);
     color: var(--danger-color);
     border: 1px solid rgba(231, 74, 59, 0.2);
+}
+
+.success-message {
+    color: #28a745;
+    background-color: #d4edda;
+    padding: 10px;
+    border-radius: 4px;
+    border-left: 4px solid #28a745;
+}
+
+.error-message {
+    color: #dc3545;
+    background-color: #f8d7da;
+    padding: 10px;
+    border-radius: 4px;
+    border-left: 4px solid #dc3545;
+}
+
+.error-details {
+    font-family: monospace;
+    background-color: #f8f9fa;
+    padding: 8px;
+    margin-top: 8px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 
 /* AI Loader */
@@ -1327,63 +1354,68 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Handle test email form submission
-    document.getElementById('testEmailForm').addEventListener('submit', function(e) {
+    $('#testEmailForm').on('submit', function(e) {
         e.preventDefault();
         
-        const templateId = document.getElementById('test_template_id').value;
-        const email = document.getElementById('test_email').value;
-        const firstName = document.getElementById('test_first_name').value;
-        const lastName = document.getElementById('test_last_name').value;
+        // Get form data
+        var formData = {
+            template_id: $('#test_template_id').val(),
+            email: $('#test_email').val(),
+            first_name: $('#test_first_name').val(),
+            last_name: $('#test_last_name').val()
+        };
         
-        // Log form data for debugging
-        console.log('Form data:', {
-            template_id: templateId,
-            email: email,
-            first_name: firstName,
-            last_name: lastName
-        });
+        console.log('Form data:', formData);
         
-        // Prepare form data
-        const formData = new FormData();
-        formData.append('template_id', templateId);
-        formData.append('email', email);
-        formData.append('first_name', firstName);
-        formData.append('last_name', lastName);
-        
-        // Log FormData contents for debugging
-        for (let pair of formData.entries()) {
-            console.log(pair[0] + ': ' + pair[1]);
-        }
+        // Show loading indicator
+        $('#testResult').html('<p><i class="fas fa-spinner fa-spin"></i> Sending test email...</p>').show();
         
         // Send test email via AJAX
-        fetch('ajax/send_test_email.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => {
-            console.log('Response status:', response.status);
-            return response.json();
-        })
-        .then(data => {
-            console.log('Response data:', data);
-            const resultDiv = document.getElementById('testResult');
-            resultDiv.innerHTML = data.message;
-            
-            if (data.success) {
-                resultDiv.className = 'test-result success';
-            } else {
-                resultDiv.className = 'test-result error';
+        $.ajax({
+            url: 'ajax/send_test_email.php',
+            type: 'POST',
+            data: formData,
+            dataType: 'json',
+            success: function(response) {
+                console.log('Response status:', 200);
+                console.log('Response data:', response);
+                
+                // Check if response is valid and has success property
+                if (response && typeof response === 'object') {
+                    if (response.success) {
+                        $('#testResult').html('<p class="success-message"><i class="fas fa-check-circle"></i> ' + 
+                            (response.message || 'Email sent successfully!') + '</p>');
+                        $('#testResult').addClass('success').removeClass('error');
+                    } else {
+                        $('#testResult').html('<p class="error-message"><i class="fas fa-exclamation-circle"></i> ' + 
+                            (response.error || 'Failed to send email.') + '</p>' +
+                            (response.details ? '<pre class="error-details">' + JSON.stringify(response.details, null, 2) + '</pre>' : ''));
+                        $('#testResult').addClass('error').removeClass('success');
+                    }
+                } else {
+                    // Handle case where response is not a valid object
+                    $('#testResult').html('<p class="error-message"><i class="fas fa-exclamation-circle"></i> Invalid response from server.</p>');
+                    $('#testResult').addClass('error').removeClass('success');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX error:', error);
+                $('#testResult').html('<p class="error-message"><i class="fas fa-exclamation-circle"></i> Error: ' + error + '</p>');
+                $('#testResult').addClass('error').removeClass('success');
+                
+                // Try to parse response text if possible
+                try {
+                    var errorResponse = JSON.parse(xhr.responseText);
+                    if (errorResponse && errorResponse.error) {
+                        $('#testResult').append('<p class="error-details">' + errorResponse.error + '</p>');
+                    }
+                } catch (e) {
+                    // If parsing fails, show the raw response
+                    if (xhr.responseText) {
+                        $('#testResult').append('<p class="error-details">Server response: ' + xhr.responseText + '</p>');
+                    }
+                }
             }
-            
-            resultDiv.style.display = 'block';
-        })
-        .catch(error => {
-            console.error('Error sending test email:', error);
-            
-            const resultDiv = document.getElementById('testResult');
-            resultDiv.innerHTML = 'Error sending test email. Please try again.';
-            resultDiv.className = 'test-result error';
-            resultDiv.style.display = 'block';
         });
     });
     

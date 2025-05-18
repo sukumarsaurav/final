@@ -1,0 +1,255 @@
+[18-May-2025 05:53:55 UTC] Email System Debug Info: Array
+(
+    [PHP Version] => 8.4.3
+    [Extensions] => Array
+        (
+            [0] => Core
+            [1] => date
+            [2] => libxml
+            [3] => openssl
+            [4] => pcre
+            [5] => sqlite3
+            [6] => zlib
+            [7] => bcmath
+            [8] => bz2
+            [9] => calendar
+            [10] => ctype
+            [11] => curl
+            [12] => dba
+            [13] => dom
+            [14] => json
+            [15] => FFI
+            [16] => fileinfo
+            [17] => filter
+            [18] => ftp
+            [19] => gd
+            [20] => gettext
+            [21] => gmp
+            [22] => hash
+            [23] => iconv
+            [24] => intl
+            [25] => SPL
+            [26] => ldap
+            [27] => mbstring
+            [28] => session
+            [29] => standard
+            [30] => mysqlnd
+            [31] => mysqli
+            [32] => odbc
+            [33] => pcntl
+            [34] => PDO
+            [35] => pdo_dblib
+            [36] => pdo_mysql
+            [37] => PDO_ODBC
+            [38] => pdo_pgsql
+            [39] => pdo_sqlite
+            [40] => pgsql
+            [41] => Phar
+            [42] => posix
+            [43] => random
+            [44] => readline
+            [45] => Reflection
+            [46] => exif
+            [47] => shmop
+            [48] => SimpleXML
+            [49] => snmp
+            [50] => soap
+            [51] => sockets
+            [52] => sodium
+            [53] => sysvmsg
+            [54] => sysvsem
+            [55] => sysvshm
+            [56] => tidy
+            [57] => tokenizer
+            [58] => xml
+            [59] => xmlreader
+            [60] => xmlwriter
+            [61] => xsl
+            [62] => zip
+            [63] => cli_server
+            [64] => Zend OPcache
+        )
+
+    [SMTP Settings] => Array
+        (
+            [Host] => Not defined
+            [Port] => Not defined
+            [Secure] => Not defined
+            [Username] => Not defined
+            [Password] => Not defined
+        )
+
+    [Email Config File] => Exists
+    [PHPMailer] => Not available
+)
+
+[18-May-2025 05:54:06 UTC] Email System Debug Info: Array
+(
+    [PHP Version] => 8.4.3
+    [Extensions] => Array
+        (
+            [0] => Core
+            [1] => date
+            [2] => libxml
+            [3] => openssl
+            [4] => pcre
+            [5] => sqlite3
+            [6] => zlib
+            [7] => bcmath
+            [8] => bz2
+            [9] => calendar
+            [10] => ctype
+            [11] => curl
+            [12] => dba
+            [13] => dom
+            [14] => json
+            [15] => FFI
+            [16] => fileinfo
+            [17] => filter
+            [18] => ftp
+            [19] => gd
+            [20] => gettext
+            [21] => gmp
+            [22] => hash
+            [23] => iconv
+            [24] => intl
+            [25] => SPL
+            [26] => ldap
+            [27] => mbstring
+            [28] => session
+            [29] => standard
+            [30] => mysqlnd
+            [31] => mysqli
+            [32] => odbc
+            [33] => pcntl
+            [34] => PDO
+            [35] => pdo_dblib
+            [36] => pdo_mysql
+            [37] => PDO_ODBC
+            [38] => pdo_pgsql
+            [39] => pdo_sqlite
+            [40] => pgsql
+            [41] => Phar
+            [42] => posix
+            [43] => random
+            [44] => readline
+            [45] => Reflection
+            [46] => exif
+            [47] => shmop
+            [48] => SimpleXML
+            [49] => snmp
+            [50] => soap
+            [51] => sockets
+            [52] => sodium
+            [53] => sysvmsg
+            [54] => sysvsem
+            [55] => sysvshm
+            [56] => tidy
+            [57] => tokenizer
+            [58] => xml
+            [59] => xmlreader
+            [60] => xmlwriter
+            [61] => xsl
+            [62] => zip
+            [63] => cli_server
+            [64] => Zend OPcache
+        )
+
+    [SMTP Settings] => Array
+        (
+            [Host] => Not defined
+            [Port] => Not defined
+            [Secure] => Not defined
+            [Username] => Not defined
+            [Password] => Not defined
+        )
+
+    [Email Config File] => Exists
+    [PHPMailer] => Not available
+)
+
+[18-May-2025 05:54:18 UTC] Email System Debug Info: Array
+(
+    [PHP Version] => 8.4.3
+    [Extensions] => Array
+        (
+            [0] => Core
+            [1] => date
+            [2] => libxml
+            [3] => openssl
+            [4] => pcre
+            [5] => sqlite3
+            [6] => zlib
+            [7] => bcmath
+            [8] => bz2
+            [9] => calendar
+            [10] => ctype
+            [11] => curl
+            [12] => dba
+            [13] => dom
+            [14] => json
+            [15] => FFI
+            [16] => fileinfo
+            [17] => filter
+            [18] => ftp
+            [19] => gd
+            [20] => gettext
+            [21] => gmp
+            [22] => hash
+            [23] => iconv
+            [24] => intl
+            [25] => SPL
+            [26] => ldap
+            [27] => mbstring
+            [28] => session
+            [29] => standard
+            [30] => mysqlnd
+            [31] => mysqli
+            [32] => odbc
+            [33] => pcntl
+            [34] => PDO
+            [35] => pdo_dblib
+            [36] => pdo_mysql
+            [37] => PDO_ODBC
+            [38] => pdo_pgsql
+            [39] => pdo_sqlite
+            [40] => pgsql
+            [41] => Phar
+            [42] => posix
+            [43] => random
+            [44] => readline
+            [45] => Reflection
+            [46] => exif
+            [47] => shmop
+            [48] => SimpleXML
+            [49] => snmp
+            [50] => soap
+            [51] => sockets
+            [52] => sodium
+            [53] => sysvmsg
+            [54] => sysvsem
+            [55] => sysvshm
+            [56] => tidy
+            [57] => tokenizer
+            [58] => xml
+            [59] => xmlreader
+            [60] => xmlwriter
+            [61] => xsl
+            [62] => zip
+            [63] => cli_server
+            [64] => Zend OPcache
+        )
+
+    [SMTP Settings] => Array
+        (
+            [Host] => Not defined
+            [Port] => Not defined
+            [Secure] => Not defined
+            [Username] => Not defined
+            [Password] => Not defined
+        )
+
+    [Email Config File] => Exists
+    [PHPMailer] => Not available
+)
+
