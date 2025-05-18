@@ -474,13 +474,13 @@ if (isset($_GET['success'])) {
                                                 <?php endif; ?>
                                             </td>
                                             <td class="actions-cell">
-                                                <a href="visa_details.php?id=<?php echo $visa['visa_id']; ?>" class="btn-action btn-view" title="View Details">
+                                                <button type="button" class="btn-action btn-view" title="View Details" data-id="<?php echo $visa['visa_id']; ?>">
                                                     <i class="fas fa-eye"></i>
-                                                </a>
+                                                </button>
                                                 
-                                                <a href="edit_visa.php?id=<?php echo $visa['visa_id']; ?>" class="btn-action btn-edit" title="Edit">
+                                                <button type="button" class="btn-action btn-edit" title="Edit" data-id="<?php echo $visa['visa_id']; ?>">
                                                     <i class="fas fa-edit"></i>
-                                                </a>
+                                                </button>
                                                 
                                                 <button type="button" class="btn-action btn-documents" 
                                                         title="Manage Required Documents" onclick="manageRequiredDocuments(<?php echo $visa['visa_id']; ?>, '<?php echo htmlspecialchars(addslashes($visa['visa_type'])); ?>')">
@@ -737,6 +737,118 @@ if (isset($_GET['success'])) {
                     <div class="form-buttons">
                         <button type="button" class="btn cancel-btn" data-dismiss="modal">Cancel</button>
                         <button type="submit" name="edit_country" class="btn submit-btn">Update Country</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Visa Details Modal -->
+<div class="modal" id="viewVisaModal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Visa Details</h3>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="visaDetailsLoading" class="text-center p-4">
+                    <i class="fas fa-spinner fa-spin fa-2x"></i>
+                    <p class="mt-2">Loading visa details...</p>
+                </div>
+                <div id="visaDetailsContent" style="display: none;">
+                    <div class="visa-details-grid">
+                        <div class="detail-group">
+                            <label>Visa Type</label>
+                            <p id="detail_visa_type"></p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Country</label>
+                            <p id="detail_country"></p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Validity Period</label>
+                            <p id="detail_validity"></p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Fee</label>
+                            <p id="detail_fee"></p>
+                        </div>
+                        <div class="detail-group full-width">
+                            <label>Description</label>
+                            <p id="detail_description"></p>
+                        </div>
+                        <div class="detail-group full-width">
+                            <label>Requirements</label>
+                            <p id="detail_requirements"></p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Status</label>
+                            <p id="detail_status"></p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Created Date</label>
+                            <p id="detail_created"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn cancel-btn" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Visa Modal -->
+<div class="modal" id="editVisaModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Visa</h3>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="editVisaForm" method="POST" action="visa.php">
+                    <input type="hidden" name="edit_visa_id" id="edit_visa_id">
+                    
+                    <div class="form-group">
+                        <label for="edit_visa_type">Visa Type*</label>
+                        <input type="text" name="visa_type" id="edit_visa_type" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit_description">Description</label>
+                        <textarea name="description" id="edit_description" class="form-control" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="edit_validity_period">Validity Period (days)</label>
+                            <input type="number" name="validity_period" id="edit_validity_period" class="form-control" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="edit_fee">Fee ($)</label>
+                            <input type="number" name="fee" id="edit_fee" class="form-control" min="0" step="0.01">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit_requirements">Requirements</label>
+                        <textarea name="requirements" id="edit_requirements" class="form-control" rows="4"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="checkbox-group">
+                            <input type="checkbox" name="is_active" id="edit_visa_is_active" value="1">
+                            <label for="edit_visa_is_active">Active</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-buttons">
+                        <button type="button" class="btn cancel-btn" data-dismiss="modal">Cancel</button>
+                        <button type="submit" name="edit_visa" class="btn submit-btn">Update Visa</button>
                     </div>
                 </form>
             </div>
@@ -1422,6 +1534,40 @@ textarea.form-control {
 .org-badge i {
     font-size: 10px;
 }
+
+.visa-details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    padding: 20px;
+}
+
+.detail-group {
+    margin-bottom: 15px;
+}
+
+.detail-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.detail-group label {
+    display: block;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 5px;
+}
+
+.detail-group p {
+    margin: 0;
+    color: var(--dark-color);
+    line-height: 1.5;
+}
+
+.detail-group p:empty::before {
+    content: '-';
+    color: var(--secondary-color);
+    font-style: italic;
+}
 </style>
 
 <script>
@@ -1808,6 +1954,95 @@ function saveRequiredDocuments() {
         alert('Error saving required documents. Please try again.');
     });
 }
+
+// Function to view visa details
+function viewVisaDetails(visaId) {
+    // Show loading state
+    document.getElementById('visaDetailsLoading').style.display = 'block';
+    document.getElementById('visaDetailsContent').style.display = 'none';
+    
+    // Show modal
+    document.getElementById('viewVisaModal').style.display = 'block';
+    
+    // Fetch visa details
+    fetch('ajax/get_visa_details.php?id=' + visaId)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const visa = data.visa;
+                
+                // Populate details
+                document.getElementById('detail_visa_type').textContent = visa.visa_type;
+                document.getElementById('detail_country').textContent = visa.country_name;
+                document.getElementById('detail_validity').textContent = visa.validity_period ? visa.validity_period + ' days' : '-';
+                document.getElementById('detail_fee').textContent = visa.fee ? '$' + parseFloat(visa.fee).toFixed(2) : '-';
+                document.getElementById('detail_description').textContent = visa.description || '';
+                document.getElementById('detail_requirements').textContent = visa.requirements || '';
+                document.getElementById('detail_status').innerHTML = visa.is_active ? 
+                    '<span class="status-badge active"><i class="fas fa-circle"></i> Active</span>' :
+                    '<span class="status-badge inactive"><i class="fas fa-circle"></i> Inactive</span>';
+                document.getElementById('detail_created').textContent = new Date(visa.created_at).toLocaleDateString();
+                
+                // Hide loading, show content
+                document.getElementById('visaDetailsLoading').style.display = 'none';
+                document.getElementById('visaDetailsContent').style.display = 'block';
+            } else {
+                throw new Error(data.error || 'Failed to load visa details');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('visaDetailsLoading').style.display = 'none';
+            alert('Error loading visa details: ' + error.message);
+        });
+}
+
+// Function to edit visa
+function editVisa(visaId) {
+    // Fetch visa details
+    fetch('ajax/get_visa_details.php?id=' + visaId)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const visa = data.visa;
+                
+                // Populate form
+                document.getElementById('edit_visa_id').value = visa.visa_id;
+                document.getElementById('edit_visa_type').value = visa.visa_type;
+                document.getElementById('edit_description').value = visa.description || '';
+                document.getElementById('edit_validity_period').value = visa.validity_period || '';
+                document.getElementById('edit_fee').value = visa.fee || '';
+                document.getElementById('edit_requirements').value = visa.requirements || '';
+                document.getElementById('edit_visa_is_active').checked = visa.is_active == 1;
+                
+                // Show modal
+                document.getElementById('editVisaModal').style.display = 'block';
+            } else {
+                throw new Error(data.error || 'Failed to load visa details');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error loading visa details: ' + error.message);
+        });
+}
+
+// Update the existing action buttons to use the new functions
+document.querySelectorAll('.btn-view').forEach(button => {
+    button.addEventListener('click', function(e) {
+        e.preventDefault();
+        const visaId = this.dataset.id;
+        viewVisaDetails(visaId);
+    });
+});
+
+document.querySelectorAll('.btn-edit').forEach(button => {
+    button.addEventListener('click', function(e) {
+        e.preventDefault();
+        const visaId = this.dataset.id;
+        editVisa(visaId);
+    });
+});
 </script>
 
 <?php
