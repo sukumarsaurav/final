@@ -311,6 +311,11 @@ $queue_stats = $conn->query($queue_stats_query)->fetch_assoc();
                 
                 <div class="form-group">
                     <label for="template_content">Email Content*</label>
+                    <div class="editor-tabs">
+                        <button type="button" class="tab-btn active" data-tab="visual">Visual Editor</button>
+                        <button type="button" class="tab-btn" data-tab="html">HTML Editor</button>
+                    </div>
+                    
                     <div class="editor-tools">
                         <button type="button" class="tool-btn" data-command="bold"><i class="fas fa-bold"></i></button>
                         <button type="button" class="tool-btn" data-command="italic"><i class="fas fa-italic"></i></button>
@@ -331,9 +336,11 @@ $queue_stats = $conn->query($queue_stats_query)->fetch_assoc();
                         </select>
                         <button type="button" class="tool-btn" data-command="insertVariable"><i class="fas fa-code"></i> Insert Variable</button>
                     </div>
+                    
                     <div class="editor-container">
                         <div class="editor-wrapper">
                             <div id="editor" contenteditable="true" class="editor"></div>
+                            <textarea id="html_editor" class="html-editor" style="display:none;"></textarea>
                             <textarea id="template_content" name="template_content" style="display:none;"></textarea>
                         </div>
                         <div class="preview-panel">
@@ -341,6 +348,7 @@ $queue_stats = $conn->query($queue_stats_query)->fetch_assoc();
                             <div id="emailPreview" class="email-preview"></div>
                         </div>
                     </div>
+                    
                     <div class="variable-helper">
                         <p><strong>Available Variables:</strong></p>
                         <div class="variable-tags">
@@ -410,7 +418,7 @@ $queue_stats = $conn->query($queue_stats_query)->fetch_assoc();
                 </div>
                 
                 <div class="form-group test-variables">
-                    <h4>Test Variables (Optional)</h4>
+                    <h4>Test Variables</h4>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="test_first_name">First Name</label>
@@ -420,6 +428,42 @@ $queue_stats = $conn->query($queue_stats_query)->fetch_assoc();
                         <div class="form-group">
                             <label for="test_last_name">Last Name</label>
                             <input type="text" id="test_last_name" name="last_name" class="form-control" value="Doe">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="test_booking_date">Booking Date</label>
+                            <input type="date" id="test_booking_date" name="booking_date" class="form-control" value="<?php echo date('Y-m-d'); ?>">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="test_booking_time">Booking Time</label>
+                            <input type="time" id="test_booking_time" name="booking_time" class="form-control" value="10:00">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="test_booking_reference">Booking Reference</label>
+                            <input type="text" id="test_booking_reference" name="booking_reference" class="form-control" value="BK123456">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="test_service_name">Service Name</label>
+                            <input type="text" id="test_service_name" name="service_name" class="form-control" value="Visa Consultation">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="test_consultant_name">Consultant Name</label>
+                            <input type="text" id="test_consultant_name" name="consultant_name" class="form-control" value="Jane Smith">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="test_company_name">Company Name</label>
+                            <input type="text" id="test_company_name" name="company_name" class="form-control" value="Visafy">
                         </div>
                     </div>
                 </div>
@@ -1000,6 +1044,40 @@ $queue_stats = $conn->query($queue_stats_query)->fetch_assoc();
     overflow-y: auto;
 }
 
+/* Editor Tabs */
+.editor-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.tab-btn {
+    padding: 8px 16px;
+    border: 1px solid var(--border-color);
+    background: #f8f9fc;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.tab-btn.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+/* HTML Editor */
+.html-editor {
+    width: 100%;
+    min-height: 400px;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    font-family: monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    resize: vertical;
+}
+
 /* Test Variables Form */
 .test-variables {
     margin-top: 20px;
@@ -1012,8 +1090,31 @@ $queue_stats = $conn->query($queue_stats_query)->fetch_assoc();
 .test-variables h4 {
     margin-top: 0;
     margin-bottom: 15px;
+    color: var(--primary-color);
 }
 
+.test-variables .form-row {
+    margin-bottom: 15px;
+}
+
+.test-variables .form-row:last-child {
+    margin-bottom: 0;
+}
+
+.test-variables .form-group {
+    margin-bottom: 0;
+}
+
+.test-variables label {
+    font-size: 0.9rem;
+    color: var(--dark-color);
+}
+
+.test-variables .form-control {
+    font-size: 0.9rem;
+}
+
+/* Test Result Styles */
 .test-result {
     margin-top: 15px;
     padding: 10px;
@@ -1159,94 +1260,41 @@ document.addEventListener('DOMContentLoaded', function() {
         openModal('templateEditorModal');
     });
     
-    // Editor initialization and tools
+    // Editor tabs functionality
+    const editorTabs = document.querySelectorAll('.tab-btn');
     const editor = document.getElementById('editor');
+    const htmlEditor = document.getElementById('html_editor');
     const contentTextarea = document.getElementById('template_content');
-    const emailPreview = document.getElementById('emailPreview');
     
-    // Initialize editor with textarea content if editing
-    editor.addEventListener('input', function() {
-        contentTextarea.value = editor.innerHTML;
-        emailPreview.innerHTML = editor.innerHTML;
-    });
-    
-    // Editor toolbar functionality
-    document.querySelectorAll('.tool-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const command = this.dataset.command;
+    editorTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Update active tab
+            editorTabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
             
-            if (command === 'createLink') {
-                const url = prompt('Enter the link URL:');
-                if (url) {
-                    document.execCommand('createLink', false, url);
-                }
-            } else if (command === 'insertImage') {
-                const url = prompt('Enter the image URL:');
-                if (url) {
-                    document.execCommand('insertImage', false, url);
-                }
-            } else if (command === 'insertVariable') {
-                // Show variable selection or handle insertion
-                alert('Please click on a variable from the list below to insert it.');
+            // Show/hide appropriate editor
+            if (this.dataset.tab === 'visual') {
+                editor.style.display = 'block';
+                htmlEditor.style.display = 'none';
+                // Update HTML editor content
+                htmlEditor.value = editor.innerHTML;
             } else {
-                document.execCommand(command, false, null);
+                editor.style.display = 'none';
+                htmlEditor.style.display = 'block';
+                // Update visual editor content
+                editor.innerHTML = htmlEditor.value;
             }
             
-            // Update preview and textarea
+            // Update content textarea
             contentTextarea.value = editor.innerHTML;
-            emailPreview.innerHTML = editor.innerHTML;
         });
     });
     
-    // Color picker functionality
-    document.getElementById('colorPicker').addEventListener('input', function() {
-        document.execCommand('foreColor', false, this.value);
-        contentTextarea.value = editor.innerHTML;
-        emailPreview.innerHTML = editor.innerHTML;
-    });
-    
-    // Heading selector functionality
-    document.querySelector('.heading-select').addEventListener('change', function() {
-        if (this.value) {
-            document.execCommand('formatBlock', false, this.value);
-            contentTextarea.value = editor.innerHTML;
-            emailPreview.innerHTML = editor.innerHTML;
-        }
-        // Reset the selector
-        this.selectedIndex = 0;
-    });
-    
-    // Variable tag insertion
-    document.querySelectorAll('.variable-tag').forEach(tag => {
-        tag.addEventListener('click', function() {
-            const variable = this.dataset.variable;
-            
-            // Insert at cursor position or at the end
-            const selection = window.getSelection();
-            if (selection.rangeCount > 0) {
-                const range = selection.getRangeAt(0);
-                if (range.startContainer.parentNode === editor || editor.contains(range.startContainer)) {
-                    // Insert at cursor position
-                    const textNode = document.createTextNode(variable);
-                    range.insertNode(textNode);
-                    // Move cursor after the inserted variable
-                    range.setStartAfter(textNode);
-                    range.setEndAfter(textNode);
-                    selection.removeAllRanges();
-                    selection.addRange(range);
-                } else {
-                    // Insert at the end
-                    editor.appendChild(document.createTextNode(variable));
-                }
-            } else {
-                // No selection, insert at the end
-                editor.appendChild(document.createTextNode(variable));
-            }
-            
-            // Update the content textarea and preview
-            contentTextarea.value = editor.innerHTML;
-            emailPreview.innerHTML = editor.innerHTML;
-        });
+    // HTML editor change handler
+    htmlEditor.addEventListener('input', function() {
+        editor.innerHTML = this.value;
+        contentTextarea.value = this.value;
+        document.getElementById('emailPreview').innerHTML = this.value;
     });
     
     // Handle form submission
@@ -1453,6 +1501,12 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.append('email', document.getElementById('test_email').value);
         formData.append('first_name', document.getElementById('test_first_name').value);
         formData.append('last_name', document.getElementById('test_last_name').value);
+        formData.append('booking_date', document.getElementById('test_booking_date').value);
+        formData.append('booking_time', document.getElementById('test_booking_time').value);
+        formData.append('booking_reference', document.getElementById('test_booking_reference').value);
+        formData.append('service_name', document.getElementById('test_service_name').value);
+        formData.append('consultant_name', document.getElementById('test_consultant_name').value);
+        formData.append('company_name', document.getElementById('test_company_name').value);
         
         // Show loading indicator
         const testResult = document.getElementById('testResult');
@@ -1464,19 +1518,7 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'POST',
             body: formData
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.text().then(text => {
-                try {
-                    return JSON.parse(text);
-                } catch (e) {
-                    console.error('Error parsing JSON:', text);
-                    throw new Error('Invalid JSON response from server');
-                }
-            });
-        })
+        .then(response => response.json())
         .then(data => {
             if (data.success) {
                 testResult.innerHTML = '<p class="success-message"><i class="fas fa-check-circle"></i> ' + 
@@ -1484,8 +1526,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 testResult.className = 'test-result success';
             } else {
                 testResult.innerHTML = '<p class="error-message"><i class="fas fa-exclamation-circle"></i> ' + 
-                    (data.error || 'Failed to send email.') + '</p>' +
-                    (data.details ? '<pre class="error-details">' + JSON.stringify(data.details, null, 2) + '</pre>' : '');
+                    (data.error || 'Failed to send email.') + '</p>';
                 testResult.className = 'test-result error';
             }
         })
@@ -1538,7 +1579,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Update the editor with generated template
                 editor.innerHTML = data.template;
                 contentTextarea.value = data.template;
-                emailPreview.innerHTML = data.template;
+                document.getElementById('emailPreview').innerHTML = data.template;
                 
                 // Set the subject if provided
                 if (subject) {
