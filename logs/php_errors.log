@@ -1,4 +1,83 @@
-[18-May-2025 05:53:55 UTC] Email System Debug Info: Array
+[18-May-2025 10:19:04 UTC] Organization ID from session: 4
+[18-May-2025 10:19:04 UTC] GET request data: Array
+(
+    [id] => 4
+)
+
+[18-May-2025 10:19:04 UTC] Template ID from request: 4
+[18-May-2025 10:19:04 UTC] Executing query: SELECT et.*, CONCAT(u.first_name, ' ', u.last_name) as created_by_name 
+              FROM email_templates et
+              JOIN users u ON et.created_by = u.id
+              WHERE et.id = ? AND (et.organization_id = ? OR et.is_global = 1)
+[18-May-2025 10:19:04 UTC] Query parameters - template_id: 4, organization_id: 4
+[18-May-2025 10:19:04 UTC] Query result: Array
+(
+    [id] => 4
+    [name] => Welcome mail
+    [subject] => Welcome mail
+    [content] => fgsdgsd
+    [template_type] => welcome
+    [organization_id] => 4
+    [is_global] => 0
+    [created_by] => 11
+    [created_at] => 2025-05-18 06:57:07
+    [updated_at] => 2025-05-18 06:57:07
+    [created_by_name] => sukumar Saurav
+)
+
+[18-May-2025 10:19:07 UTC] Test Email Debug - POST Data: Array
+(
+    [template_id] => 4
+    [email] => sukumarsaurav@gmail.com
+    [first_name] => John
+    [last_name] => Doe
+)
+
+[18-May-2025 10:19:07 UTC] Organization ID from session: 4
+[18-May-2025 10:19:07 UTC] Test Email Debug - Processed Data:
+[18-May-2025 10:19:07 UTC] template_id: 4
+[18-May-2025 10:19:07 UTC] email: sukumarsaurav@gmail.com
+[18-May-2025 10:19:07 UTC] first_name: John
+[18-May-2025 10:19:07 UTC] last_name: Doe
+[18-May-2025 10:19:07 UTC] Executing query: SELECT * FROM email_templates WHERE id = ? AND (organization_id = ? OR is_global = 1)
+[18-May-2025 10:19:07 UTC] Query parameters - template_id: 4, organization_id: 4
+[18-May-2025 10:19:07 UTC] Template query result: Array
+(
+    [id] => 4
+    [name] => Welcome mail
+    [subject] => Welcome mail
+    [content] => fgsdgsd
+    [template_type] => welcome
+    [organization_id] => 4
+    [is_global] => 0
+    [created_by] => 11
+    [created_at] => 2025-05-18 06:57:07
+    [updated_at] => 2025-05-18 06:57:07
+)
+
+[18-May-2025 10:19:07 UTC] Variable replacements: Array
+(
+    [{first_name}] => John
+    [{last_name}] => Doe
+    [{email}] => sukumarsaurav@gmail.com
+    [{current_date}] => 2025-05-18
+    [{company_name}] => Visafy
+)
+
+[18-May-2025 10:19:07 UTC] Processed content length: 7
+[18-May-2025 10:19:07 UTC] Processed subject: Welcome mail
+[18-May-2025 10:19:07 UTC] SMTP Configuration:
+[18-May-2025 10:19:07 UTC] Host: smtp.hostinger.com
+[18-May-2025 10:19:07 UTC] Port: 465
+[18-May-2025 10:19:07 UTC] Secure: tsl
+[18-May-2025 10:19:07 UTC] Username: info@visafy.io
+[18-May-2025 10:19:07 UTC] Email Configuration:
+[18-May-2025 10:19:07 UTC] From: info@visafy.io (Visafy)
+[18-May-2025 10:19:07 UTC] To: sukumarsaurav@gmail.com
+[18-May-2025 10:19:07 UTC] Reply-To: info@visafy.io
+[18-May-2025 10:19:07 UTC] Attempting to send email...
+[18-May-2025 10:19:37 UTC] PHP Fatal error:  Maximum execution time of 30 seconds exceeded in /Users/sukumarsaurav/templates/final/vendor/phpmailer/phpmailer/src/SMTP.php on line 1297
+[18-May-2025 10:23:48 UTC] Email System Debug Info: Array
 (
     [PHP Version] => 8.4.3
     [Extensions] => Array
@@ -72,18 +151,100 @@
 
     [SMTP Settings] => Array
         (
-            [Host] => Not defined
-            [Port] => Not defined
-            [Secure] => Not defined
-            [Username] => Not defined
-            [Password] => Not defined
+            [Host] => smtp.hostinger.com
+            [Port] => 465
+            [Secure] => tsl
+            [Username] => info@visafy.io
+            [Password] => ******
+            [From Email] => info@visafy.io
+            [From Name] => Visafy
+            [Reply To] => info@visafy.io
         )
 
     [Email Config File] => Exists
-    [PHPMailer] => Not available
+    [PHPMailer] => Available
 )
 
-[18-May-2025 05:54:06 UTC] Email System Debug Info: Array
+[18-May-2025 10:23:51 UTC] Organization ID from session: 4
+[18-May-2025 10:23:51 UTC] GET request data: Array
+(
+    [id] => 4
+)
+
+[18-May-2025 10:23:51 UTC] Template ID from request: 4
+[18-May-2025 10:23:51 UTC] Executing query: SELECT et.*, CONCAT(u.first_name, ' ', u.last_name) as created_by_name 
+              FROM email_templates et
+              JOIN users u ON et.created_by = u.id
+              WHERE et.id = ? AND (et.organization_id = ? OR et.is_global = 1)
+[18-May-2025 10:23:51 UTC] Query parameters - template_id: 4, organization_id: 4
+[18-May-2025 10:23:51 UTC] Query result: Array
+(
+    [id] => 4
+    [name] => Welcome mail
+    [subject] => Welcome mail
+    [content] => fgsdgsd
+    [template_type] => welcome
+    [organization_id] => 4
+    [is_global] => 0
+    [created_by] => 11
+    [created_at] => 2025-05-18 06:57:07
+    [updated_at] => 2025-05-18 06:57:07
+    [created_by_name] => sukumar Saurav
+)
+
+[18-May-2025 10:23:54 UTC] Test Email Debug - POST Data: Array
+(
+    [template_id] => 4
+    [email] => sukumarsaurav@gmail.com
+    [first_name] => John
+    [last_name] => Doe
+)
+
+[18-May-2025 10:23:54 UTC] Organization ID from session: 4
+[18-May-2025 10:23:54 UTC] Test Email Debug - Processed Data:
+[18-May-2025 10:23:54 UTC] template_id: 4
+[18-May-2025 10:23:54 UTC] email: sukumarsaurav@gmail.com
+[18-May-2025 10:23:54 UTC] first_name: John
+[18-May-2025 10:23:54 UTC] last_name: Doe
+[18-May-2025 10:23:54 UTC] Executing query: SELECT * FROM email_templates WHERE id = ? AND (organization_id = ? OR is_global = 1)
+[18-May-2025 10:23:54 UTC] Query parameters - template_id: 4, organization_id: 4
+[18-May-2025 10:23:54 UTC] Template query result: Array
+(
+    [id] => 4
+    [name] => Welcome mail
+    [subject] => Welcome mail
+    [content] => fgsdgsd
+    [template_type] => welcome
+    [organization_id] => 4
+    [is_global] => 0
+    [created_by] => 11
+    [created_at] => 2025-05-18 06:57:07
+    [updated_at] => 2025-05-18 06:57:07
+)
+
+[18-May-2025 10:23:54 UTC] Variable replacements: Array
+(
+    [{first_name}] => John
+    [{last_name}] => Doe
+    [{email}] => sukumarsaurav@gmail.com
+    [{current_date}] => 2025-05-18
+    [{company_name}] => Visafy
+)
+
+[18-May-2025 10:23:54 UTC] Processed content length: 7
+[18-May-2025 10:23:54 UTC] Processed subject: Welcome mail
+[18-May-2025 10:23:54 UTC] SMTP Configuration:
+[18-May-2025 10:23:54 UTC] Host: smtp.hostinger.com
+[18-May-2025 10:23:54 UTC] Port: 465
+[18-May-2025 10:23:54 UTC] Secure: tsl
+[18-May-2025 10:23:54 UTC] Username: info@visafy.io
+[18-May-2025 10:23:54 UTC] Email Configuration:
+[18-May-2025 10:23:54 UTC] From: info@visafy.io (Visafy)
+[18-May-2025 10:23:54 UTC] To: sukumarsaurav@gmail.com
+[18-May-2025 10:23:54 UTC] Reply-To: info@visafy.io
+[18-May-2025 10:23:54 UTC] Attempting to send email...
+[18-May-2025 10:24:54 UTC] PHP Fatal error:  Maximum execution time of 60 seconds exceeded in /Users/sukumarsaurav/templates/final/vendor/phpmailer/phpmailer/src/SMTP.php on line 1297
+[18-May-2025 10:32:17 UTC] Email System Debug Info: Array
 (
     [PHP Version] => 8.4.3
     [Extensions] => Array
@@ -157,99 +318,191 @@
 
     [SMTP Settings] => Array
         (
-            [Host] => Not defined
-            [Port] => Not defined
-            [Secure] => Not defined
-            [Username] => Not defined
-            [Password] => Not defined
+            [Host] => smtp.hostinger.com
+            [Port] => 465
+            [Secure] => ssl
+            [Username] => info@visafy.io
+            [Password] => ******
+            [From Email] => info@visafy.io
+            [From Name] => Visafy
+            [Reply To] => info@visafy.io
         )
 
     [Email Config File] => Exists
-    [PHPMailer] => Not available
+    [PHPMailer] => Available
 )
 
-[18-May-2025 05:54:18 UTC] Email System Debug Info: Array
+[18-May-2025 10:32:20 UTC] Organization ID from session: 4
+[18-May-2025 10:32:20 UTC] GET request data: Array
 (
-    [PHP Version] => 8.4.3
-    [Extensions] => Array
-        (
-            [0] => Core
-            [1] => date
-            [2] => libxml
-            [3] => openssl
-            [4] => pcre
-            [5] => sqlite3
-            [6] => zlib
-            [7] => bcmath
-            [8] => bz2
-            [9] => calendar
-            [10] => ctype
-            [11] => curl
-            [12] => dba
-            [13] => dom
-            [14] => json
-            [15] => FFI
-            [16] => fileinfo
-            [17] => filter
-            [18] => ftp
-            [19] => gd
-            [20] => gettext
-            [21] => gmp
-            [22] => hash
-            [23] => iconv
-            [24] => intl
-            [25] => SPL
-            [26] => ldap
-            [27] => mbstring
-            [28] => session
-            [29] => standard
-            [30] => mysqlnd
-            [31] => mysqli
-            [32] => odbc
-            [33] => pcntl
-            [34] => PDO
-            [35] => pdo_dblib
-            [36] => pdo_mysql
-            [37] => PDO_ODBC
-            [38] => pdo_pgsql
-            [39] => pdo_sqlite
-            [40] => pgsql
-            [41] => Phar
-            [42] => posix
-            [43] => random
-            [44] => readline
-            [45] => Reflection
-            [46] => exif
-            [47] => shmop
-            [48] => SimpleXML
-            [49] => snmp
-            [50] => soap
-            [51] => sockets
-            [52] => sodium
-            [53] => sysvmsg
-            [54] => sysvsem
-            [55] => sysvshm
-            [56] => tidy
-            [57] => tokenizer
-            [58] => xml
-            [59] => xmlreader
-            [60] => xmlwriter
-            [61] => xsl
-            [62] => zip
-            [63] => cli_server
-            [64] => Zend OPcache
-        )
-
-    [SMTP Settings] => Array
-        (
-            [Host] => Not defined
-            [Port] => Not defined
-            [Secure] => Not defined
-            [Username] => Not defined
-            [Password] => Not defined
-        )
-
-    [Email Config File] => Exists
-    [PHPMailer] => Not available
+    [id] => 4
 )
 
+[18-May-2025 10:32:20 UTC] Template ID from request: 4
+[18-May-2025 10:32:20 UTC] Executing query: SELECT et.*, CONCAT(u.first_name, ' ', u.last_name) as created_by_name 
+              FROM email_templates et
+              JOIN users u ON et.created_by = u.id
+              WHERE et.id = ? AND (et.organization_id = ? OR et.is_global = 1)
+[18-May-2025 10:32:20 UTC] Query parameters - template_id: 4, organization_id: 4
+[18-May-2025 10:32:21 UTC] Query result: Array
+(
+    [id] => 4
+    [name] => Welcome mail
+    [subject] => Welcome mail
+    [content] => fgsdgsd
+    [template_type] => welcome
+    [organization_id] => 4
+    [is_global] => 0
+    [created_by] => 11
+    [created_at] => 2025-05-18 06:57:07
+    [updated_at] => 2025-05-18 06:57:07
+    [created_by_name] => sukumar Saurav
+)
+
+[18-May-2025 10:32:23 UTC] Test Email Debug - POST Data: Array
+(
+    [template_id] => 4
+    [email] => sukumarsaurav@gmail.com
+    [first_name] => John
+    [last_name] => Doe
+)
+
+[18-May-2025 10:32:23 UTC] Organization ID from session: 4
+[18-May-2025 10:32:23 UTC] Test Email Debug - Processed Data:
+[18-May-2025 10:32:23 UTC] template_id: 4
+[18-May-2025 10:32:23 UTC] email: sukumarsaurav@gmail.com
+[18-May-2025 10:32:23 UTC] first_name: John
+[18-May-2025 10:32:23 UTC] last_name: Doe
+[18-May-2025 10:32:23 UTC] Executing query: SELECT * FROM email_templates WHERE id = ? AND (organization_id = ? OR is_global = 1)
+[18-May-2025 10:32:23 UTC] Query parameters - template_id: 4, organization_id: 4
+[18-May-2025 10:32:24 UTC] Template query result: Array
+(
+    [id] => 4
+    [name] => Welcome mail
+    [subject] => Welcome mail
+    [content] => fgsdgsd
+    [template_type] => welcome
+    [organization_id] => 4
+    [is_global] => 0
+    [created_by] => 11
+    [created_at] => 2025-05-18 06:57:07
+    [updated_at] => 2025-05-18 06:57:07
+)
+
+[18-May-2025 10:32:24 UTC] Variable replacements: Array
+(
+    [{first_name}] => John
+    [{last_name}] => Doe
+    [{email}] => sukumarsaurav@gmail.com
+    [{current_date}] => 2025-05-18
+    [{company_name}] => Visafy
+)
+
+[18-May-2025 10:32:24 UTC] Processed content length: 7
+[18-May-2025 10:32:24 UTC] Processed subject: Welcome mail
+[18-May-2025 10:32:24 UTC] SMTP Configuration:
+[18-May-2025 10:32:24 UTC] Host: smtp.hostinger.com
+[18-May-2025 10:32:24 UTC] Port: 465
+[18-May-2025 10:32:24 UTC] Secure: ssl
+[18-May-2025 10:32:24 UTC] Username: info@visafy.io
+[18-May-2025 10:32:24 UTC] Email Configuration:
+[18-May-2025 10:32:24 UTC] From: info@visafy.io (Visafy)
+[18-May-2025 10:32:24 UTC] To: sukumarsaurav@gmail.com
+[18-May-2025 10:32:24 UTC] Reply-To: info@visafy.io
+[18-May-2025 10:32:24 UTC] Attempting to send email...
+[18-May-2025 10:32:25 UTC] PHPMailer Debug: SERVER -> CLIENT: 220 ESMTP smtp.hostinger.com
+
+[18-May-2025 10:32:25 UTC] PHPMailer Debug: CLIENT -> SERVER: EHLO localhost
+
+[18-May-2025 10:32:25 UTC] PHPMailer Debug: SERVER -> CLIENT: 250-smtp.hostinger.com
+250-PIPELINING
+250-SIZE 48811212
+250-ETRN
+250-AUTH PLAIN LOGIN
+250-ENHANCEDSTATUSCODES
+250-8BITMIME
+250-DSN
+250 CHUNKING
+
+[18-May-2025 10:32:25 UTC] PHPMailer Debug: CLIENT -> SERVER: AUTH LOGIN
+
+[18-May-2025 10:32:25 UTC] PHPMailer Debug: SERVER -> CLIENT: 334 VXNlcm5hbWU6
+
+[18-May-2025 10:32:25 UTC] PHPMailer Debug: CLIENT -> SERVER: [credentials hidden]
+[18-May-2025 10:32:25 UTC] PHPMailer Debug: SERVER -> CLIENT: 334 UGFzc3dvcmQ6
+
+[18-May-2025 10:32:25 UTC] PHPMailer Debug: CLIENT -> SERVER: [credentials hidden]
+[18-May-2025 10:32:26 UTC] PHPMailer Debug: SERVER -> CLIENT: 235 2.7.0 Authentication successful
+
+[18-May-2025 10:32:26 UTC] PHPMailer Debug: CLIENT -> SERVER: MAIL FROM:<info@visafy.io>
+
+[18-May-2025 10:32:26 UTC] PHPMailer Debug: SERVER -> CLIENT: 250 2.1.0 Ok
+
+[18-May-2025 10:32:26 UTC] PHPMailer Debug: CLIENT -> SERVER: RCPT TO:<sukumarsaurav@gmail.com>
+
+[18-May-2025 10:32:26 UTC] PHPMailer Debug: SERVER -> CLIENT: 250 2.1.5 Ok
+
+[18-May-2025 10:32:26 UTC] PHPMailer Debug: CLIENT -> SERVER: DATA
+
+[18-May-2025 10:32:26 UTC] PHPMailer Debug: SERVER -> CLIENT: 354 End data with <CR><LF>.<CR><LF>
+
+[18-May-2025 10:32:26 UTC] PHPMailer Debug: CLIENT -> SERVER: Date: Sun, 18 May 2025 10:32:24 +0000
+
+[18-May-2025 10:32:26 UTC] PHPMailer Debug: CLIENT -> SERVER: To: sukumarsaurav@gmail.com
+
+[18-May-2025 10:32:26 UTC] PHPMailer Debug: CLIENT -> SERVER: From: Visafy <info@visafy.io>
+
+[18-May-2025 10:32:26 UTC] PHPMailer Debug: CLIENT -> SERVER: Reply-To: info@visafy.io
+
+[18-May-2025 10:32:26 UTC] PHPMailer Debug: CLIENT -> SERVER: Subject: Welcome mail
+
+[18-May-2025 10:32:26 UTC] PHPMailer Debug: CLIENT -> SERVER: Message-ID: <5s9FCPL1kyJR9fqpi9jsAtXTE6U8crbTm9pCRJ0c91E@localhost>
+
+[18-May-2025 10:32:26 UTC] PHPMailer Debug: CLIENT -> SERVER: X-Mailer: PHPMailer 6.10.0 (https://github.com/PHPMailer/PHPMailer)
+
+[18-May-2025 10:32:26 UTC] PHPMailer Debug: CLIENT -> SERVER: MIME-Version: 1.0
+
+[18-May-2025 10:32:26 UTC] PHPMailer Debug: CLIENT -> SERVER: Content-Type: multipart/alternative;
+
+[18-May-2025 10:32:26 UTC] PHPMailer Debug: CLIENT -> SERVER:  boundary="b1=_5s9FCPL1kyJR9fqpi9jsAtXTE6U8crbTm9pCRJ0c91E"
+
+[18-May-2025 10:32:26 UTC] PHPMailer Debug: CLIENT -> SERVER: Content-Transfer-Encoding: 8bit
+
+[18-May-2025 10:32:26 UTC] PHPMailer Debug: CLIENT -> SERVER: 
+
+[18-May-2025 10:32:26 UTC] PHPMailer Debug: CLIENT -> SERVER: --b1=_5s9FCPL1kyJR9fqpi9jsAtXTE6U8crbTm9pCRJ0c91E
+
+[18-May-2025 10:32:26 UTC] PHPMailer Debug: CLIENT -> SERVER: Content-Type: text/plain; charset=us-ascii
+
+[18-May-2025 10:32:26 UTC] PHPMailer Debug: CLIENT -> SERVER: 
+
+[18-May-2025 10:32:26 UTC] PHPMailer Debug: CLIENT -> SERVER: fgsdgsd
+
+[18-May-2025 10:32:26 UTC] PHPMailer Debug: CLIENT -> SERVER: 
+
+[18-May-2025 10:32:26 UTC] PHPMailer Debug: CLIENT -> SERVER: --b1=_5s9FCPL1kyJR9fqpi9jsAtXTE6U8crbTm9pCRJ0c91E
+
+[18-May-2025 10:32:26 UTC] PHPMailer Debug: CLIENT -> SERVER: Content-Type: text/html; charset=us-ascii
+
+[18-May-2025 10:32:26 UTC] PHPMailer Debug: CLIENT -> SERVER: 
+
+[18-May-2025 10:32:26 UTC] PHPMailer Debug: CLIENT -> SERVER: fgsdgsd
+
+[18-May-2025 10:32:26 UTC] PHPMailer Debug: CLIENT -> SERVER: 
+
+[18-May-2025 10:32:26 UTC] PHPMailer Debug: CLIENT -> SERVER: 
+
+[18-May-2025 10:32:26 UTC] PHPMailer Debug: CLIENT -> SERVER: --b1=_5s9FCPL1kyJR9fqpi9jsAtXTE6U8crbTm9pCRJ0c91E--
+
+[18-May-2025 10:32:26 UTC] PHPMailer Debug: CLIENT -> SERVER: 
+
+[18-May-2025 10:32:26 UTC] PHPMailer Debug: CLIENT -> SERVER: .
+
+[18-May-2025 10:32:27 UTC] PHPMailer Debug: SERVER -> CLIENT: 250 2.0.0 Ok: queued as 4b0cZf36K0zKLLHg
+
+[18-May-2025 10:32:27 UTC] PHPMailer Debug: CLIENT -> SERVER: RSET
+
+[18-May-2025 10:32:27 UTC] PHPMailer Debug: SERVER -> CLIENT: 250 2.0.0 Ok
+
+[18-May-2025 10:32:27 UTC] Email sent successfully
+[18-May-2025 10:32:27 UTC] Email logged in queue successfully

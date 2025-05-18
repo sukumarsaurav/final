@@ -10,16 +10,37 @@ if (!is_dir('../../logs')) {
     mkdir('../../logs', 0755, true);
 }
 
+// Check if required files exist
+$required_files = [
+    '../../config/db_connect.php' => 'Database connection file',
+    '../../config/email_config.php' => 'Email configuration file',
+    '../../vendor/autoload.php' => 'Composer autoload file'
+];
+
+foreach ($required_files as $file => $description) {
+    if (!file_exists($file)) {
+        die("Required file missing: $description ($file)");
+    }
+}
+
+// Include required files
+require_once '../../config/db_connect.php';
+require_once '../../config/email_config.php';
+require_once '../../vendor/autoload.php';
+
 // Debug information
 $debug_info = [
     'PHP Version' => phpversion(),
     'Extensions' => get_loaded_extensions(),
     'SMTP Settings' => [
-        'Host' => defined('SMTP_HOST') ? SMTP_HOST : 'Not defined',
-        'Port' => defined('SMTP_PORT') ? SMTP_PORT : 'Not defined',
-        'Secure' => defined('SMTP_SECURE') ? SMTP_SECURE : 'Not defined',
-        'Username' => defined('SMTP_USERNAME') ? SMTP_USERNAME : 'Not defined',
-        'Password' => defined('SMTP_PASSWORD') ? (defined('SMTP_PASSWORD') ? '******' : 'Not defined') : 'Not defined'
+        'Host' => defined('SMTP_HOST') ? SMTP_HOST : 'Not defined', // smtp.hostinger.com
+        'Port' => defined('SMTP_PORT') ? SMTP_PORT : 'Not defined', // 465
+        'Secure' => defined('SMTP_SECURE') ? SMTP_SECURE : 'Not defined', // tsl
+        'Username' => defined('SMTP_USERNAME') ? SMTP_USERNAME : 'Not defined', // info@visafy.io
+        'Password' => defined('SMTP_PASSWORD') ? '******' : 'Not defined',
+        'From Email' => defined('EMAIL_FROM') ? EMAIL_FROM : 'Not defined', // info@visafy.io
+        'From Name' => defined('EMAIL_FROM_NAME') ? EMAIL_FROM_NAME : 'Not defined', // Visafy
+        'Reply To' => defined('EMAIL_REPLY_TO') ? EMAIL_REPLY_TO : 'Not defined' // info@visafy.io
     ],
     'Email Config File' => file_exists('../../config/email_config.php') ? 'Exists' : 'Missing',
     'PHPMailer' => class_exists('PHPMailer\PHPMailer\PHPMailer') ? 'Available' : 'Not available'
@@ -65,8 +86,12 @@ $_SESSION['organization_id'] = $organization_id;
 $query = "SELECT et.*, CONCAT(u.first_name, ' ', u.last_name) as created_by_name 
           FROM email_templates et
           JOIN users u ON et.created_by = u.id
+          WHERE et.organization_id = ? OR et.is_global = 1
           ORDER BY et.created_at DESC";
-$result = $conn->query($query);
+$stmt = $conn->prepare($query);
+$stmt->bind_param('i', $organization_id);
+$stmt->execute();
+$result = $stmt->get_result();
 
 // Get template types for dropdown
 $template_types = [
@@ -86,40 +111,74 @@ $template_types = [
 
 // Handle form submission to create/update template
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Debug POST data
+    error_log("Form Submission Debug - POST Data: " . print_r($_POST, true));
+    
     $template_id = isset($_POST['template_id']) ? (int)$_POST['template_id'] : 0;
-    $template_name = trim($_POST['template_name']);
-    $template_subject = trim($_POST['template_subject']);
-    $template_type = trim($_POST['template_type']);
-    $template_content = $_POST['template_content'];
+    $template_name = isset($_POST['template_name']) ? trim($_POST['template_name']) : '';
+    $template_subject = isset($_POST['template_subject']) ? trim($_POST['template_subject']) : '';
+    $template_type = isset($_POST['template_type']) ? trim($_POST['template_type']) : '';
+    $template_content = isset($_POST['template_content']) ? trim($_POST['template_content']) : '';
+    
+    // Debug processed form data
+    error_log("Form Submission Debug - Processed Data:");
+    error_log("template_id: " . $template_id);
+    error_log("template_name: " . $template_name);
+    error_log("template_subject: " . $template_subject);
+    error_log("template_type: " . $template_type);
+    error_log("template_content length: " . strlen($template_content));
     
     // Validate inputs
     $errors = [];
     if (empty($template_name)) {
         $errors[] = "Template name is required";
+        error_log("Validation Error: Template name is empty");
     }
     if (empty($template_subject)) {
         $errors[] = "Subject is required";
+        error_log("Validation Error: Subject is empty");
     }
     if (empty($template_content)) {
         $errors[] = "Content is required";
+        error_log("Validation Error: Content is empty");
+    }
+    if (empty($template_type)) {
+        $errors[] = "Template type is required";
+        error_log("Validation Error: Template type is empty");
+    }
+    
+    // Debug validation errors
+    if (!empty($errors)) {
+        error_log("Validation Errors: " . print_r($errors, true));
     }
     
     if (empty($errors)) {
         // Check if we're updating or creating a new template
         if ($template_id > 0) {
-            // Update existing template
-            $stmt = $conn->prepare("UPDATE email_templates SET name = ?, subject = ?, content = ?, template_type = ?, updated_at = NOW() WHERE id = ?");
-            $stmt->bind_param('ssssi', $template_name, $template_subject, $template_content, $template_type, $template_id);
+            // Verify template belongs to organization
+            $check_query = "SELECT id FROM email_templates WHERE id = ? AND (organization_id = ? OR is_global = 1)";
+            $check_stmt = $conn->prepare($check_query);
+            $check_stmt->bind_param('ii', $template_id, $organization_id);
+            $check_stmt->execute();
+            $check_result = $check_stmt->get_result();
             
-            if ($stmt->execute()) {
-                $success_message = "Email template updated successfully";
+            if ($check_result->num_rows === 0) {
+                $error_message = "Template not found or access denied";
             } else {
-                $error_message = "Error updating template: " . $conn->error;
+                // Update existing template
+                $stmt = $conn->prepare("UPDATE email_templates SET name = ?, subject = ?, content = ?, template_type = ?, updated_at = NOW() WHERE id = ? AND (organization_id = ? OR is_global = 1)");
+                $stmt->bind_param('ssssii', $template_name, $template_subject, $template_content, $template_type, $template_id, $organization_id);
+                
+                if ($stmt->execute()) {
+                    $success_message = "Email template updated successfully";
+                } else {
+                    $error_message = "Error updating template: " . $conn->error;
+                }
             }
         } else {
             // Create new template
-            $stmt = $conn->prepare("INSERT INTO email_templates (name, subject, content, template_type, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())");
-            $stmt->bind_param('ssssi', $template_name, $template_subject, $template_content, $template_type, $_SESSION['id']);
+            $stmt = $conn->prepare("INSERT INTO email_templates (name, subject, content, template_type, created_by, organization_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())");
+            $stmt->bind_param('ssssii', $template_name, $template_subject, $template_content, $template_type, $_SESSION['id'], $organization_id);
             
             if ($stmt->execute()) {
                 $success_message = "Email template created successfully";
@@ -394,12 +453,12 @@ $queue_stats = $conn->query($queue_stats_query)->fetch_assoc();
             <span class="close">&times;</span>
         </div>
         <div class="modal-body">
-            <form id="testEmailForm">
-                <input type="hidden" id="test_template_id" name="test_template_id">
+            <form id="testEmailForm" method="post">
+                <input type="hidden" id="test_template_id" name="template_id">
                 
                 <div class="form-group">
                     <label for="test_email">Recipient Email*</label>
-                    <input type="email" id="test_email" name="test_email" class="form-control" required>
+                    <input type="email" id="test_email" name="email" class="form-control" required>
                 </div>
                 
                 <div class="form-group test-variables">
@@ -407,12 +466,12 @@ $queue_stats = $conn->query($queue_stats_query)->fetch_assoc();
                     <div class="form-row">
                         <div class="form-group">
                             <label for="test_first_name">First Name</label>
-                            <input type="text" id="test_first_name" name="test_first_name" class="form-control" value="John">
+                            <input type="text" id="test_first_name" name="first_name" class="form-control" value="John">
                         </div>
                         
                         <div class="form-group">
                             <label for="test_last_name">Last Name</label>
-                            <input type="text" id="test_last_name" name="test_last_name" class="form-control" value="Doe">
+                            <input type="text" id="test_last_name" name="last_name" class="form-control" value="Doe">
                         </div>
                     </div>
                 </div>
@@ -1244,44 +1303,97 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Handle form submission
     document.getElementById('templateForm').addEventListener('submit', function(e) {
-        // Ensure textarea has the latest editor content
-        contentTextarea.value = editor.innerHTML;
+        e.preventDefault();
+        
+        // Get form data
+        const formData = new FormData();
+        formData.append('template_id', document.getElementById('template_id').value);
+        formData.append('template_name', document.getElementById('template_name').value);
+        formData.append('template_subject', document.getElementById('template_subject').value);
+        formData.append('template_type', document.getElementById('template_type').value);
+        formData.append('template_content', document.getElementById('template_content').value);
+        
+        // Validate required fields
+        const errors = [];
+        if (!formData.get('template_name')) errors.push('Template name is required');
+        if (!formData.get('template_subject')) errors.push('Subject is required');
+        if (!formData.get('template_content')) errors.push('Content is required');
+        if (!formData.get('template_type')) errors.push('Template type is required');
+        
+        if (errors.length > 0) {
+            alert(errors.join('\n'));
+            return;
+        }
+        
+        // Submit form
+        fetch('email-management.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.redirected) {
+                window.location.href = response.url;
+            } else {
+                window.location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error submitting form:', error);
+            alert('Error saving template. Please try again.');
+        });
     });
     
     // Edit template button functionality
     document.querySelectorAll('.edit-btn').forEach(button => {
         button.addEventListener('click', function() {
             const templateId = this.dataset.id;
-            const templateName = this.dataset.name;
-            const templateSubject = this.dataset.subject;
-            const templateType = this.dataset.type;
             
-            // Populate form fields
-            document.getElementById('template_id').value = templateId;
-            document.getElementById('template_name').value = templateName;
-            document.getElementById('template_subject').value = templateSubject;
-            document.getElementById('template_type').value = templateType;
-            document.getElementById('modalTitle').textContent = 'Edit Email Template';
+            // Reset form
+            document.getElementById('templateForm').reset();
+            document.getElementById('editor').innerHTML = '';
+            document.getElementById('emailPreview').innerHTML = '';
+            
+            // Show loading state
+            const editor = document.getElementById('editor');
+            editor.innerHTML = '<div class="loading">Loading template...</div>';
+            openModal('templateEditorModal');
             
             // Fetch template content via AJAX
             fetch('ajax/get_email_template.php?id=' + templateId)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.text().then(text => {
+                        try {
+                            return JSON.parse(text);
+                        } catch (e) {
+                            console.error('Error parsing JSON:', text);
+                            throw new Error('Invalid JSON response from server');
+                        }
+                    });
+                })
                 .then(data => {
                     if (data.success) {
+                        // Populate form fields
+                        document.getElementById('template_id').value = data.template.id;
+                        document.getElementById('template_name').value = data.template.name;
+                        document.getElementById('template_subject').value = data.template.subject;
+                        document.getElementById('template_type').value = data.template.template_type;
+                        
                         // Set editor content
                         editor.innerHTML = data.template.content;
-                        contentTextarea.value = data.template.content;
-                        emailPreview.innerHTML = data.template.content;
+                        document.getElementById('template_content').value = data.template.content;
+                        document.getElementById('emailPreview').innerHTML = data.template.content;
                         
-                        // Open modal
-                        openModal('templateEditorModal');
+                        document.getElementById('modalTitle').textContent = 'Edit Email Template';
                     } else {
-                        alert('Error loading template: ' + data.error);
+                        editor.innerHTML = '<div class="error-message">Error: ' + data.error + '</div>';
                     }
                 })
                 .catch(error => {
                     console.error('Error fetching template:', error);
-                    alert('Error loading template. Please try again.');
+                    editor.innerHTML = '<div class="error-message">Error loading template: ' + error.message + '</div>';
                 });
         });
     });
@@ -1290,6 +1402,11 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.preview-btn').forEach(button => {
         button.addEventListener('click', function() {
             const templateId = this.dataset.id;
+            
+            // Show loading state
+            const previewContent = document.getElementById('previewContent');
+            previewContent.innerHTML = '<div class="loading">Loading template...</div>';
+            openModal('previewModal');
             
             // Fetch template details via AJAX
             fetch('ajax/get_email_template.php?id=' + templateId)
@@ -1302,16 +1419,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         document.getElementById('previewType').textContent = 
                             document.querySelector(`.badge-${data.template.template_type}`).textContent.trim();
                         document.getElementById('previewContent').innerHTML = data.template.content;
-                        
-                        // Open preview modal
-                        openModal('previewModal');
                     } else {
-                        alert('Error loading template: ' + data.error);
+                        document.getElementById('previewContent').innerHTML = 
+                            '<div class="error-message">Error: ' + data.error + '</div>';
                     }
                 })
                 .catch(error => {
                     console.error('Error fetching template:', error);
-                    alert('Error loading template. Please try again.');
+                    document.getElementById('previewContent').innerHTML = 
+                        '<div class="error-message">Error loading template. Please try again.</div>';
                 });
         });
     });
@@ -1358,76 +1474,78 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.test-btn').forEach(button => {
         button.addEventListener('click', function() {
             const templateId = this.dataset.id;
-            document.getElementById('test_template_id').value = templateId;
-            document.getElementById('testResult').style.display = 'none';
-            document.getElementById('testEmailForm').reset();
-            openModal('testEmailModal');
+            
+            // Fetch template details first
+            fetch('ajax/get_email_template.php?id=' + templateId)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('test_template_id').value = templateId;
+                        document.getElementById('testResult').style.display = 'none';
+                        document.getElementById('testEmailForm').reset();
+                        openModal('testEmailModal');
+                    } else {
+                        alert('Error loading template: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching template:', error);
+                    alert('Error loading template. Please try again.');
+                });
         });
     });
     
     // Handle test email form submission
-    $('#testEmailForm').on('submit', function(e) {
+    document.getElementById('testEmailForm').addEventListener('submit', function(e) {
         e.preventDefault();
         
         // Get form data
-        var formData = {
-            template_id: $('#test_template_id').val(),
-            email: $('#test_email').val(),
-            first_name: $('#test_first_name').val(),
-            last_name: $('#test_last_name').val()
-        };
-        
-        console.log('Form data:', formData);
+        const formData = new FormData();
+        formData.append('template_id', document.getElementById('test_template_id').value);
+        formData.append('email', document.getElementById('test_email').value);
+        formData.append('first_name', document.getElementById('test_first_name').value);
+        formData.append('last_name', document.getElementById('test_last_name').value);
         
         // Show loading indicator
-        $('#testResult').html('<p><i class="fas fa-spinner fa-spin"></i> Sending test email...</p>').show();
+        const testResult = document.getElementById('testResult');
+        testResult.innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Sending test email...</p>';
+        testResult.style.display = 'block';
         
         // Send test email via AJAX
-        $.ajax({
-            url: 'ajax/send_test_email.php',
-            type: 'POST',
-            data: formData,
-            dataType: 'json',
-            success: function(response) {
-                console.log('Response status:', 200);
-                console.log('Response data:', response);
-                
-                // Check if response is valid and has success property
-                if (response && typeof response === 'object') {
-                    if (response.success) {
-                        $('#testResult').html('<p class="success-message"><i class="fas fa-check-circle"></i> ' + 
-                            (response.message || 'Email sent successfully!') + '</p>');
-                        $('#testResult').addClass('success').removeClass('error');
-                    } else {
-                        $('#testResult').html('<p class="error-message"><i class="fas fa-exclamation-circle"></i> ' + 
-                            (response.error || 'Failed to send email.') + '</p>' +
-                            (response.details ? '<pre class="error-details">' + JSON.stringify(response.details, null, 2) + '</pre>' : ''));
-                        $('#testResult').addClass('error').removeClass('success');
-                    }
-                } else {
-                    // Handle case where response is not a valid object
-                    $('#testResult').html('<p class="error-message"><i class="fas fa-exclamation-circle"></i> Invalid response from server.</p>');
-                    $('#testResult').addClass('error').removeClass('success');
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error('AJAX error:', error);
-                $('#testResult').html('<p class="error-message"><i class="fas fa-exclamation-circle"></i> Error: ' + error + '</p>');
-                $('#testResult').addClass('error').removeClass('success');
-                
-                // Try to parse response text if possible
-                try {
-                    var errorResponse = JSON.parse(xhr.responseText);
-                    if (errorResponse && errorResponse.error) {
-                        $('#testResult').append('<p class="error-details">' + errorResponse.error + '</p>');
-                    }
-                } catch (e) {
-                    // If parsing fails, show the raw response
-                    if (xhr.responseText) {
-                        $('#testResult').append('<p class="error-details">Server response: ' + xhr.responseText + '</p>');
-                    }
-                }
+        fetch('ajax/send_test_email.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
             }
+            return response.text().then(text => {
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    console.error('Error parsing JSON:', text);
+                    throw new Error('Invalid JSON response from server');
+                }
+            });
+        })
+        .then(data => {
+            if (data.success) {
+                testResult.innerHTML = '<p class="success-message"><i class="fas fa-check-circle"></i> ' + 
+                    (data.message || 'Email sent successfully!') + '</p>';
+                testResult.className = 'test-result success';
+            } else {
+                testResult.innerHTML = '<p class="error-message"><i class="fas fa-exclamation-circle"></i> ' + 
+                    (data.error || 'Failed to send email.') + '</p>' +
+                    (data.details ? '<pre class="error-details">' + JSON.stringify(data.details, null, 2) + '</pre>' : '');
+                testResult.className = 'test-result error';
+            }
+        })
+        .catch(error => {
+            console.error('Error sending test email:', error);
+            testResult.innerHTML = '<p class="error-message"><i class="fas fa-exclamation-circle"></i> Error: ' + 
+                error.message + '</p>';
+            testResult.className = 'test-result error';
         });
     });
     
@@ -1493,5 +1611,24 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Error connecting to AI service. Please try again later.');
         });
     });
+
+    // Add loading and error styles
+    const style = document.createElement('style');
+    style.textContent = `
+        .loading {
+            padding: 20px;
+            text-align: center;
+            color: #666;
+        }
+        .error-message {
+            padding: 20px;
+            color: #dc3545;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    `;
+    document.head.appendChild(style);
 });
 </script>
