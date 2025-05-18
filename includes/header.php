@@ -128,6 +128,11 @@ if ($is_logged_in) {
                 
                 <!-- Header Actions: Book Service Button or User Profile -->
                 <div class="header-actions">
+                    <!-- Book Service button - always visible -->
+                    <div class="consultation-btn">
+                        <a href="/book-service.php" class="btn btn-primary">Book Service</a>
+                    </div>
+                    
                     <?php if($is_logged_in): ?>
                     <!-- User is logged in - show profile dropdown -->
                     <div class="action-buttons">
@@ -168,11 +173,8 @@ if ($is_logged_in) {
                         </div>
                     </div>
                     <?php else: ?>
-                    <!-- User is not logged in - show login/register button and book service -->
+                    <!-- User is not logged in - show login button -->
                     <div class="action-buttons">
-                        <div class="consultation-btn">
-                            <a href="/book-service.php" class="btn btn-primary">Book Service</a>
-                        </div>
                         <div class="auth-button">
                             <a href="/login.php" class="btn btn-secondary">Login</a>
                         </div>

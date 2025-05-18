@@ -67,18 +67,11 @@ if ($result && $result->num_rows > 0) {
 ?>
 
 <!-- Hero Section -->
-<section class="hero consultant-hero">
+<section class="hero">
     <div class="container">
-        <div class="hero-grid">
-            <div class="hero-content">
-                <h1 class="hero-title">Book a Professional Consultation</h1>
-                <p class="hero-subtitle">Connect with our network of experienced visa consultants to guide your immigration journey</p>
-            </div>
-            <div class="hero-image-container">
-                <div class="floating-image-hero">
-                    <img src="assets/images/consultation-hero.png" alt="Book a Consultation">
-                </div>
-            </div>
+        <div class="hero-content text-center">
+            <h1 class="hero-title">Book a Professional Consultation</h1>
+            <p class="hero-subtitle">Connect with our network of experienced visa consultants to guide your immigration journey</p>
         </div>
         
         <!-- Search and Filter Controls (inline at bottom of hero) -->
@@ -247,69 +240,34 @@ if ($result && $result->num_rows > 0) {
 
 /* Hero Section Styles */
 .hero {
-    padding: 60px 0 30px;
-    background-color: var(--background-light);
+    padding: 80px 0;
+    background-color: rgba(234, 170, 52, 0.05);
+    color: var(--color-light);
     overflow: hidden;
     position: relative;
 }
 
-.hero.consultant-hero {
-    background-color: rgba(234, 170, 52, 0.05);
-}
-
-.hero-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 40px;
-    align-items: center;
-    margin-bottom: 30px;
+.hero-content {
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto;
 }
 
 .hero-title {
-    font-size: 2.5rem;
+    font-size: 3.5rem;
+    color: #042167;
     font-weight: 700;
-    color: var(--dark-blue);
     margin-bottom: 20px;
     line-height: 1.2;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 .hero-subtitle {
     font-size: 1.2rem;
-    color: var(--text-light);
     margin-bottom: 30px;
-    line-height: 1.5;
-}
-
-.hero-image-container {
-    position: relative;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.floating-image-hero {
-    animation: float 3s ease-in-out infinite;
-    max-width: 100%;
-}
-
-.floating-image-hero img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 10px;
-    box-shadow: var(--shadow-lg);
-}
-
-@keyframes float {
-    0% {
-        transform: translateY(0px);
-    }
-    50% {
-        transform: translateY(-15px);
-    }
-    100% {
-        transform: translateY(0px);
-    }
+    line-height: 1.6;
+    opacity: 0.9;
+    color: #042167;
 }
 
 /* Search Filters */

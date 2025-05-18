@@ -27,19 +27,12 @@ if ($result && $result->num_rows > 0) {
 <!-- Hero Section -->
 <section class="hero consultant-hero">
     <div class="container">
-        <div class="hero-grid">
-            <div class="hero-content">
-                <h1 class="hero-title">Grow Your Immigration Consulting Business</h1>
-                <p class="hero-subtitle">Join Visafy to streamline your services, manage clients efficiently, and scale your practice</p>
-                <div class="hero-buttons">
-                    <a href="#membership-plans" class="btn btn-primary">View Membership Plans</a>
-                    <a href="contact.php" class="btn btn-secondary">Learn More</a>
-                </div>
-            </div>
-            <div class="hero-image-container">
-                <div class="floating-image-hero">
-                    <img src="assets/images/consultant-hero.png" alt="Immigration Consultant">
-                </div>
+        <div class="hero-content text-center">
+            <h1 class="hero-title">Grow Your Immigration Consulting Business</h1>
+            <p class="hero-subtitle">Join Visafy to streamline your services, manage clients efficiently, and scale your practice</p>
+            <div class="hero-buttons">
+                <a href="#membership-plans" class="btn btn-primary">View Membership Plans</a>
+                <a href="contact.php" class="btn btn-secondary">Learn More</a>
             </div>
         </div>
     </div>
@@ -47,6 +40,56 @@ if ($result && $result->num_rows > 0) {
 
 <div class="content">
     <!-- Consultant Benefits Section -->
+    <div class="registration-container" id="membership-plans">
+        <div class="membership-plans">
+            <h2>Choose Your Membership Plan</h2>
+            <p>Select the plan that best fits your business needs</p>
+            
+            <!-- Membership Plans -->
+            <div class="plans-grid">
+                <?php
+                if (count($plans) > 0) {
+                    foreach ($plans as $plan): 
+                ?>
+                    <div class="plan-card">
+                        <div class="plan-header">
+                            <h3 class="plan-name"><?php echo htmlspecialchars($plan['name']); ?></h3>
+                            <div class="plan-price">$<?php echo number_format($plan['price'], 2); ?></div>
+                            <div class="plan-billing">per month</div>
+                        </div>
+                        <div class="plan-features">
+                            <div class="feature">
+                                <i class="fas fa-users"></i>
+                                <div>Up to <?php echo (int)$plan['max_team_members']; ?> team members</div>
+                            </div>
+                            <div class="feature">
+                                <i class="fas fa-check-circle"></i>
+                                <div>Client management tools</div>
+                            </div>
+                            <div class="feature">
+                                <i class="fas fa-check-circle"></i>
+                                <div>Document management</div>
+                            </div>
+                            <div class="feature">
+                                <i class="fas fa-check-circle"></i>
+                                <div>Visa tracking system</div>
+                            </div>
+                        </div>
+                        <div class="plan-action">
+                            <a href="consultant-registration.php?plan_id=<?php echo $plan['id']; ?>" class="btn select-plan-btn">
+                                Select Plan
+                            </a>
+                        </div>
+                    </div>
+                <?php 
+                    endforeach; 
+                } else {
+                    echo '<div class="no-plans-message">No plans are currently available. Please check back later.</div>';
+                }
+                ?>
+            </div>
+        </div>
+    </div>
     <section class="section platform-benefits">
         <div class="container">
             <h2 class="section-title" data-aos="fade-up">Why Join Visafy as a Consultant</h2>
@@ -212,56 +255,7 @@ if ($result && $result->num_rows > 0) {
         </div>
     </section>
     
-    <div class="registration-container" id="membership-plans">
-        <div class="membership-plans">
-            <h2>Choose Your Membership Plan</h2>
-            <p>Select the plan that best fits your business needs</p>
-            
-            <!-- Membership Plans -->
-            <div class="plans-grid">
-                <?php
-                if (count($plans) > 0) {
-                    foreach ($plans as $plan): 
-                ?>
-                    <div class="plan-card">
-                        <div class="plan-header">
-                            <h3 class="plan-name"><?php echo htmlspecialchars($plan['name']); ?></h3>
-                            <div class="plan-price">$<?php echo number_format($plan['price'], 2); ?></div>
-                            <div class="plan-billing">per month</div>
-                        </div>
-                        <div class="plan-features">
-                            <div class="feature">
-                                <i class="fas fa-users"></i>
-                                <div>Up to <?php echo (int)$plan['max_team_members']; ?> team members</div>
-                            </div>
-                            <div class="feature">
-                                <i class="fas fa-check-circle"></i>
-                                <div>Client management tools</div>
-                            </div>
-                            <div class="feature">
-                                <i class="fas fa-check-circle"></i>
-                                <div>Document management</div>
-                            </div>
-                            <div class="feature">
-                                <i class="fas fa-check-circle"></i>
-                                <div>Visa tracking system</div>
-                            </div>
-                        </div>
-                        <div class="plan-action">
-                            <a href="consultant-registration.php?plan_id=<?php echo $plan['id']; ?>" class="btn select-plan-btn">
-                                Select Plan
-                            </a>
-                        </div>
-                    </div>
-                <?php 
-                    endforeach; 
-                } else {
-                    echo '<div class="no-plans-message">No plans are currently available. Please check back later.</div>';
-                }
-                ?>
-            </div>
-        </div>
-    </div>
+    
 </div>
 
 <style>
@@ -702,17 +696,18 @@ if ($result && $result->num_rows > 0) {
     background-color: var(--background-light);
     overflow: hidden;
     position: relative;
+    min-height: 300px;
+    display: flex;
+    align-items: center;
 }
 
 .hero.consultant-hero {
     background-color: rgba(234, 170, 52, 0.05);
 }
 
-.hero-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 40px;
-    align-items: center;
+.hero-content {
+    max-width: 800px;
+    margin: 0 auto;
 }
 
 .hero-title {
@@ -733,6 +728,7 @@ if ($result && $result->num_rows > 0) {
 .hero-buttons {
     display: flex;
     gap: 15px;
+    justify-content: center;
 }
 
 .btn {

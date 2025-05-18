@@ -9,21 +9,14 @@ include('includes/header.php');
 <!-- Hero Section -->
 <section class="hero">
     <div class="container">
-        <div class="hero-grid">
-            <div class="hero-content">
-                <h1 class="hero-title">Immigration Simplified For
-                    <div class="animated-text-wrapper"></div>
-                </h1>
-                <p class="hero-subtitle">Your trusted partner for immigration services</p>
-                <div class="hero-buttons">
-                    <a href="eligibility-test.php" class="btn btn-primary">Check Eligibility</a>
-                    <a href="contact.php" class="btn btn-secondary">Get Consultation</a>
-                </div>
-            </div>
-            <div class="hero-image-container ">
-                <div class="floating-image-hero">
-                    <img src="assets/images/9.png" alt="Immigration Services">
-                </div>
+        <div class="hero-content text-center">
+            <h1 class="hero-title">Immigration Simplified For
+                <div class="animated-text-wrapper"></div>
+            </h1>
+            <p class="hero-subtitle">Your trusted partner for immigration services</p>
+            <div class="hero-buttons">
+                <a href="eligibility-test.php" class="btn btn-primary">Check Eligibility</a>
+                <a href="book-service.php" class="btn btn-secondary">Get Consultation</a>
             </div>
         </div>
     </div>

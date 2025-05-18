@@ -4,16 +4,11 @@ include('includes/header.php');
 ?>
 
 <!-- Hero Section -->
-<section class="about-hero" style="padding: 80px 0; background-color: rgba(234, 170, 52, 0.05);">
+<section class="hero">
     <div class="container">
-        <div class="about-hero-grid">
-            <div class="about-hero-content">
-                <h1 class="about-title">Transforming Immigration Services Through Technology</h1>
-                <p class="about-subtitle">We're building the future of immigration consulting by connecting applicants with licensed professionals through our innovative digital platform.</p>
-            </div>
-            <div class="about-hero-image">
-                <img src="assets/images/about-hero.jpg" alt="Visafy Team" style="width: 100%; height: auto; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-            </div>
+        <div class="hero-content text-center">
+            <h1 class="hero-title">Transforming Immigration Services Through Technology</h1>
+            <p class="hero-subtitle">We're building the future of immigration consulting by connecting applicants with licensed professionals through our innovative digital platform.</p>
         </div>
     </div>
 </section>
@@ -170,11 +165,15 @@ include('includes/header.php');
 
 <style>
 /* About Hero Styles */
-.about-hero-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 50px;
+.about-hero {
+    min-height: 300px;
+    display: flex;
     align-items: center;
+}
+
+.about-hero-content {
+    max-width: 800px;
+    margin: 0 auto;
 }
 
 .about-title {
