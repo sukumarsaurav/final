@@ -76,8 +76,8 @@ include('includes/header.php');
                     <?php endif; ?>
                 </div>
                 <div class="profile-details">
-                    <h1><?php echo htmlspecialchars($consultant['first_name'] . ' ' . $consultant['last_name']); ?></h1>
-                    <p class="company-name"><?php echo htmlspecialchars($consultant['company_name']); ?></p>
+                    <h1><?php echo htmlspecialchars($consultant['first_name'] ?? '' . ' ' . $consultant['last_name'] ?? ''); ?></h1>
+                    <p class="company-name"><?php echo htmlspecialchars($consultant['company_name'] ?? ''); ?></p>
                    
                     <div class="profile-stats">
                         <div class="stat">
