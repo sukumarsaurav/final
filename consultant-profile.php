@@ -78,7 +78,7 @@ include('includes/header.php');
                 <div class="profile-details">
                     <h1><?php echo htmlspecialchars($consultant['first_name'] . ' ' . $consultant['last_name']); ?></h1>
                     <p class="company-name"><?php echo htmlspecialchars($consultant['company_name']); ?></p>
-                    <p class="organization"><?php echo htmlspecialchars($consultant['organization_name']); ?></p>
+                   
                     <div class="profile-stats">
                         <div class="stat">
                             <span class="stat-value"><?php echo number_format($consultant['average_rating'] ?? 0, 1); ?></span>
@@ -328,6 +328,8 @@ include('includes/header.php');
 /* Profile Header Styles */
 .profile-header {
     margin-bottom: 2rem;
+    position: relative;
+    z-index: 1;
 }
 
 .profile-banner {
@@ -345,7 +347,7 @@ include('includes/header.php');
     left: 0;
     right: 0;
     padding: 2rem;
-    background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+    background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.7));
     color: white;
     display: flex;
     align-items: flex-end;
@@ -359,6 +361,7 @@ include('includes/header.php');
     border-radius: 50%;
     overflow: hidden;
     border: 4px solid white;
+    flex-shrink: 0;
 }
 
 .profile-image img {
@@ -379,17 +382,21 @@ include('includes/header.php');
 
 .profile-details {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
 .profile-details h1 {
     margin: 0;
-    font-size: 2rem;
+    font-size: 2.5rem;
     font-weight: 700;
+    line-height: 1.2;
 }
 
 .company-name {
-    font-size: 1.2rem;
-    margin: 0.5rem 0;
+    font-size: 1.4rem;
+    margin: 0;
     opacity: 0.9;
 }
 
@@ -397,39 +404,44 @@ include('includes/header.php');
     font-size: 1rem;
     margin: 0;
     opacity: 0.8;
+    color: #ccc;
 }
 
 .profile-stats {
     display: flex;
     gap: 2rem;
-    margin-top: 1rem;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
 }
 
 .stat {
-    text-align: center;
+    text-align: left;
 }
 
 .stat-value {
     display: block;
-    font-size: 1.5rem;
-    font-weight: 700;
+    font-size: 1.2rem;
+    font-weight: 600;
 }
 
 .stat-label {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     opacity: 0.8;
 }
 
 /* Contact Info Styles */
 .contact-info {
-    margin-top: 1.5rem;
+    margin-top: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    justify-content: flex-start;
 }
 
 .contact-item {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    margin-bottom: 0.5rem;
 }
 
 .contact-item i {
@@ -441,6 +453,7 @@ include('includes/header.php');
     color: white;
     text-decoration: none;
     opacity: 0.9;
+    font-size: 0.9rem;
 }
 
 .contact-item a:hover {
@@ -449,9 +462,12 @@ include('includes/header.php');
 
 /* Social Links Styles */
 .social-links {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
     display: flex;
-    gap: 1rem;
-    margin-top: 1rem;
+    gap: 0.5rem;
+    z-index: 2;
 }
 
 .social-link {
@@ -465,6 +481,7 @@ include('includes/header.php');
     justify-content: center;
     text-decoration: none;
     transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
 }
 
 .social-link:hover {
@@ -605,6 +622,7 @@ include('includes/header.php');
         flex-direction: column;
         align-items: center;
         text-align: center;
+        padding: 1.5rem;
     }
 
     .profile-image {
@@ -612,20 +630,30 @@ include('includes/header.php');
         height: 120px;
     }
 
+    .profile-details h1 {
+        font-size: 2rem;
+        text-align: center;
+    }
+
+    .company-name {
+        font-size: 1.2rem;
+        text-align: center;
+    }
+
     .profile-stats {
         justify-content: center;
     }
 
     .contact-info {
-        text-align: center;
-    }
-
-    .contact-item {
         justify-content: center;
     }
 
     .social-links {
+        position: relative;
+        top: 0;
+        right: 0;
         justify-content: center;
+        margin-top: 1rem;
     }
 }
 </style>
