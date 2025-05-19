@@ -99,6 +99,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Handle profile picture upload
         $profile_picture = $user_data['profile_picture'];
         if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] == 0) {
+            // Delete old profile picture if exists
+            if (!empty($profile_picture) && file_exists('../../uploads/' . $profile_picture)) {
+                unlink('../../uploads/' . $profile_picture);
+            }
+            
             $upload_result = handle_user_file_upload(
                 $user_id, 
                 $_FILES['profile_picture'],
@@ -119,11 +124,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // Update profile if no validation errors
         if (empty($validation_errors)) {
-            $update_query = "UPDATE users SET first_name = ?, last_name = ?, email = ?, profile_picture = ? WHERE id = ?";
-            $stmt = $conn->prepare($update_query);
-            $stmt->bind_param('ssssi', $first_name, $last_name, $email, $profile_picture, $user_id);
-            
-            if ($stmt->execute()) {
+            try {
+                // Start transaction
+                $conn->begin_transaction();
+                
+                // Update users table
+                $update_query = "UPDATE users SET first_name = ?, last_name = ?, email = ?, profile_picture = ? WHERE id = ?";
+                $stmt = $conn->prepare($update_query);
+                $stmt->bind_param('ssssi', $first_name, $last_name, $email, $profile_picture, $user_id);
+                $stmt->execute();
+                
+                // Update consultant_profiles table if user is a consultant
+                if ($user_data['user_type'] === 'consultant') {
+                    // Check if consultant profile exists
+                    $check_profile = "SELECT consultant_id FROM consultant_profiles WHERE consultant_id = ?";
+                    $stmt = $conn->prepare($check_profile);
+                    $stmt->bind_param('i', $user_id);
+                    $stmt->execute();
+                    $profile_result = $stmt->get_result();
+                    
+                    if ($profile_result->num_rows > 0) {
+                        // Update existing profile
+                        $update_profile = "UPDATE consultant_profiles SET profile_image = ? WHERE consultant_id = ?";
+                        $stmt = $conn->prepare($update_profile);
+                        $stmt->bind_param('si', $profile_picture, $user_id);
+                        $stmt->execute();
+                    } else {
+                        // Insert new profile
+                        $insert_profile = "INSERT INTO consultant_profiles (consultant_id, profile_image) VALUES (?, ?)";
+                        $stmt = $conn->prepare($insert_profile);
+                        $stmt->bind_param('is', $user_id, $profile_picture);
+                        $stmt->execute();
+                    }
+                }
+                
+                // Commit transaction
+                $conn->commit();
+                
                 $success_message = "Profile updated successfully";
                 
                 // Update session variables
@@ -134,21 +171,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 // Refresh user data
                 $result = $conn->query("SELECT u.*, c.company_name, o.name as organization_name, c.membership_plan_id,
-                                        mp.name as membership_plan, mp.max_team_members, c.team_members_count,
-                                        cp.bio, cp.specializations, cp.years_experience, cp.education, cp.certifications, cp.languages,
-                                        cp.website, cp.social_linkedin, cp.social_twitter, cp.social_facebook, cp.is_featured, 
-                                        cp.is_verified, cp.verified_by, cp.verified_at, cp.banner_image 
-                                        FROM users u 
-                                        LEFT JOIN consultants c ON u.id = c.user_id
-                                        LEFT JOIN organizations o ON u.organization_id = o.id
-                                        LEFT JOIN membership_plans mp ON c.membership_plan_id = mp.id
-                                        LEFT JOIN consultant_profiles cp ON u.id = cp.consultant_id
-                                        WHERE u.id = $user_id");
+                                    mp.name as membership_plan, mp.max_team_members, c.team_members_count,
+                                    cp.bio, cp.specializations, cp.years_experience, cp.education, cp.certifications, cp.languages,
+                                    cp.website, cp.social_linkedin, cp.social_twitter, cp.social_facebook, cp.is_featured, 
+                                    cp.is_verified, cp.verified_by, cp.verified_at, cp.banner_image, cp.profile_image 
+                                    FROM users u 
+                                    LEFT JOIN consultants c ON u.id = c.user_id
+                                    LEFT JOIN organizations o ON u.organization_id = o.id
+                                    LEFT JOIN membership_plans mp ON c.membership_plan_id = mp.id
+                                    LEFT JOIN consultant_profiles cp ON u.id = cp.consultant_id
+                                    WHERE u.id = $user_id");
                 $user_data = $result->fetch_assoc();
-            } else {
-                $error_message = "Error updating profile: " . $conn->error;
+                
+            } catch (Exception $e) {
+                // Rollback transaction on error
+                $conn->rollback();
+                $error_message = "Error updating profile: " . $e->getMessage();
             }
-            $stmt->close();
         } else {
             $error_message = implode("<br>", $validation_errors);
         }
@@ -156,151 +195,194 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Update professional info
     if (isset($_POST['update_professional_info'])) {
-        $bio = trim($_POST['bio']);
-        $specializations = trim($_POST['specializations']);
-        $years_experience = intval($_POST['years_experience']);
-        $education = trim($_POST['education']);
-        $certifications = trim($_POST['certifications']);
-        $languages = trim($_POST['languages']);
-        $website = trim($_POST['website']);
-        $social_linkedin = trim($_POST['social_linkedin']);
-        $social_twitter = trim($_POST['social_twitter']);
-        $social_facebook = trim($_POST['social_facebook']);
-        
-        // Validate URLs if provided
-        if (!empty($website) && !filter_var($website, FILTER_VALIDATE_URL)) {
-            $validation_errors[] = "Website URL is invalid";
-        }
-        if (!empty($social_linkedin) && !filter_var($social_linkedin, FILTER_VALIDATE_URL)) {
-            $validation_errors[] = "LinkedIn URL is invalid";
-        }
-        if (!empty($social_twitter) && !filter_var($social_twitter, FILTER_VALIDATE_URL)) {
-            $validation_errors[] = "Twitter URL is invalid";
-        }
-        if (!empty($social_facebook) && !filter_var($social_facebook, FILTER_VALIDATE_URL)) {
-            $validation_errors[] = "Facebook URL is invalid";
-        }
-        
-        // Handle banner image upload
-        $banner_image = $user_data['banner_image'] ?? '';
-        if (isset($_FILES['banner_image']) && $_FILES['banner_image']['error'] == 0) {
-            $upload_result = handle_user_file_upload(
-                $user_id, 
-                $_FILES['banner_image'],
-                'banners',
-                [
-                    'max_size' => 5 * 1024 * 1024, // 5MB
-                    'allowed_types' => ['image/jpeg', 'image/png', 'image/gif'],
-                    'filename_prefix' => 'banner_'
-                ]
-            );
+        try {
+            // Start transaction
+            $conn->begin_transaction();
             
-            if ($upload_result['status']) {
-                $banner_image = $upload_result['file_path'];
-            } else {
-                $validation_errors[] = $upload_result['message'];
+            $bio = trim($_POST['bio'] ?? '');
+            $specializations = trim($_POST['specializations'] ?? '');
+            $years_experience = intval($_POST['years_experience'] ?? 0);
+            $education = trim($_POST['education'] ?? '');
+            $certifications = trim($_POST['certifications'] ?? '');
+            $languages = trim($_POST['languages'] ?? '');
+            $website = trim($_POST['website'] ?? '');
+            $social_linkedin = trim($_POST['social_linkedin'] ?? '');
+            $social_twitter = trim($_POST['social_twitter'] ?? '');
+            $social_facebook = trim($_POST['social_facebook'] ?? '');
+            
+            // Validate URLs if provided
+            $validation_errors = [];
+            if (!empty($website) && !filter_var($website, FILTER_VALIDATE_URL)) {
+                $validation_errors[] = "Website URL is invalid";
             }
-        }
-        
-        // Update professional info if no validation errors
-        if (empty($validation_errors)) {
-            // Check if consultant profile already exists
-            $check_query = "SELECT consultant_id FROM consultant_profiles WHERE consultant_id = ?";
-            $stmt = $conn->prepare($check_query);
-            $stmt->bind_param('i', $user_id);
-            $stmt->execute();
-            $check_result = $stmt->get_result();
-            
-            if ($check_result->num_rows > 0) {
-                // Update existing profile
-                $update_query = "UPDATE consultant_profiles SET 
-                                bio = ?, 
-                                specializations = ?, 
-                                years_experience = ?, 
-                                education = ?, 
-                                certifications = ?, 
-                                languages = ?, 
-                                website = ?, 
-                                social_linkedin = ?, 
-                                social_twitter = ?, 
-                                social_facebook = ?, 
-                                banner_image = ?
-                                WHERE consultant_id = ?";
-                $stmt = $conn->prepare($update_query);
-                $stmt->bind_param('ssisssssssi', $bio, $specializations, $years_experience, $education, $certifications, 
-                                $languages, $website, $social_linkedin, $social_twitter, $social_facebook, $banner_image, $user_id);
-            } else {
-                // Insert new profile
-                $insert_query = "INSERT INTO consultant_profiles 
-                                (consultant_id, bio, specializations, years_experience, education, certifications, 
-                                languages, website, social_linkedin, social_twitter, social_facebook, banner_image)
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                $stmt = $conn->prepare($insert_query);
-                $stmt->bind_param('ississssssss', $user_id, $bio, $specializations, $years_experience, $education, $certifications, 
-                                $languages, $website, $social_linkedin, $social_twitter, $social_facebook, $banner_image);
+            if (!empty($social_linkedin) && !filter_var($social_linkedin, FILTER_VALIDATE_URL)) {
+                $validation_errors[] = "LinkedIn URL is invalid";
+            }
+            if (!empty($social_twitter) && !filter_var($social_twitter, FILTER_VALIDATE_URL)) {
+                $validation_errors[] = "Twitter URL is invalid";
+            }
+            if (!empty($social_facebook) && !filter_var($social_facebook, FILTER_VALIDATE_URL)) {
+                $validation_errors[] = "Facebook URL is invalid";
             }
             
-            if ($stmt->execute()) {
+            // Handle banner image upload
+            $banner_image = $user_data['banner_image'] ?? '';
+            if (isset($_FILES['banner_image']) && $_FILES['banner_image']['error'] == 0) {
+                $upload_result = handle_user_file_upload(
+                    $user_id, 
+                    $_FILES['banner_image'],
+                    'banners',
+                    [
+                        'max_size' => 5 * 1024 * 1024, // 5MB
+                        'allowed_types' => ['image/jpeg', 'image/png', 'image/gif'],
+                        'filename_prefix' => 'banner_'
+                    ]
+                );
+                
+                if ($upload_result['status']) {
+                    $banner_image = $upload_result['file_path'];
+                } else {
+                    $validation_errors[] = $upload_result['message'];
+                }
+            }
+            
+            // Update professional info if no validation errors
+            if (empty($validation_errors)) {
+                // Check if consultant profile exists
+                $check_query = "SELECT consultant_id FROM consultant_profiles WHERE consultant_id = ?";
+                $stmt = $conn->prepare($check_query);
+                if (!$stmt) {
+                    throw new Exception("Error preparing check query: " . $conn->error);
+                }
+                $stmt->bind_param('i', $user_id);
+                $stmt->execute();
+                $check_result = $stmt->get_result();
+                
+                if ($check_result->num_rows > 0) {
+                    // Update existing profile
+                    $update_query = "UPDATE consultant_profiles SET 
+                                    bio = ?, 
+                                    specializations = ?, 
+                                    years_experience = ?, 
+                                    education = ?, 
+                                    certifications = ?, 
+                                    languages = ?, 
+                                    website = ?, 
+                                    social_linkedin = ?, 
+                                    social_twitter = ?, 
+                                    social_facebook = ?, 
+                                    banner_image = ?
+                                    WHERE consultant_id = ?";
+                    $stmt = $conn->prepare($update_query);
+                    if (!$stmt) {
+                        throw new Exception("Error preparing update query: " . $conn->error);
+                    }
+                    $stmt->bind_param('ssissssssssi', $bio, $specializations, $years_experience, $education, $certifications, 
+                                    $languages, $website, $social_linkedin, $social_twitter, $social_facebook, $banner_image, $user_id);
+                } else {
+                    // Insert new profile
+                    $insert_query = "INSERT INTO consultant_profiles 
+                                    (consultant_id, bio, specializations, years_experience, education, certifications, 
+                                    languages, website, social_linkedin, social_twitter, social_facebook, banner_image)
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    $stmt = $conn->prepare($insert_query);
+                    if (!$stmt) {
+                        throw new Exception("Error preparing insert query: " . $conn->error);
+                    }
+                    $stmt->bind_param('ississssssss', $user_id, $bio, $specializations, $years_experience, $education, $certifications, 
+                                    $languages, $website, $social_linkedin, $social_twitter, $social_facebook, $banner_image);
+                }
+                
+                if (!$stmt->execute()) {
+                    throw new Exception("Error executing query: " . $stmt->error);
+                }
+                
+                // Commit transaction
+                $conn->commit();
+                
                 $success_message = "Professional information updated successfully";
                 
                 // Refresh user data
-                $result = $conn->query("SELECT u.*, c.company_name, o.name as organization_name, c.membership_plan_id,
-                                        mp.name as membership_plan, mp.max_team_members, c.team_members_count,
-                                        cp.bio, cp.specializations, cp.years_experience, cp.education, cp.certifications, cp.languages,
-                                        cp.website, cp.social_linkedin, cp.social_twitter, cp.social_facebook, cp.is_featured, 
-                                        cp.is_verified, cp.verified_by, cp.verified_at, cp.banner_image
-                                        FROM users u 
-                                        LEFT JOIN consultants c ON u.id = c.user_id
-                                        LEFT JOIN organizations o ON u.organization_id = o.id
-                                        LEFT JOIN membership_plans mp ON c.membership_plan_id = mp.id
-                                        LEFT JOIN consultant_profiles cp ON u.id = cp.consultant_id
-                                        WHERE u.id = $user_id");
+                $refresh_query = "SELECT u.*, c.company_name, o.name as organization_name, c.membership_plan_id,
+                                mp.name as membership_plan, mp.max_team_members, c.team_members_count,
+                                cp.bio, cp.specializations, cp.years_experience, cp.education, cp.certifications, cp.languages,
+                                cp.website, cp.social_linkedin, cp.social_twitter, cp.social_facebook, cp.is_featured, 
+                                cp.is_verified, cp.verified_by, cp.verified_at, cp.banner_image, cp.profile_image
+                                FROM users u 
+                                LEFT JOIN consultants c ON u.id = c.user_id
+                                LEFT JOIN organizations o ON u.organization_id = o.id
+                                LEFT JOIN membership_plans mp ON c.membership_plan_id = mp.id
+                                LEFT JOIN consultant_profiles cp ON u.id = cp.consultant_id
+                                WHERE u.id = ?";
+                $stmt = $conn->prepare($refresh_query);
+                if (!$stmt) {
+                    throw new Exception("Error preparing refresh query: " . $conn->error);
+                }
+                $stmt->bind_param('i', $user_id);
+                $stmt->execute();
+                $result = $stmt->get_result();
                 $user_data = $result->fetch_assoc();
+                
             } else {
-                $error_message = "Error updating professional information: " . $conn->error;
+                throw new Exception(implode("<br>", $validation_errors));
             }
-            $stmt->close();
-        } else {
-            $error_message = implode("<br>", $validation_errors);
+            
+        } catch (Exception $e) {
+            // Rollback transaction on error
+            $conn->rollback();
+            $error_message = "Error updating professional information: " . $e->getMessage();
         }
     }
     
     // Update just the profile picture (Ajax request)
     if (isset($_POST['update_profile_picture']) && isset($_FILES['profile_picture'])) {
-        $upload_result = handle_user_file_upload(
-            $user_id, 
-            $_FILES['profile_picture'],
-            'profile',
-            [
-                'max_size' => 2 * 1024 * 1024, // 2MB
-                'allowed_types' => ['image/jpeg', 'image/png', 'image/gif'],
-                'filename_prefix' => 'profile_'
-            ]
-        );
-        
-        if ($upload_result['status']) {
-            // Update database
-            $update_query = "UPDATE users SET profile_picture = ? WHERE id = ?";
-            $stmt = $conn->prepare($update_query);
-            $stmt->bind_param('si', $upload_result['file_path'], $user_id);
+        try {
+            // Start transaction
+            $conn->begin_transaction();
             
-            if ($stmt->execute()) {
-                // Update session
-                $_SESSION['profile_picture'] = $upload_result['file_path'];
-                
-                // Success - redirect to refresh the page
-                header('Location: profile.php?success=profile_picture_updated');
-                exit;
-            } else {
-                $validation_errors[] = "Error updating profile picture in database";
+            // Delete old profile picture if exists
+            if (!empty($user_data['profile_picture']) && file_exists('../../uploads/' . $user_data['profile_picture'])) {
+                unlink('../../uploads/' . $user_data['profile_picture']);
             }
-            $stmt->close();
-        } else {
-            $validation_errors[] = $upload_result['message'];
-        }
-        
-        if (!empty($validation_errors)) {
-            $error_message = implode("<br>", $validation_errors);
+            
+            $upload_result = handle_user_file_upload(
+                $user_id, 
+                $_FILES['profile_picture'],
+                'profile',
+                [
+                    'max_size' => 2 * 1024 * 1024, // 2MB
+                    'allowed_types' => ['image/jpeg', 'image/png', 'image/gif'],
+                    'filename_prefix' => 'profile_'
+                ]
+            );
+            
+            if ($upload_result['status']) {
+                // Update database
+                $update_query = "UPDATE users SET profile_picture = ? WHERE id = ?";
+                $stmt = $conn->prepare($update_query);
+                $stmt->bind_param('si', $upload_result['file_path'], $user_id);
+                
+                if ($stmt->execute()) {
+                    // Update session
+                    $_SESSION['profile_picture'] = $upload_result['file_path'];
+                    
+                    // Commit transaction
+                    $conn->commit();
+                    
+                    // Success - redirect to refresh the page
+                    header('Location: profile.php?success=profile_picture_updated');
+                    exit;
+                } else {
+                    throw new Exception("Error updating profile picture in database");
+                }
+            } else {
+                throw new Exception($upload_result['message']);
+            }
+            
+        } catch (Exception $e) {
+            // Rollback transaction on error
+            $conn->rollback();
+            $error_message = "Error updating profile picture: " . $e->getMessage();
         }
     }
     
@@ -506,6 +588,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->close();
         } else {
             $error_message = implode("<br>", $validation_errors);
+        }
+    }
+
+    // Verification documents upload
+    if (isset($_POST['upload_verification'])) {
+        try {
+            // Start transaction
+            $conn->begin_transaction();
+            
+            $document_types = ['business_license', 'id_proof', 'certifications', 'additional_docs'];
+            $upload_success = true;
+            
+            foreach ($document_types as $doc_type) {
+                if (isset($_FILES[$doc_type]) && $_FILES[$doc_type]['error'] == 0) {
+                    $upload_result = handle_user_file_upload(
+                        $user_id,
+                        $_FILES[$doc_type],
+                        'verification',
+                        [
+                            'max_size' => 5 * 1024 * 1024, // 5MB
+                            'allowed_types' => ['application/pdf', 'image/jpeg', 'image/png'],
+                            'filename_prefix' => 'verification_' . $doc_type . '_'
+                        ]
+                    );
+                    
+                    if ($upload_result['status']) {
+                        // Insert into consultant_verifications table
+                        $insert_query = "INSERT INTO consultant_verifications 
+                                       (consultant_id, document_type, document_path) 
+                                       VALUES (?, ?, ?)";
+                        $stmt = $conn->prepare($insert_query);
+                        $stmt->bind_param('iss', $user_id, $doc_type, $upload_result['file_path']);
+                        
+                        if (!$stmt->execute()) {
+                            throw new Exception("Error saving verification document: " . $stmt->error);
+                        }
+                    } else {
+                        $upload_success = false;
+                        throw new Exception($upload_result['message']);
+                    }
+                }
+            }
+            
+            if ($upload_success) {
+                // Commit transaction
+                $conn->commit();
+                $success_message = "Verification documents uploaded successfully. They will be reviewed by our team.";
+            }
+            
+        } catch (Exception $e) {
+            // Rollback transaction on error
+            $conn->rollback();
+            $error_message = "Error uploading verification documents: " . $e->getMessage();
         }
     }
 }
@@ -771,7 +906,57 @@ if (!empty($user_data['profile_picture'])) {
                             <i class="fas fa-exclamation-circle"></i>
                             <span>Your profile is not verified</span>
                         </div>
-                        <p>Get your profile verified to increase trust with potential clients. <a href="verification.php">Upload verification documents</a></p>
+                        <p>Upload your verification documents to get your profile verified.</p>
+                        
+                        <div class="verification-documents">
+                            <div class="form-group">
+                                <label>Business License</label>
+                                <div class="file-upload-container">
+                                    <input type="file" name="business_license" class="form-control file-upload" accept=".pdf,.jpg,.jpeg,.png">
+                                    <div class="file-upload-text">
+                                        <i class="fas fa-upload"></i> Choose a file...
+                                    </div>
+                                </div>
+                                <small class="form-text">Upload your business license or registration document</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>ID Proof</label>
+                                <div class="file-upload-container">
+                                    <input type="file" name="id_proof" class="form-control file-upload" accept=".pdf,.jpg,.jpeg,.png">
+                                    <div class="file-upload-text">
+                                        <i class="fas fa-upload"></i> Choose a file...
+                                    </div>
+                                </div>
+                                <small class="form-text">Upload a government-issued ID (passport, driver's license)</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Professional Certifications</label>
+                                <div class="file-upload-container">
+                                    <input type="file" name="certifications" class="form-control file-upload" accept=".pdf,.jpg,.jpeg,.png">
+                                    <div class="file-upload-text">
+                                        <i class="fas fa-upload"></i> Choose a file...
+                                    </div>
+                                </div>
+                                <small class="form-text">Upload your professional certifications or accreditations</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Additional Documents</label>
+                                <div class="file-upload-container">
+                                    <input type="file" name="additional_docs" class="form-control file-upload" accept=".pdf,.jpg,.jpeg,.png">
+                                    <div class="file-upload-text">
+                                        <i class="fas fa-upload"></i> Choose a file...
+                                    </div>
+                                </div>
+                                <small class="form-text">Any additional documents that support your verification</small>
+                            </div>
+                            
+                            <div class="form-buttons">
+                                <button type="submit" name="upload_verification" class="btn primary-btn">Upload Verification Documents</button>
+                            </div>
+                        </div>
                     </div>
                     <?php endif; ?>
                     
@@ -1408,6 +1593,31 @@ if (!empty($user_data['profile_picture'])) {
     font-size: 0.9rem;
 }
 
+.verification-documents {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #f8f9fc;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+}
+
+.verification-documents .form-group {
+    margin-bottom: 20px;
+}
+
+.verification-documents .file-upload-container {
+    margin-top: 5px;
+}
+
+.verification-documents .form-text {
+    margin-top: 5px;
+    color: var(--secondary-color);
+}
+
+.verification-documents .form-buttons {
+    margin-top: 30px;
+}
+
 @media (max-width: 768px) {
     .profile-container {
         flex-direction: column;
@@ -1434,8 +1644,8 @@ if (!empty($user_data['profile_picture'])) {
 </style>
 
 <script>
-// Tab switching functionality
 document.addEventListener('DOMContentLoaded', function() {
+    // Tab switching functionality
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
     
@@ -1460,13 +1670,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const profileImagePreview = document.getElementById('profile-image-preview');
     const changePhotoBtn = document.querySelector('.change-photo-btn');
     
-    // Open file picker when the camera icon is clicked
-    changePhotoBtn.addEventListener('click', function() {
+    // Prevent event bubbling and default behavior
+    changePhotoBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
         profilePicUpload.click();
     });
     
-    // Preview and submit when file is selected
-    profilePicUpload.addEventListener('change', function() {
+    // Handle file selection
+    profilePicUpload.addEventListener('change', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
         if (this.files && this.files[0]) {
             // First show a preview
             const reader = new FileReader();
@@ -1486,12 +1701,33 @@ document.addEventListener('DOMContentLoaded', function() {
     const fileUpload = document.getElementById('profile_picture');
     const fileText = document.querySelector('.file-upload-text');
     
-    fileUpload.addEventListener('change', function() {
+    fileUpload.addEventListener('change', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
         if (this.files && this.files[0]) {
             fileText.innerHTML = '<i class="fas fa-file"></i> ' + this.files[0].name;
         } else {
             fileText.innerHTML = '<i class="fas fa-upload"></i> Choose a file...';
         }
+    });
+
+    // Handle file upload text display for verification documents
+    const verificationFileInputs = document.querySelectorAll('.verification-documents .file-upload');
+    
+    verificationFileInputs.forEach(input => {
+        const fileText = input.nextElementSibling;
+        
+        input.addEventListener('change', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (this.files && this.files[0]) {
+                fileText.innerHTML = '<i class="fas fa-file"></i> ' + this.files[0].name;
+            } else {
+                fileText.innerHTML = '<i class="fas fa-upload"></i> Choose a file...';
+            }
+        });
     });
 });
 </script>
