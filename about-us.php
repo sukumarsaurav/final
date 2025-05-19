@@ -35,6 +35,84 @@ include('includes/header.php');
     </div>
 </section>
 
+<!-- Platform Benefits Section -->
+<section class="platform-benefits" style="padding: 80px 0; background-color: #fff;">
+    <div class="container">
+        <h2 class="section-title">How We Help</h2>
+        <div class="benefits-grid">
+            <!-- For Applicants -->
+            <div class="benefit-group">
+                <h3 class="benefit-title">For Applicants</h3>
+                <div class="benefits-list">
+                    <div class="benefit-item">
+                        <i class="fas fa-file-alt"></i>
+                        <div class="benefit-content">
+                            <h4>Application Management</h4>
+                            <p>Track your application progress, manage documents, and receive real-time updates</p>
+                        </div>
+                    </div>
+                    <div class="benefit-item">
+                        <i class="fas fa-comments"></i>
+                        <div class="benefit-content">
+                            <h4>Direct Communication</h4>
+                            <p>Connect with your consultant through our integrated messaging and meeting system</p>
+                        </div>
+                    </div>
+                    <div class="benefit-item">
+                        <i class="fas fa-tasks"></i>
+                        <div class="benefit-content">
+                            <h4>Document Management</h4>
+                            <p>Securely store and manage all your immigration documents in one place</p>
+                        </div>
+                    </div>
+                    <div class="benefit-item">
+                        <i class="fas fa-calendar-check"></i>
+                        <div class="benefit-content">
+                            <h4>Meeting Scheduling</h4>
+                            <p>Schedule and manage consultations with your immigration consultant</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- For Consultants -->
+            <div class="benefit-group">
+                <h3 class="benefit-title">For Consultants</h3>
+                <div class="benefits-list">
+                    <div class="benefit-item">
+                        <i class="fas fa-users"></i>
+                        <div class="benefit-content">
+                            <h4>Client Management</h4>
+                            <p>Comprehensive tools for managing client profiles, history, and relationships</p>
+                        </div>
+                    </div>
+                    <div class="benefit-item">
+                        <i class="fas fa-passport"></i>
+                        <div class="benefit-content">
+                            <h4>Visa Processing</h4>
+                            <p>Advanced tools for application tracking, document verification, and status updates</p>
+                        </div>
+                    </div>
+                    <div class="benefit-item">
+                        <i class="fas fa-cogs"></i>
+                        <div class="benefit-content">
+                            <h4>Service Management</h4>
+                            <p>Customize services, manage team collaboration, and handle bookings efficiently</p>
+                        </div>
+                    </div>
+                    <div class="benefit-item">
+                        <i class="fas fa-chart-line"></i>
+                        <div class="benefit-content">
+                            <h4>Business Analytics</h4>
+                            <p>Track performance metrics, client engagement, and business growth</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <!-- Problem & Solution Section -->
 <section class="problem-solution" style="padding: 80px 0; background-color: #f8f9fa;">
     <div class="container">
@@ -46,11 +124,11 @@ include('includes/header.php');
                 </div>
                 <h3>Traditional Challenges</h3>
                 <ul>
-                    <li>Lack of transparency in application process</li>
-                    <li>Difficulty in finding legitimate consultants</li>
-                    <li>Inefficient document management</li>
-                    <li>Poor communication channels</li>
-                    <li>Inconsistent service quality</li>
+                    <li>Complex application tracking and management</li>
+                    <li>Inefficient document handling and verification</li>
+                    <li>Poor client-consultant communication</li>
+                    <li>Lack of automated scheduling and reminders</li>
+                    <li>Difficulty in managing multiple applications</li>
                 </ul>
             </div>
             <div class="solution-card">
@@ -59,76 +137,12 @@ include('includes/header.php');
                 </div>
                 <h3>Our Solutions</h3>
                 <ul>
-                    <li>Real-time application tracking system</li>
-                    <li>Verified ICCRC-licensed consultants</li>
-                    <li>Secure digital document management</li>
-                    <li>Integrated communication platform</li>
-                    <li>Standardized service delivery</li>
+                    <li>Real-time application tracking and status updates</li>
+                    <li>Secure digital document management system</li>
+                    <li>Integrated messaging and meeting platform</li>
+                    <li>Automated scheduling and notification system</li>
+                    <li>Comprehensive client and case management tools</li>
                 </ul>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Platform Benefits Section -->
-<section class="platform-benefits" style="padding: 80px 0; background-color: #fff;">
-    <div class="container">
-        <h2 class="section-title">How We Help</h2>
-        <div class="benefits-grid">
-            <!-- For Applicants -->
-            <div class="benefit-group">
-                <h3 class="benefit-title">For Applicants</h3>
-                <div class="benefits-list">
-                    <div class="benefit-item">
-                        <i class="fas fa-check-circle"></i>
-                        <div class="benefit-content">
-                            <h4>Transparent Process</h4>
-                            <p>Track your application progress in real-time with detailed status updates</p>
-                        </div>
-                    </div>
-                    <div class="benefit-item">
-                        <i class="fas fa-shield-alt"></i>
-                        <div class="benefit-content">
-                            <h4>Verified Experts</h4>
-                            <p>Connect with licensed immigration consultants with proven track records</p>
-                        </div>
-                    </div>
-                    <div class="benefit-item">
-                        <i class="fas fa-file-alt"></i>
-                        <div class="benefit-content">
-                            <h4>Document Security</h4>
-                            <p>Store and manage your documents in our secure digital vault</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- For Consultants -->
-            <div class="benefit-group">
-                <h3 class="benefit-title">For Consultants</h3>
-                <div class="benefits-list">
-                    <div class="benefit-item">
-                        <i class="fas fa-tasks"></i>
-                        <div class="benefit-content">
-                            <h4>Practice Management</h4>
-                            <p>Streamline your practice with our comprehensive management tools</p>
-                        </div>
-                    </div>
-                    <div class="benefit-item">
-                        <i class="fas fa-users"></i>
-                        <div class="benefit-content">
-                            <h4>Client Acquisition</h4>
-                            <p>Connect with verified applicants seeking professional services</p>
-                        </div>
-                    </div>
-                    <div class="benefit-item">
-                        <i class="fas fa-chart-line"></i>
-                        <div class="benefit-content">
-                            <h4>Business Growth</h4>
-                            <p>Scale your practice with automated workflows and digital tools</p>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>

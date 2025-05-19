@@ -197,288 +197,13 @@ $page_title = $consultant['consultant_name'] . " - Consultant Profile";
 require_once 'includes/header.php';
 ?>
 
-<!-- Banner Section -->
-<div class="consultant-banner" style="background-image: url('<?php echo $banner_img; ?>');">
-    <div class="banner-overlay">
-        <div class="container">
-            <?php if (!empty($consultant['is_verified'])): ?>
-                <div class="verified-badge-large">
-                    <i class="fas fa-check-circle"></i> Verified by Visafy
-                </div>
-            <?php endif; ?>
-        </div>
-    </div>
-</div>
-
-<div class="container">
-    <div class="profile-main">
-        <div class="profile-header">
-            <div class="profile-image-container">
-                <img src="<?php echo $profile_img; ?>" alt="<?php echo htmlspecialchars($consultant['consultant_name']); ?>" class="profile-image">
-            </div>
-            
-            <div class="profile-info">
-                <h1><?php echo htmlspecialchars($consultant['consultant_name']); ?></h1>
-                <p class="company-name"><?php echo htmlspecialchars($consultant['company_name']); ?></p>
-                
-                <div class="profile-meta">
-                    <?php if (!empty($consultant['years_experience'])): ?>
-                        <span class="meta-item"><i class="fas fa-briefcase"></i> <?php echo $consultant['years_experience']; ?> years experience</span>
-                    <?php endif; ?>
-                    
-                    <?php if (!empty($consultant['languages'])): ?>
-                        <span class="meta-item"><i class="fas fa-globe"></i> <?php echo htmlspecialchars($consultant['languages']); ?></span>
-                    <?php endif; ?>
-                    
-                    <span class="meta-item"><i class="fas fa-star"></i> <?php echo $avg_rating; ?> (<?php echo $reviews_count; ?> reviews)</span>
-                </div>
-                
-                <div class="social-links">
-                    <?php if (!empty($consultant['website'])): ?>
-                        <a href="<?php echo htmlspecialchars($consultant['website']); ?>" target="_blank" class="social-link">
-                            <i class="fas fa-globe"></i>
-                        </a>
-                    <?php endif; ?>
-                    
-                    <?php if (!empty($consultant['social_linkedin'])): ?>
-                        <a href="<?php echo htmlspecialchars($consultant['social_linkedin']); ?>" target="_blank" class="social-link">
-                            <i class="fab fa-linkedin"></i>
-                        </a>
-                    <?php endif; ?>
-                    
-                    <?php if (!empty($consultant['social_twitter'])): ?>
-                        <a href="<?php echo htmlspecialchars($consultant['social_twitter']); ?>" target="_blank" class="social-link">
-                            <i class="fab fa-twitter"></i>
-                        </a>
-                    <?php endif; ?>
-                    
-                    <?php if (!empty($consultant['social_facebook'])): ?>
-                        <a href="<?php echo htmlspecialchars($consultant['social_facebook']); ?>" target="_blank" class="social-link">
-                            <i class="fab fa-facebook"></i>
-                        </a>
-                    <?php endif; ?>
-                </div>
-                
-                <div class="profile-actions">
-                    <a href="book-consultation.php?consultant_id=<?php echo $consultant_id; ?>" class="btn btn-primary">Book Consultation</a>
-                    <a href="contact-consultant.php?id=<?php echo $consultant_id; ?>" class="btn btn-secondary">Contact</a>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Profile Tabs -->
-        <div class="profile-tabs">
-            <ul class="nav nav-tabs" id="profileTabs" role="tablist">
-                <li class="nav-item">
-                    <a class="nav-link active" id="about-tab" data-toggle="tab" href="#about" role="tab" aria-controls="about" aria-selected="true">About</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="services-tab" data-toggle="tab" href="#services" role="tab" aria-controls="services" aria-selected="false">Services</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="reviews-tab" data-toggle="tab" href="#reviews" role="tab" aria-controls="reviews" aria-selected="false">Client Reviews</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="bookings-tab" data-toggle="tab" href="#bookings" role="tab" aria-controls="bookings" aria-selected="false">Recent Bookings</a>
-                </li>
-            </ul>
-            
-            <div class="tab-content" id="profileTabsContent">
-                <!-- About Tab -->
-                <div class="tab-pane fade show active" id="about" role="tabpanel" aria-labelledby="about-tab">
-                    <div class="tab-section">
-                        <h3>About <?php echo htmlspecialchars($consultant['consultant_name']); ?></h3>
-                        <?php if (!empty($consultant['bio'])): ?>
-                            <div class="bio">
-                                <?php echo nl2br(htmlspecialchars($consultant['bio'])); ?>
-                            </div>
-                        <?php else: ?>
-                            <p>No bio information available.</p>
-                        <?php endif; ?>
-                        
-                        <?php if (!empty($consultant['specializations'])): ?>
-                            <div class="specializations">
-                                <h4>Specializations</h4>
-                                <p><?php echo nl2br(htmlspecialchars($consultant['specializations'])); ?></p>
-                            </div>
-                        <?php endif; ?>
-                        
-                        <?php if (!empty($consultant['education'])): ?>
-                            <div class="education">
-                                <h4>Education</h4>
-                                <p><?php echo nl2br(htmlspecialchars($consultant['education'])); ?></p>
-                            </div>
-                        <?php endif; ?>
-                        
-                        <?php if (!empty($consultant['certifications'])): ?>
-                            <div class="certifications">
-                                <h4>Certifications</h4>
-                                <p><?php echo nl2br(htmlspecialchars($consultant['certifications'])); ?></p>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                </div>
-                
-                <!-- Services Tab -->
-                <div class="tab-pane fade" id="services" role="tabpanel" aria-labelledby="services-tab">
-                    <div class="tab-section">
-                        <h3>Services Offered</h3>
-                        <?php if (empty($services)): ?>
-                            <p>No services are currently listed for this consultant.</p>
-                        <?php else: ?>
-                            <div class="services-grid">
-                                <?php foreach ($services as $service): ?>
-                                    <div class="service-card">
-                                        <div class="service-header">
-                                            <h4><?php echo htmlspecialchars($service['service_name']); ?></h4>
-                                            <span class="service-price">$<?php echo number_format($service['base_price'], 2); ?></span>
-                                        </div>
-                                        <div class="service-body">
-                                            <p class="visa-type">
-                                                <i class="fas fa-passport"></i> 
-                                                <?php echo htmlspecialchars($service['visa_type']); ?> - 
-                                                <?php echo htmlspecialchars($service['country_name']); ?>
-                                            </p>
-                                            <?php if (!empty($service['description'])): ?>
-                                                <p class="service-description"><?php echo nl2br(htmlspecialchars($service['description'])); ?></p>
-                                            <?php endif; ?>
-                                        </div>
-                                        <div class="service-footer">
-                                            <a href="book-consultation.php?consultant_id=<?php echo $consultant_id; ?>&service_id=<?php echo $service['visa_service_id']; ?>" class="btn btn-primary btn-sm">Book This Service</a>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                </div>
-                
-                <!-- Client Reviews Tab -->
-                <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
-                    <div class="tab-section">
-                        <h3>Client Reviews</h3>
-                        <?php if (empty($client_reviews)): ?>
-                            <p>No reviews yet. Be the first to leave a review after your consultation.</p>
-                        <?php else: ?>
-                            <div class="reviews-summary">
-                                <div class="rating-large">
-                                    <span class="rating-number"><?php echo $avg_rating; ?></span>
-                                    <div class="stars-large">
-                                        <?php for ($i = 1; $i <= 5; $i++): ?>
-                                            <?php if ($i <= floor($avg_rating)): ?>
-                                                <i class="fas fa-star"></i>
-                                            <?php elseif ($i - 0.5 <= $avg_rating): ?>
-                                                <i class="fas fa-star-half-alt"></i>
-                                            <?php else: ?>
-                                                <i class="far fa-star"></i>
-                                            <?php endif; ?>
-                                        <?php endfor; ?>
-                                    </div>
-                                    <span class="reviews-count"><?php echo $reviews_count; ?> reviews</span>
-                                </div>
-                            </div>
-                            
-                            <div class="reviews-list">
-                                <?php foreach ($client_reviews as $review): ?>
-                                    <div class="review-card">
-                                        <div class="review-header">
-                                            <div class="reviewer-info">
-                                                <div class="reviewer-avatar">
-                                                    <?php if (!empty($review['client_picture'])): ?>
-                                                        <?php 
-                                                        $client_img = '/assets/images/default-profile.jpg';
-                                                        if (strpos($review['client_picture'], 'users/') === 0) {
-                                                            if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/uploads/' . $review['client_picture'])) {
-                                                                $client_img = '/uploads/' . $review['client_picture'];
-                                                            }
-                                                        } else if (strpos($review['client_picture'], 'user/') === 0) {
-                                                            if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/uploads/' . $review['client_picture'])) {
-                                                                $client_img = '/uploads/' . $review['client_picture'];
-                                                            }
-                                                        }
-                                                        ?>
-                                                        <img src="<?php echo $client_img; ?>" alt="<?php echo htmlspecialchars($review['client_name']); ?>">
-                                                    <?php else: ?>
-                                                        <div class="default-avatar">
-                                                            <?php echo strtoupper(substr($review['client_name'], 0, 1)); ?>
-                                                        </div>
-                                                    <?php endif; ?>
-                                                </div>
-                                                <div class="reviewer-details">
-                                                    <h5><?php echo htmlspecialchars($review['client_name']); ?></h5>
-                                                    <span class="review-date"><?php echo date('F j, Y', strtotime($review['created_at'])); ?></span>
-                                                </div>
-                                            </div>
-                                            <div class="review-rating">
-                                                <?php for ($i = 1; $i <= 5; $i++): ?>
-                                                    <?php if ($i <= $review['rating']): ?>
-                                                        <i class="fas fa-star"></i>
-                                                    <?php else: ?>
-                                                        <i class="far fa-star"></i>
-                                                    <?php endif; ?>
-                                                <?php endfor; ?>
-                                            </div>
-                                        </div>
-                                        <div class="review-body">
-                                            <p><?php echo nl2br(htmlspecialchars($review['feedback'])); ?></p>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                </div>
-                
-                <!-- Recent Bookings Tab -->
-                <div class="tab-pane fade" id="bookings" role="tabpanel" aria-labelledby="bookings-tab">
-                    <div class="tab-section">
-                        <h3>Recent Bookings</h3>
-                        <?php if (empty($recent_bookings)): ?>
-                            <p>No recent bookings found.</p>
-                        <?php else: ?>
-                            <div class="table-responsive">
-                                <table class="table bookings-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>Time</th>
-                                            <th>Duration</th>
-                                            <th>Client</th>
-                                            <th>Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php foreach ($recent_bookings as $booking): ?>
-                                            <tr>
-                                                <td><?php echo date('M d, Y', strtotime($booking['booking_datetime'])); ?></td>
-                                                <td><?php echo date('h:i A', strtotime($booking['booking_datetime'])); ?></td>
-                                                <td><?php echo $booking['duration_minutes']; ?> min</td>
-                                                <td><?php echo htmlspecialchars($booking['client_name']); ?></td>
-                                                <td>
-                                                    <span class="status-badge status-<?php echo strtolower($booking['status']); ?>">
-                                                        <?php echo ucfirst($booking['status']); ?>
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- CSS -->
+<!-- CSS Styles -->
 <style>
 :root {
     --primary-color: #eaaa34;
     --primary-light: rgba(234, 170, 52, 0.1);
     --primary-medium: rgba(234, 170, 52, 0.2);
-    --dark-blue: #042167;
+    --secondary-color: #042167;
     --text-color: #333;
     --text-light: #666;
     --background-light: #f8f9fa;
@@ -493,9 +218,9 @@ require_once 'includes/header.php';
     --transition: all 0.3s ease;
 }
 
-/* Banner Section */
+/* Hero Banner */
 .consultant-banner {
-    height: 300px;
+    height: 500px;
     background-size: cover;
     background-position: center;
     position: relative;
@@ -508,9 +233,68 @@ require_once 'includes/header.php';
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.6));
+    background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.8));
     display: flex;
-    align-items: flex-end;
+    align-items: center;
+}
+
+.hero-flex {
+    display: flex;
+    align-items: center;
+}
+
+.hero-profile-image {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 5px solid var(--white);
+    box-shadow: var(--shadow);
+    margin-right: 30px;
+    flex-shrink: 0;
+}
+
+.hero-profile-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.hero-content {
+    color: var(--white);
+    max-width: 800px;
+}
+
+.hero-content h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--white);
+}
+
+.hero-content .company-name {
+    font-size: 1.5rem;
+    opacity: 0.9;
+    margin-bottom: 1.5rem;
+    color: var(--white);
+}
+
+.hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.hero-meta .meta-item {
+    display: flex;
+    align-items: center;
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.hero-meta .meta-item i {
+    margin-right: 8px;
 }
 
 .verified-badge-large {
@@ -523,225 +307,85 @@ require_once 'includes/header.php';
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 20px;
-}
-
-/* Profile Main */
-.profile-main {
-    background-color: var(--white);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
-    margin-top: -60px;
-    margin-bottom: 40px;
-    position: relative;
-    z-index: 1;
-}
-
-.profile-header {
-    padding: 30px;
-    display: flex;
-    align-items: flex-start;
-    gap: 30px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.profile-image-container {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    overflow: hidden;
-    border: 5px solid var(--white);
-    box-shadow: var(--shadow);
-    flex-shrink: 0;
-    background-color: var(--background-light);
-}
-
-.profile-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.profile-info {
-    flex: 1;
-}
-
-.profile-info h1 {
-    margin: 0 0 5px 0;
-    color: var(--dark-blue);
-    font-size: 2.2rem;
-}
-
-.company-name {
-    font-size: 1.2rem;
-    color: var(--text-light);
-    margin-bottom: 15px;
-}
-
-.profile-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    margin-bottom: 20px;
-}
-
-.meta-item {
-    display: flex;
-    align-items: center;
-    font-size: 0.95rem;
-    color: var(--text-light);
-}
-
-.meta-item i {
-    margin-right: 8px;
-    color: var(--primary-color);
 }
 
 .social-links {
     display: flex;
-    gap: 15px;
+    gap: 10px;
     margin-bottom: 20px;
 }
 
 .social-link {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
-    background-color: var(--background-light);
-    color: var(--dark-blue);
-    border-radius: 50%;
     transition: var(--transition);
 }
 
 .social-link:hover {
     background-color: var(--primary-color);
-    color: var(--white);
     transform: translateY(-3px);
 }
 
-.profile-actions {
+.hero-actions {
     display: flex;
     gap: 15px;
 }
 
-.btn {
-    padding: 10px 20px;
+/* Content Grid */
+.content-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+    margin-top: 40px;
+}
+
+.content-section {
+    margin-bottom: 40px;
+}
+
+.content-section h2 {
+    color: var(--secondary-color);
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.content-section h3 {
+    color: var(--secondary-color);
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+/* Cards */
+.card {
+    background-color: var(--white);
     border-radius: var(--border-radius);
-    font-weight: 600;
-    text-decoration: none;
-    transition: var(--transition);
-    display: inline-block;
-    cursor: pointer;
-    border: none;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin-bottom: 20px;
 }
 
-.btn-sm {
-    padding: 8px 15px;
-    font-size: 0.9rem;
-}
-
-.btn-primary {
-    background-color: var(--primary-color);
-    color: var(--white);
-}
-
-.btn-primary:hover {
-    background-color: var(--dark-blue);
-    transform: translateY(-2px);
-}
-
-.btn-secondary {
-    background-color: var(--white);
-    color: var(--text-color);
-    border: 1px solid var(--border-color);
-}
-
-.btn-secondary:hover {
-    background-color: var(--background-light);
-    transform: translateY(-2px);
-}
-
-/* Profile Tabs */
-.profile-tabs {
-    padding: 0 30px 30px;
-}
-
-.nav-tabs {
-    display: flex;
-    list-style: none;
-    padding: 0;
-    margin: 0;
+.card-header {
+    padding: 20px;
     border-bottom: 1px solid var(--border-color);
+    background-color: var(--primary-light);
 }
 
-.nav-item {
-    margin-bottom: -1px;
+.card-body {
+    padding: 20px;
 }
 
-.nav-link {
-    display: block;
+.card-footer {
     padding: 15px 20px;
-    color: var(--text-color);
-    text-decoration: none;
-    font-weight: 500;
-    border: 1px solid transparent;
-    border-top-left-radius: var(--border-radius);
-    border-top-right-radius: var(--border-radius);
-    transition: var(--transition);
-}
-
-.nav-link:hover {
-    color: var(--primary-color);
-}
-
-.nav-link.active {
-    color: var(--dark-blue);
-    background-color: var(--white);
-    border-color: var(--border-color);
-    border-bottom-color: var(--white);
-    font-weight: 600;
-}
-
-.tab-content {
-    padding-top: 30px;
-}
-
-.tab-pane {
-    display: none;
-}
-
-.tab-pane.active {
-    display: block;
-}
-
-.tab-pane.show {
-    opacity: 1;
-}
-
-.tab-section {
-    margin-bottom: 30px;
-}
-
-.tab-section h3 {
-    color: var(--dark-blue);
-    margin-bottom: 20px;
-    font-size: 1.5rem;
-    font-weight: 600;
-}
-
-.tab-section h4 {
-    color: var(--text-color);
-    margin: 25px 0 10px;
-    font-size: 1.2rem;
-    font-weight: 600;
-}
-
-.bio, .specializations, .education, .certifications {
-    margin-bottom: 20px;
-    line-height: 1.6;
-    color: var(--text-color);
+    border-top: 1px solid var(--border-color);
+    background-color: var(--background-light);
 }
 
 /* Services Grid */
@@ -749,7 +393,6 @@ require_once 'includes/header.php';
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 20px;
-    margin-top: 20px;
 }
 
 .service-card {
@@ -759,6 +402,9 @@ require_once 'includes/header.php';
     overflow: hidden;
     transition: var(--transition);
     border: 1px solid var(--border-color);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .service-card:hover {
@@ -777,7 +423,7 @@ require_once 'includes/header.php';
 
 .service-header h4 {
     margin: 0;
-    color: var(--dark-blue);
+    color: var(--secondary-color);
     font-size: 1.1rem;
 }
 
@@ -788,6 +434,7 @@ require_once 'includes/header.php';
 
 .service-body {
     padding: 20px;
+    flex-grow: 1;
 }
 
 .visa-type {
@@ -800,7 +447,7 @@ require_once 'includes/header.php';
 
 .visa-type i {
     margin-right: 8px;
-    color: var(--dark-blue);
+    color: var(--secondary-color);
 }
 
 .service-description {
@@ -832,7 +479,7 @@ require_once 'includes/header.php';
 .rating-number {
     font-size: 3rem;
     font-weight: 700;
-    color: var(--dark-blue);
+    color: var(--secondary-color);
     line-height: 1;
 }
 
@@ -890,7 +537,7 @@ require_once 'includes/header.php';
 .default-avatar {
     width: 100%;
     height: 100%;
-    background-color: var(--dark-blue);
+    background-color: var(--secondary-color);
     color: var(--white);
     display: flex;
     align-items: center;
@@ -920,31 +567,64 @@ require_once 'includes/header.php';
     line-height: 1.6;
 }
 
-/* Bookings Table */
-.table-responsive {
-    overflow-x: auto;
-}
-
-.bookings-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.bookings-table th {
-    background-color: var(--background-light);
-    color: var(--text-color);
-    font-weight: 600;
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 2px solid var(--border-color);
-}
-
-.bookings-table td {
-    padding: 12px 15px;
+/* Bookings */
+.booking-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 0;
     border-bottom: 1px solid var(--border-color);
-    color: var(--text-color);
 }
 
+.booking-item:last-child {
+    border-bottom: none;
+}
+
+.booking-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--primary-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-color);
+    flex-shrink: 0;
+}
+
+.booking-content {
+    flex: 1;
+}
+
+.booking-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.booking-client {
+    font-weight: 600;
+    margin: 0;
+}
+
+.booking-meta {
+    display: flex;
+    gap: 15px;
+    font-size: 0.85rem;
+    color: var(--text-light);
+}
+
+.booking-meta span {
+    display: flex;
+    align-items: center;
+}
+
+.booking-meta i {
+    margin-right: 5px;
+}
+
+/* Status Badges */
 .status-badge {
     display: inline-block;
     padding: 5px 10px;
@@ -973,6 +653,151 @@ require_once 'includes/header.php';
     color: #dc3545;
 }
 
+/* Buttons */
+.btn {
+    padding: 10px 20px;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    text-decoration: none;
+    transition: var(--transition);
+    display: inline-block;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-lg {
+    padding: 12px 24px;
+    font-size: 1.1rem;
+}
+
+.btn-sm {
+    padding: 8px 15px;
+    font-size: 0.9rem;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: var(--white);
+}
+
+.btn-primary:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: var(--white);
+    border: 1px solid var(--white);
+}
+
+.btn-secondary:hover {
+    background-color: var(--white);
+    color: var(--secondary-color);
+    transform: translateY(-2px);
+}
+
+.btn-outline {
+    background-color: var(--white);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+.btn-outline:hover {
+    background-color: var(--background-light);
+    transform: translateY(-2px);
+}
+
+/* Grid Layout */
+.grid-2-cols {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 30px;
+    margin-top: 30px;
+}
+
+/* Tabs for Mobile */
+.profile-tabs {
+    padding: 0 30px 30px;
+    display: none;
+}
+
+.nav-tabs {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.nav-item {
+    margin-bottom: -1px;
+}
+
+.nav-link {
+    display: block;
+    padding: 15px 20px;
+    color: var(--text-color);
+    text-decoration: none;
+    font-weight: 500;
+    border: 1px solid transparent;
+    border-top-left-radius: var(--border-radius);
+    border-top-right-radius: var(--border-radius);
+    transition: var(--transition);
+}
+
+.nav-link:hover {
+    color: var(--primary-color);
+}
+
+.nav-link.active {
+    color: var(--secondary-color);
+    background-color: var(--white);
+    border-color: var(--border-color);
+    border-bottom-color: var(--white);
+    font-weight: 600;
+}
+
+.tab-content {
+    padding-top: 30px;
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+.tab-pane.show {
+    opacity: 1;
+}
+
+.tab-section {
+    margin-bottom: 30px;
+}
+
+.tab-section h3 {
+    color: var(--secondary-color);
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.tab-section h4 {
+    color: var(--text-color);
+    margin: 25px 0 10px;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.bio, .specializations, .education, .certifications {
+    margin-bottom: 20px;
+    line-height: 1.6;
+    color: var(--text-color);
+}
+
 /* Fade animation for tab transitions */
 .fade {
     transition: opacity 0.15s linear;
@@ -984,13 +809,21 @@ require_once 'includes/header.php';
 
 /* Responsive styles */
 @media (max-width: 991px) {
-    .profile-header {
+    .hero-flex {
         flex-direction: column;
-        align-items: center;
         text-align: center;
     }
     
-    .profile-meta {
+    .hero-profile-image {
+        margin-right: 0;
+        margin-bottom: 20px;
+    }
+    
+    .hero-meta {
+        justify-content: center;
+    }
+    
+    .hero-actions {
         justify-content: center;
     }
     
@@ -998,8 +831,12 @@ require_once 'includes/header.php';
         justify-content: center;
     }
     
-    .profile-actions {
-        justify-content: center;
+    .content-grid {
+        display: none;
+    }
+    
+    .profile-tabs {
+        display: block;
     }
     
     .nav-tabs {
@@ -1015,23 +852,27 @@ require_once 'includes/header.php';
 
 @media (max-width: 767px) {
     .consultant-banner {
-        height: 200px;
+        height: 400px;
     }
     
-    .profile-main {
-        margin-top: -40px;
+    .hero-content h1 {
+        font-size: 2rem;
     }
     
-    .profile-image-container {
+    .hero-content .company-name {
+        font-size: 1.2rem;
+    }
+    
+    .hero-profile-image {
         width: 120px;
         height: 120px;
     }
     
-    .profile-info h1 {
-        font-size: 1.8rem;
+    .services-grid {
+        grid-template-columns: 1fr;
     }
     
-    .services-grid {
+    .grid-2-cols {
         grid-template-columns: 1fr;
     }
     
@@ -1045,6 +886,487 @@ require_once 'includes/header.php';
     }
 }
 </style>
+
+<!-- Hero Banner Section -->
+<div class="consultant-banner" style="background-image: url('<?php echo $banner_img; ?>');">
+    <div class="banner-overlay">
+        <div class="container">
+            <div class="hero-flex">
+                <div class="hero-profile-image">
+                    <img src="<?php echo $profile_img; ?>" alt="<?php echo htmlspecialchars($consultant['consultant_name']); ?>">
+                </div>
+                
+                <div class="hero-content">
+                    <h1><?php echo htmlspecialchars($consultant['consultant_name']); ?></h1>
+                    <p class="company-name"><?php echo htmlspecialchars($consultant['company_name']); ?></p>
+                    
+                    <div class="hero-meta">
+                        <?php if (!empty($consultant['years_experience'])): ?>
+                            <span class="meta-item"><i class="fas fa-briefcase"></i> <?php echo $consultant['years_experience']; ?> years experience</span>
+                        <?php endif; ?>
+                        
+                        <?php if (!empty($consultant['languages'])): ?>
+                            <span class="meta-item"><i class="fas fa-globe"></i> <?php echo htmlspecialchars($consultant['languages']); ?></span>
+                        <?php endif; ?>
+                        
+                        <span class="meta-item"><i class="fas fa-star"></i> <?php echo $avg_rating; ?> (<?php echo $reviews_count; ?> reviews)</span>
+                        
+                        <?php if (!empty($consultant['is_verified'])): ?>
+                            <span class="verified-badge-large">
+                                <i class="fas fa-check-circle"></i> Verified by Visafy
+                            </span>
+                        <?php endif; ?>
+                    </div>
+                    
+                    <div class="social-links">
+                        <?php if (!empty($consultant['website'])): ?>
+                            <a href="<?php echo htmlspecialchars($consultant['website']); ?>" target="_blank" class="social-link">
+                                <i class="fas fa-globe"></i>
+                            </a>
+                        <?php endif; ?>
+                        
+                        <?php if (!empty($consultant['social_linkedin'])): ?>
+                            <a href="<?php echo htmlspecialchars($consultant['social_linkedin']); ?>" target="_blank" class="social-link">
+                                <i class="fab fa-linkedin"></i>
+                            </a>
+                        <?php endif; ?>
+                        
+                        <?php if (!empty($consultant['social_twitter'])): ?>
+                            <a href="<?php echo htmlspecialchars($consultant['social_twitter']); ?>" target="_blank" class="social-link">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                        <?php endif; ?>
+                        
+                        <?php if (!empty($consultant['social_facebook'])): ?>
+                            <a href="<?php echo htmlspecialchars($consultant['social_facebook']); ?>" target="_blank" class="social-link">
+                                <i class="fab fa-facebook"></i>
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                    
+                    <div class="hero-actions">
+                        <a href="book-consultation.php?consultant_id=<?php echo $consultant_id; ?>" class="btn btn-primary btn-lg">Book Consultation</a>
+                        <a href="contact-consultant.php?id=<?php echo $consultant_id; ?>" class="btn btn-secondary btn-lg">Contact</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Desktop Layout -->
+    <div class="content-grid">
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- About Section -->
+            <div class="content-section">
+                <h2>About <?php echo htmlspecialchars($consultant['consultant_name']); ?></h2>
+                <div class="card">
+                    <div class="card-body">
+                        <?php if (!empty($consultant['bio'])): ?>
+                            <div class="bio">
+                                <?php echo nl2br(htmlspecialchars($consultant['bio'])); ?>
+                            </div>
+                        <?php else: ?>
+                            <p>No bio information available.</p>
+                        <?php endif; ?>
+                        
+                        <div class="grid-2-cols">
+                            <?php if (!empty($consultant['specializations'])): ?>
+                                <div class="specializations">
+                                    <h3>Specializations</h3>
+                                    <p><?php echo nl2br(htmlspecialchars($consultant['specializations'])); ?></p>
+                                </div>
+                            <?php endif; ?>
+                            
+                            <?php if (!empty($consultant['education'])): ?>
+                                <div class="education">
+                                    <h3>Education</h3>
+                                    <p><?php echo nl2br(htmlspecialchars($consultant['education'])); ?></p>
+                                </div>
+                            <?php endif; ?>
+                            
+                            <?php if (!empty($consultant['certifications'])): ?>
+                                <div class="certifications">
+                                    <h3>Certifications</h3>
+                                    <p><?php echo nl2br(htmlspecialchars($consultant['certifications'])); ?></p>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Services Section -->
+            <div class="content-section">
+                <h2>Services Offered</h2>
+                <?php if (empty($services)): ?>
+                    <div class="card">
+                        <div class="card-body">
+                            <p>No services are currently listed for this consultant.</p>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <div class="services-grid">
+                        <?php foreach ($services as $service): ?>
+                            <div class="service-card">
+                                <div class="service-header">
+                                    <h4><?php echo htmlspecialchars($service['service_name']); ?></h4>
+                                    <span class="service-price">$<?php echo number_format($service['base_price'], 2); ?></span>
+                                </div>
+                                <div class="service-body">
+                                    <p class="visa-type">
+                                        <i class="fas fa-passport"></i> 
+                                        <?php echo htmlspecialchars($service['visa_type']); ?> - 
+                                        <?php echo htmlspecialchars($service['country_name']); ?>
+                                    </p>
+                                    <?php if (!empty($service['description'])): ?>
+                                        <p class="service-description"><?php echo nl2br(htmlspecialchars($service['description'])); ?></p>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="service-footer">
+                                    <a href="book-consultation.php?consultant_id=<?php echo $consultant_id; ?>&service_id=<?php echo $service['visa_service_id']; ?>" class="btn btn-primary btn-sm">Book This Service</a>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Reviews Section -->
+            <div class="content-section">
+                <h2>Client Reviews</h2>
+                <div class="card">
+                    <div class="card-body">
+                        <?php if (empty($client_reviews)): ?>
+                            <p>No reviews yet. Be the first to leave a review after your consultation.</p>
+                        <?php else: ?>
+                            <div class="reviews-summary">
+                                <div class="rating-large">
+                                    <span class="rating-number"><?php echo $avg_rating; ?></span>
+                                    <div class="stars-large">
+                                        <?php for ($i = 1; $i <= 5; $i++): ?>
+                                            <?php if ($i <= floor($avg_rating)): ?>
+                                                <i class="fas fa-star"></i>
+                                            <?php elseif ($i - 0.5 <= $avg_rating): ?>
+                                                <i class="fas fa-star-half-alt"></i>
+                                            <?php else: ?>
+                                                <i class="far fa-star"></i>
+                                            <?php endif; ?>
+                                        <?php endfor; ?>
+                                    </div>
+                                    <span class="reviews-count"><?php echo $reviews_count; ?> reviews</span>
+                                </div>
+                            </div>
+                            
+                            <div class="reviews-list">
+                                <?php foreach (array_slice($client_reviews, 0, 2) as $review): ?>
+                                    <div class="review-card">
+                                        <div class="review-header">
+                                            <div class="reviewer-info">
+                                                <div class="reviewer-avatar">
+                                                    <?php if (!empty($review['client_picture'])): ?>
+                                                        <?php 
+                                                        $client_img = '/assets/images/default-profile.jpg';
+                                                        if (strpos($review['client_picture'], 'users/') === 0) {
+                                                            if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/uploads/' . $review['client_picture'])) {
+                                                                $client_img = '/uploads/' . $review['client_picture'];
+                                                            }
+                                                        } else if (strpos($review['client_picture'], 'user/') === 0) {
+                                                            if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/uploads/' . $review['client_picture'])) {
+                                                                $client_img = '/uploads/' . $review['client_picture'];
+                                                            }
+                                                        }
+                                                        ?>
+                                                        <img src="<?php echo $client_img; ?>" alt="<?php echo htmlspecialchars($review['client_name']); ?>">
+                                                    <?php else: ?>
+                                                        <div class="default-avatar">
+                                                            <?php echo strtoupper(substr($review['client_name'], 0, 1)); ?>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                </div>
+                                                <div class="reviewer-details">
+                                                    <h5><?php echo htmlspecialchars($review['client_name']); ?></h5>
+                                                    <span class="review-date"><?php echo date('F j, Y', strtotime($review['created_at'])); ?></span>
+                                                </div>
+                                            </div>
+                                            <div class="review-rating">
+                                                <?php for ($i = 1; $i <= 5; $i++): ?>
+                                                    <?php if ($i <= $review['rating']): ?>
+                                                        <i class="fas fa-star"></i>
+                                                    <?php else: ?>
+                                                        <i class="far fa-star"></i>
+                                                    <?php endif; ?>
+                                                <?php endfor; ?>
+                                            </div>
+                                        </div>
+                                        <div class="review-body">
+                                            <p><?php echo nl2br(htmlspecialchars($review['feedback'])); ?></p>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                            
+                            <?php if (count($client_reviews) > 2): ?>
+                                <div style="text-align: center; margin-top: 15px;">
+                                    <a href="#" class="btn btn-outline btn-sm" onclick="document.getElementById('reviews-tab').click(); return false;">View all <?php echo $reviews_count; ?> reviews</a>
+                                </div>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Bookings Section -->
+            <div class="content-section">
+                <h2>Recent Bookings</h2>
+                <div class="card">
+                    <div class="card-body">
+                        <?php if (empty($recent_bookings)): ?>
+                            <p>No recent bookings found.</p>
+                        <?php else: ?>
+                            <div class="recent-bookings-list">
+                                <?php foreach (array_slice($recent_bookings, 0, 3) as $booking): ?>
+                                    <div class="booking-item">
+                                        <div class="booking-icon">
+                                            <i class="fas fa-calendar"></i>
+                                        </div>
+                                        <div class="booking-content">
+                                            <div class="booking-header">
+                                                <p class="booking-client"><?php echo htmlspecialchars($booking['client_name']); ?></p>
+                                                <span class="status-badge status-<?php echo strtolower($booking['status']); ?>">
+                                                    <?php echo ucfirst(explode('_', $booking['status'])[0]); ?>
+                                                </span>
+                                            </div>
+                                            <div class="booking-meta">
+                                                <span><i class="fas fa-calendar-day"></i><?php echo date('M d', strtotime($booking['booking_datetime'])); ?></span>
+                                                <span><i class="fas fa-clock"></i><?php echo date('h:i A', strtotime($booking['booking_datetime'])); ?></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                            
+                            <?php if (count($recent_bookings) > 3): ?>
+                                <div style="text-align: center; margin-top: 15px;">
+                                    <a href="#" class="btn btn-outline btn-sm" onclick="document.getElementById('bookings-tab').click(); return false;">View all bookings</a>
+                                </div>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mobile Tabs Layout -->
+    <div class="profile-tabs">
+        <ul class="nav nav-tabs" id="profileTabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="about-tab" data-toggle="tab" href="#about" role="tab" aria-controls="about" aria-selected="true">About</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="services-tab" data-toggle="tab" href="#services" role="tab" aria-controls="services" aria-selected="false">Services</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="reviews-tab" data-toggle="tab" href="#reviews" role="tab" aria-controls="reviews" aria-selected="false">Reviews</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="bookings-tab" data-toggle="tab" href="#bookings" role="tab" aria-controls="bookings" aria-selected="false">Bookings</a>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="profileTabsContent">
+            <!-- About Tab -->
+            <div class="tab-pane fade show active" id="about" role="tabpanel" aria-labelledby="about-tab">
+                <div class="tab-section">
+                    <h3>About <?php echo htmlspecialchars($consultant['consultant_name']); ?></h3>
+                    <?php if (!empty($consultant['bio'])): ?>
+                        <div class="bio">
+                            <?php echo nl2br(htmlspecialchars($consultant['bio'])); ?>
+                        </div>
+                    <?php else: ?>
+                        <p>No bio information available.</p>
+                    <?php endif; ?>
+                    
+                    <?php if (!empty($consultant['specializations'])): ?>
+                        <div class="specializations">
+                            <h4>Specializations</h4>
+                            <p><?php echo nl2br(htmlspecialchars($consultant['specializations'])); ?></p>
+                        </div>
+                    <?php endif; ?>
+                    
+                    <?php if (!empty($consultant['education'])): ?>
+                        <div class="education">
+                            <h4>Education</h4>
+                            <p><?php echo nl2br(htmlspecialchars($consultant['education'])); ?></p>
+                        </div>
+                    <?php endif; ?>
+                    
+                    <?php if (!empty($consultant['certifications'])): ?>
+                        <div class="certifications">
+                            <h4>Certifications</h4>
+                            <p><?php echo nl2br(htmlspecialchars($consultant['certifications'])); ?></p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+            
+            <!-- Services Tab -->
+            <div class="tab-pane fade" id="services" role="tabpanel" aria-labelledby="services-tab">
+                <div class="tab-section">
+                    <h3>Services Offered</h3>
+                    <?php if (empty($services)): ?>
+                        <p>No services are currently listed for this consultant.</p>
+                    <?php else: ?>
+                        <div class="services-grid">
+                            <?php foreach ($services as $service): ?>
+                                <div class="service-card">
+                                    <div class="service-header">
+                                        <h4><?php echo htmlspecialchars($service['service_name']); ?></h4>
+                                        <span class="service-price">$<?php echo number_format($service['base_price'], 2); ?></span>
+                                    </div>
+                                    <div class="service-body">
+                                        <p class="visa-type">
+                                            <i class="fas fa-passport"></i> 
+                                            <?php echo htmlspecialchars($service['visa_type']); ?> - 
+                                            <?php echo htmlspecialchars($service['country_name']); ?>
+                                        </p>
+                                        <?php if (!empty($service['description'])): ?>
+                                            <p class="service-description"><?php echo nl2br(htmlspecialchars($service['description'])); ?></p>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="service-footer">
+                                        <a href="book-consultation.php?consultant_id=<?php echo $consultant_id; ?>&service_id=<?php echo $service['visa_service_id']; ?>" class="btn btn-primary btn-sm">Book This Service</a>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+            
+            <!-- Client Reviews Tab -->
+            <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
+                <div class="tab-section">
+                    <h3>Client Reviews</h3>
+                    <?php if (empty($client_reviews)): ?>
+                        <p>No reviews yet. Be the first to leave a review after your consultation.</p>
+                    <?php else: ?>
+                        <div class="reviews-summary">
+                            <div class="rating-large">
+                                <span class="rating-number"><?php echo $avg_rating; ?></span>
+                                <div class="stars-large">
+                                    <?php for ($i = 1; $i <= 5; $i++): ?>
+                                        <?php if ($i <= floor($avg_rating)): ?>
+                                            <i class="fas fa-star"></i>
+                                        <?php elseif ($i - 0.5 <= $avg_rating): ?>
+                                            <i class="fas fa-star-half-alt"></i>
+                                        <?php else: ?>
+                                            <i class="far fa-star"></i>
+                                        <?php endif; ?>
+                                    <?php endfor; ?>
+                                </div>
+                                <span class="reviews-count"><?php echo $reviews_count; ?> reviews</span>
+                            </div>
+                        </div>
+                        
+                        <div class="reviews-list">
+                            <?php foreach ($client_reviews as $review): ?>
+                                <div class="review-card">
+                                    <div class="review-header">
+                                        <div class="reviewer-info">
+                                            <div class="reviewer-avatar">
+                                                <?php if (!empty($review['client_picture'])): ?>
+                                                    <?php 
+                                                    $client_img = '/assets/images/default-profile.jpg';
+                                                    if (strpos($review['client_picture'], 'users/') === 0) {
+                                                        if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/uploads/' . $review['client_picture'])) {
+                                                            $client_img = '/uploads/' . $review['client_picture'];
+                                                        }
+                                                    } else if (strpos($review['client_picture'], 'user/') === 0) {
+                                                        if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/uploads/' . $review['client_picture'])) {
+                                                            $client_img = '/uploads/' . $review['client_picture'];
+                                                        }
+                                                    }
+                                                    ?>
+                                                    <img src="<?php echo $client_img; ?>" alt="<?php echo htmlspecialchars($review['client_name']); ?>">
+                                                <?php else: ?>
+                                                    <div class="default-avatar">
+                                                        <?php echo strtoupper(substr($review['client_name'], 0, 1)); ?>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
+                                            <div class="reviewer-details">
+                                                <h5><?php echo htmlspecialchars($review['client_name']); ?></h5>
+                                                <span class="review-date"><?php echo date('F j, Y', strtotime($review['created_at'])); ?></span>
+                                            </div>
+                                        </div>
+                                        <div class="review-rating">
+                                            <?php for ($i = 1; $i <= 5; $i++): ?>
+                                                <?php if ($i <= $review['rating']): ?>
+                                                    <i class="fas fa-star"></i>
+                                                <?php else: ?>
+                                                    <i class="far fa-star"></i>
+                                                <?php endif; ?>
+                                            <?php endfor; ?>
+                                        </div>
+                                    </div>
+                                    <div class="review-body">
+                                        <p><?php echo nl2br(htmlspecialchars($review['feedback'])); ?></p>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+            
+            <!-- Recent Bookings Tab -->
+            <div class="tab-pane fade" id="bookings" role="tabpanel" aria-labelledby="bookings-tab">
+                <div class="tab-section">
+                    <h3>Recent Bookings</h3>
+                    <?php if (empty($recent_bookings)): ?>
+                        <p>No recent bookings found.</p>
+                    <?php else: ?>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>Duration</th>
+                                        <th>Client</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($recent_bookings as $booking): ?>
+                                        <tr>
+                                            <td><?php echo date('M d, Y', strtotime($booking['booking_datetime'])); ?></td>
+                                            <td><?php echo date('h:i A', strtotime($booking['booking_datetime'])); ?></td>
+                                            <td><?php echo $booking['duration_minutes']; ?> min</td>
+                                            <td><?php echo htmlspecialchars($booking['client_name']); ?></td>
+                                            <td>
+                                                <span class="status-badge status-<?php echo strtolower($booking['status']); ?>">
+                                                    <?php echo ucfirst(explode('_', $booking['status'])[0]); ?>
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- JavaScript for tab functionality -->
 <script>

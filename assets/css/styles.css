@@ -1761,11 +1761,13 @@ body {
     justify-content: center;
     gap: 1.5rem;
     flex-wrap: wrap;
+    
 }
 
 .cta-buttons a {
     padding: 1rem 2rem;
     font-size: 1.1rem;
+    border-radius:8px;
 }
 
 /* Why Choose Us Section */

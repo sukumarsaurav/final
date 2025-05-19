@@ -82,7 +82,8 @@ if ($result && $result->num_rows > 0) {
                 </div>
                 <div class="filter-item">
                     <select id="filter-rating" class="form-control">
-                        <option value="">Filter by Rating</option>
+                        <option value="">All Ratings</option>
+                        <option value="no-rating">No Ratings</option>
                         <option value="4">4+ Stars</option>
                         <option value="3">3+ Stars</option>
                         <option value="2">2+ Stars</option>
@@ -103,6 +104,9 @@ if ($result && $result->num_rows > 0) {
 </section>
 
 <div class="container">
+    <!-- Search and Filter Controls -->
+    
+
     <!-- Consultants List -->
     <div class="consultants-list">
         <?php if (empty($consultants)): ?>
@@ -113,10 +117,11 @@ if ($result && $result->num_rows > 0) {
         <?php else: ?>
             <div class="row">
                 <?php foreach ($consultants as $consultant): ?>
-                    <div class="col-md-6 col-lg-4 mb-4 consultant-card-wrapper" 
+                    <div class="col-md-6 mb-4 consultant-card-wrapper" 
                          data-name="<?php echo strtolower(htmlspecialchars($consultant['consultant_name'])); ?>"
                          data-specializations="<?php echo strtolower(htmlspecialchars($consultant['specializations'] ?? '')); ?>"
                          data-rating="<?php echo htmlspecialchars($consultant['average_rating']); ?>"
+                         data-has-rating="<?php echo $consultant['review_count'] > 0 ? '1' : '0'; ?>"
                          data-verified="<?php echo !empty($consultant['is_verified']) ? '1' : '0'; ?>">
                         
                         <div class="consultant-card">
@@ -496,23 +501,33 @@ if ($result && $result->num_rows > 0) {
 
 .consultant-footer .btn {
     width: 48%;
+    padding: 12px 25px;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    text-decoration: none;
+    transition: var(--transition);
+    display: inline-block;
+    cursor: pointer;
+    border: none;
 }
 
+/* Update grid layout */
+.consultants-list .row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+    margin: 0;
+}
+
+.consultant-card-wrapper {
+    width: 100%;
+    padding: 0;
+}
+
+/* Responsive adjustments */
 @media (max-width: 991px) {
-    .hero-grid {
+    .consultants-list .row {
         grid-template-columns: 1fr;
-    }
-    
-    .hero-image-container {
-        order: -1;
-    }
-    
-    .filter-container {
-        flex-direction: column;
-    }
-    
-    .filter-item {
-        width: 100%;
     }
 }
 
@@ -552,6 +567,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const name = card.dataset.name;
             const specializations = card.dataset.specializations;
             const rating = parseFloat(card.dataset.rating);
+            const hasRating = card.dataset.hasRating === '1';
             const verified = card.dataset.verified;
             
             // Check if card matches all filters
@@ -559,7 +575,14 @@ document.addEventListener('DOMContentLoaded', function() {
                                  name.includes(searchTerm) || 
                                  specializations.includes(searchTerm);
             
-            const matchesRating = ratingValue === '' || rating >= parseFloat(ratingValue);
+            let matchesRating = true;
+            if (ratingValue !== '') {
+                if (ratingValue === 'no-rating') {
+                    matchesRating = !hasRating;
+                } else {
+                    matchesRating = hasRating && rating >= parseFloat(ratingValue);
+                }
+            }
             
             const matchesVerified = verifiedValue === '' || 
                                    (verifiedValue === '1' && verified === '1');
