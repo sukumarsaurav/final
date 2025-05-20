@@ -191,7 +191,7 @@ if ($result && $result->num_rows > 0) {
                             </div>
                             
                             <div class="consultant-action">
-                                <a href="book-consultation.php?consultant_id=<?php echo $consultant['consultant_id']; ?>" class="btn btn-primary">Book Consultation</a>
+                                <a href="consultant-profile.php?consultant_id=<?php echo $consultant['consultant_id']; ?>" class="btn btn-primary">Book Consultation</a>
                             </div>
                         </div>
                     </div>
