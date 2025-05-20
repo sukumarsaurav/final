@@ -135,15 +135,7 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
                     <i class="fas fa-user-check"></i>
                     <span class="nav-item-text">Verify Consultants</span>
                 </a>
-                
-                <div class="sidebar-divider"></div>
-                <div class="sidebar-heading">System</div>
-                
-                <a href="settings.php" class="nav-item <?php echo $current_page == 'settings' ? 'active' : ''; ?>">
-                    <i class="fas fa-cog"></i>
-                    <span class="nav-item-text">Settings</span>
-                </a>
-                
+           
                 <a href="../logout.php" class="nav-item">
                     <i class="fas fa-sign-out-alt"></i>
                     <span class="nav-item-text">Logout</span>
