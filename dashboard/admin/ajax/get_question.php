@@ -6,52 +6,60 @@ if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-header('Content-Type: application/json');
-
-// Check if ID is provided
-if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    echo json_encode([
-        'success' => false,
-        'message' => 'Invalid question ID'
-    ]);
+// Check if user is logged in and is admin
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized access']);
     exit;
 }
 
-$question_id = intval($_GET['id']);
+// Get question ID from request
+$question_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+
+if (!$question_id) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => 'Invalid question ID']);
+    exit;
+}
 
 try {
-    // Get question details with joined category name and options count
-    // Note the CONCAT for creator's full name (first_name + last_name)
-    $sql = "SELECT q.*, 
-            c.name as category_name,
-            (SELECT COUNT(*) FROM decision_tree_options WHERE question_id = q.id) as options_count,
-            CONCAT(u.first_name, ' ', u.last_name) as created_by_name
-            FROM decision_tree_questions q
-            LEFT JOIN decision_tree_categories c ON q.category_id = c.id
-            LEFT JOIN users u ON q.created_by = u.id
-            WHERE q.id = ?";
+    // Get question details
+    $query = "SELECT q.*, c.name as category_name, 
+              CONCAT(u.first_name, ' ', u.last_name) as created_by_name
+              FROM decision_tree_questions q
+              LEFT JOIN decision_tree_categories c ON q.category_id = c.id
+              LEFT JOIN users u ON q.created_by = u.id
+              WHERE q.id = ?";
     
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $question_id);
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param('i', $question_id);
     $stmt->execute();
     $result = $stmt->get_result();
     
     if ($result->num_rows === 0) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Question not found'
-        ]);
+        http_response_code(404);
+        echo json_encode(['success' => false, 'message' => 'Question not found']);
         exit;
     }
     
     $question = $result->fetch_assoc();
     
-    // Return success response with question data
-    echo json_encode(array_merge(['success' => true], $question));
+    // Return success response
+    echo json_encode([
+        'success' => true,
+        'id' => $question['id'],
+        'question_text' => $question['question_text'],
+        'description' => $question['description'],
+        'category_id' => $question['category_id'],
+        'category_name' => $question['category_name'],
+        'is_active' => $question['is_active'],
+        'created_by' => $question['created_by'],
+        'created_by_name' => $question['created_by_name'],
+        'created_at' => $question['created_at'],
+        'updated_at' => $question['updated_at']
+    ]);
     
 } catch (Exception $e) {
-    echo json_encode([
-        'success' => false,
-        'message' => 'Database error: ' . $e->getMessage()
-    ]);
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
 }
