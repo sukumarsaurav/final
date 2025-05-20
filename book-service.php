@@ -117,101 +117,80 @@ if ($result && $result->num_rows > 0) {
         <?php else: ?>
             <div class="row">
                 <?php foreach ($consultants as $consultant): ?>
-                    <div class="col-md-6 mb-4 consultant-card-wrapper" 
+                    <div class="consultant-card-wrapper" 
                          data-name="<?php echo strtolower(htmlspecialchars($consultant['consultant_name'])); ?>"
                          data-specializations="<?php echo strtolower(htmlspecialchars($consultant['specializations'] ?? '')); ?>"
                          data-rating="<?php echo htmlspecialchars($consultant['average_rating']); ?>"
                          data-has-rating="<?php echo $consultant['review_count'] > 0 ? '1' : '0'; ?>"
                          data-verified="<?php echo !empty($consultant['is_verified']) ? '1' : '0'; ?>">
                         
-                        <div class="consultant-card">
+                        <div class="consultant-card horizontal">
                             <?php if (!empty($consultant['is_verified'])): ?>
                                 <div class="verified-badge">
                                     <i class="fas fa-check-circle"></i> Verified by Visafy
                                 </div>
                             <?php endif; ?>
                             
-                            <div class="consultant-header">
-                                <div class="consultant-img">
-                                    <?php if (!empty($consultant['profile_picture'])): ?>
-                                        <?php 
-                                        // Fix profile picture path - add 'uploads/' if not present
-                                        $profile_picture = $consultant['profile_picture'];
-                                        if (strpos($profile_picture, 'users/') === 0) {
-                                            if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/uploads/' . $profile_picture)) {
-                                                $profile_img = '/uploads/' . $profile_picture;
-                                            }
-                                        // } else {
-                                        //     // Legacy structure
-                                        //     if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/uploads/profiles/' . $profile_picture)) {
-                                        //         $profile_img = '/uploads/profiles/' . $profile_picture;
-                                        //     } else if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/uploads/profile/' . $profile_picture)) {
-                                        //         $profile_img = '/uploads/profile/' . $profile_picture;
-                                        //     }
+                            <div class="consultant-img">
+                                <?php if (!empty($consultant['profile_picture'])): ?>
+                                    <?php 
+                                    // Fix profile picture path - add 'uploads/' if not present
+                                    $profile_picture = $consultant['profile_picture'];
+                                    if (strpos($profile_picture, 'users/') === 0) {
+                                        if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/uploads/' . $profile_picture)) {
+                                            $profile_img = '/uploads/' . $profile_picture;
                                         }
-                                        ?>
-                                        <img src="<?php echo htmlspecialchars($profile_img); ?>" alt="<?php echo htmlspecialchars($consultant['consultant_name']); ?>">
-                                    <?php else: ?>
-                                        <div class="default-avatar">
-                                            <?php echo strtoupper(substr($consultant['consultant_name'], 0, 1)); ?>
-                                        </div>
-                                    <?php endif; ?>
-                                </div>
-                                <div class="consultant-info">
-                                    <h3><?php echo htmlspecialchars($consultant['consultant_name']); ?></h3>
-                                    <p class="company-name"><?php echo htmlspecialchars($consultant['company_name']); ?></p>
-                                    <div class="rating">
-                                        <?php
-                                        $rating = round($consultant['average_rating'] * 2) / 2; // Round to nearest 0.5
-                                        for ($i = 1; $i <= 5; $i++):
-                                            if ($rating >= $i):
-                                                echo '<i class="fas fa-star"></i>';
-                                            elseif ($rating >= $i - 0.5):
-                                                echo '<i class="fas fa-star-half-alt"></i>';
-                                            else:
-                                                echo '<i class="far fa-star"></i>';
-                                            endif;
-                                        endfor;
-                                        ?>
-                                        <span>(<?php echo $consultant['review_count']; ?> reviews)</span>
+                                    }
+                                    ?>
+                                    <img src="<?php echo htmlspecialchars($profile_img); ?>" alt="<?php echo htmlspecialchars($consultant['consultant_name']); ?>">
+                                <?php else: ?>
+                                    <div class="default-avatar">
+                                        <?php echo strtoupper(substr($consultant['consultant_name'], 0, 1)); ?>
                                     </div>
-                                </div>
+                                <?php endif; ?>
                             </div>
                             
-                            <div class="consultant-body">
-                                <?php if (!empty($consultant['bio'])): ?>
-                                    <p class="bio"><?php echo htmlspecialchars(substr($consultant['bio'], 0, 150)) . (strlen($consultant['bio']) > 150 ? '...' : ''); ?></p>
-                                <?php else: ?>
-                                    <p class="bio">No bio information available.</p>
-                                <?php endif; ?>
+                            <div class="consultant-info">
+                                <h3><?php echo htmlspecialchars($consultant['consultant_name']); ?></h3>
+                                <p class="company-name"><?php echo htmlspecialchars($consultant['company_name']); ?></p>
+                                <div class="rating">
+                                    <?php
+                                    $rating = round($consultant['average_rating'] * 2) / 2; // Round to nearest 0.5
+                                    for ($i = 1; $i <= 5; $i++):
+                                        if ($rating >= $i):
+                                            echo '<i class="fas fa-star"></i>';
+                                        elseif ($rating >= $i - 0.5):
+                                            echo '<i class="fas fa-star-half-alt"></i>';
+                                        else:
+                                            echo '<i class="far fa-star"></i>';
+                                        endif;
+                                    endfor;
+                                    ?>
+                                    <span>(<?php echo $consultant['review_count']; ?> reviews)</span>
+                                </div>
                                 
                                 <div class="specializations">
                                     <strong>Specializations:</strong>
                                     <?php if (!empty($consultant['specializations'])): ?>
-                                        <p><?php echo htmlspecialchars($consultant['specializations']); ?></p>
+                                        <span><?php echo htmlspecialchars($consultant['specializations']); ?></span>
                                     <?php else: ?>
-                                        <p>General visa services</p>
+                                        <span>General visa services</span>
                                     <?php endif; ?>
-                                </div>
-                                
-                                <div class="meta-info">
-                                    <div class="meta-item">
-                                        <i class="fas fa-briefcase"></i>
-                                        <span><?php echo !empty($consultant['years_experience']) ? $consultant['years_experience'] . '+ years exp.' : 'Experience not specified'; ?></span>
-                                    </div>
-                                    <div class="meta-item">
-                                        <i class="fas fa-globe"></i>
-                                        <span><?php echo !empty($consultant['languages']) ? htmlspecialchars($consultant['languages']) : 'Languages not specified'; ?></span>
-                                    </div>
-                                    <div class="meta-item">
-                                        <i class="fas fa-passport"></i>
-                                        <span><?php echo $consultant['services_count']; ?> Services</span>
-                                    </div>
                                 </div>
                             </div>
                             
-                            <div class="consultant-footer">
-                                <a href="consultant-profile.php?id=<?php echo $consultant['consultant_id']; ?>" class="btn btn-secondary">View Profile</a>
+                            <div class="consultant-meta">
+                                <div class="meta-item">
+                                    <i class="fas fa-briefcase"></i>
+                                    <span><?php echo !empty($consultant['years_experience']) ? $consultant['years_experience'] . '+ years exp.' : 'Experience not specified'; ?></span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fas fa-globe"></i>
+                                    <span><?php echo !empty($consultant['languages']) ? htmlspecialchars($consultant['languages']) : 'Languages not specified'; ?></span>
+                                </div>
+                            </div>
+                            
+                            <div class="consultant-action">
                                 <a href="book-consultation.php?consultant_id=<?php echo $consultant['consultant_id']; ?>" class="btn btn-primary">Book Consultation</a>
                             </div>
                         </div>
@@ -513,9 +492,9 @@ if ($result && $result->num_rows > 0) {
 
 /* Update grid layout */
 .consultants-list .row {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
     margin: 0;
 }
 
@@ -524,25 +503,78 @@ if ($result && $result->num_rows > 0) {
     padding: 0;
 }
 
+.consultant-card.horizontal {
+    display: grid;
+    grid-template-columns: 80px 2fr 1fr 0.6fr;
+    grid-template-areas: 
+        "image info meta action";
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+}
+
+.consultant-card.horizontal .consultant-img {
+    grid-area: image;
+    margin: 0;
+}
+
+.consultant-card.horizontal .consultant-info {
+    grid-area: info;
+    padding: 0;
+    border: none;
+}
+
+.consultant-card.horizontal .consultant-meta {
+    grid-area: meta;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.consultant-card.horizontal .consultant-action {
+    grid-area: action;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.consultant-card.horizontal .specializations {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.consultant-card.horizontal .verified-badge {
+    top: 10px;
+    right: 10px;
+}
+
+.consultant-card.horizontal .rating {
+    margin-top: 5px;
+}
+
 /* Responsive adjustments */
 @media (max-width: 991px) {
-    .consultants-list .row {
-        grid-template-columns: 1fr;
+    .consultant-card.horizontal {
+        grid-template-columns: 80px 1fr 1fr;
+        grid-template-areas: 
+            "image info info"
+            "image meta action";
     }
 }
 
 @media (max-width: 768px) {
-    .hero-title {
-        font-size: 2rem;
+    .consultant-card.horizontal {
+        grid-template-columns: 80px 1fr;
+        grid-template-areas: 
+            "image info"
+            "meta meta"
+            "action action";
+        gap: 15px;
     }
     
-    .consultant-card-wrapper {
-        margin-bottom: 20px;
-    }
-    
-    .meta-info {
-        flex-direction: column;
-        gap: 10px;
+    .consultant-card.horizontal .consultant-action {
+        justify-content: stretch;
     }
 }
 </style>

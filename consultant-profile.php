@@ -63,87 +63,53 @@ include('includes/header.php');
 
 <!-- Profile Header Section -->
 <section class="profile-header">
-    <div class="container">
-        <div class="profile-banner" style="background-image: url('<?php echo !empty($consultant['banner_image']) ? '/uploads/' . $consultant['banner_image'] : '/assets/images/default-banner.jpg'; ?>')">
-            <div class="profile-info">
-                <div class="profile-image">
-                    <img src="<?php echo !empty($consultant['profile_image']) ? '/uploads/' . $consultant['profile_image'] : '/assets/images/default-profile.svg'; ?>" 
-                         alt="<?php echo htmlspecialchars($consultant['first_name'] . ' ' . $consultant['last_name']); ?>">
-                    <?php if ($consultant['is_verified']): ?>
-                    <div class="verified-badge" title="Verified Consultant">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <?php endif; ?>
+    <div class="profile-banner-flex">
+        <div class="profile-header-flex">
+            <div class="header-profile-image-overlap">
+                <img src="<?php echo !empty($consultant['profile_image']) ? '/uploads/' . $consultant['profile_image'] : '/assets/images/default-profile.svg'; ?>"
+                    alt="<?php echo htmlspecialchars($consultant['first_name'] . ' ' . $consultant['last_name']); ?>">
+                <?php if ($consultant['is_verified']): ?>
+                <div class="verified-badge" title="Verified Consultant">
+                    <i class="fas fa-check-circle"></i>
                 </div>
-                <div class="profile-details">
-                    <h1><?php echo htmlspecialchars($consultant['first_name'] ?? '' . ' ' . $consultant['last_name'] ?? ''); ?></h1>
-                    <p class="company-name"><?php echo htmlspecialchars($consultant['company_name'] ?? ''); ?></p>
-                   
-                    <div class="profile-stats">
-                        <div class="stat">
-                            <span class="stat-value"><?php echo number_format($consultant['average_rating'] ?? 0, 1); ?></span>
-                            <span class="stat-label">Rating</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-value"><?php echo $consultant['total_reviews'] ?? 0; ?></span>
-                            <span class="stat-label">Reviews</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-value"><?php echo $consultant['total_bookings'] ?? 0; ?></span>
-                            <span class="stat-label">Consultations</span>
+                <?php endif; ?>
+            </div>
+            <div class="profile-details">
+                <div class="profile-header-row">
+                    <div>
+                        <h1><?php echo htmlspecialchars($consultant['first_name'] ?? '' . ' ' . $consultant['last_name'] ?? ''); ?></h1>
+                        <p class="company-name"><?php echo htmlspecialchars($consultant['company_name'] ?? ''); ?></p>
+                        <div class="header-rating">
+                            <span class="star-rating">
+                                <i class="fas fa-star" style="color:#FFC107;"></i>
+                                <?php echo number_format($consultant['average_rating'] ?? 0, 1); ?>
+                            </span>
+                            <span class="review-count">
+                                (<?php echo $consultant['total_reviews'] ?? 0; ?>)
+                            </span>
                         </div>
                     </div>
-                    
-                    <!-- Contact Information -->
-                    <div class="contact-info">
-                        <?php if (!empty($consultant['email'])): ?>
-                        <div class="contact-item">
-                            <i class="fas fa-envelope"></i>
-                            <a href="mailto:<?php echo htmlspecialchars($consultant['email']); ?>">
-                                <?php echo htmlspecialchars($consultant['email']); ?>
-                            </a>
-                        </div>
-                        <?php endif; ?>
-                        <?php if (!empty($consultant['phone'])): ?>
-                        <div class="contact-item">
-                            <i class="fas fa-phone"></i>
-                            <a href="tel:<?php echo htmlspecialchars($consultant['phone']); ?>">
-                                <?php echo htmlspecialchars($consultant['phone']); ?>
-                            </a>
-                        </div>
-                        <?php endif; ?>
-                        <?php if (!empty($consultant['website'])): ?>
-                        <div class="contact-item">
-                            <i class="fas fa-globe"></i>
-                            <a href="<?php echo htmlspecialchars($consultant['website']); ?>" target="_blank">
-                                Visit Website
-                            </a>
-                        </div>
-                        <?php endif; ?>
-                    </div>
-
-                    <!-- Social Links -->
-                    <?php if (!empty($consultant['social_linkedin']) || !empty($consultant['social_twitter']) || !empty($consultant['social_facebook'])): ?>
-                    <div class="social-links">
-                        <?php if (!empty($consultant['social_linkedin'])): ?>
-                        <a href="<?php echo htmlspecialchars($consultant['social_linkedin']); ?>" target="_blank" class="social-link">
-                            <i class="fab fa-linkedin"></i>
-                        </a>
-                        <?php endif; ?>
-                        <?php if (!empty($consultant['social_twitter'])): ?>
-                        <a href="<?php echo htmlspecialchars($consultant['social_twitter']); ?>" target="_blank" class="social-link">
-                            <i class="fab fa-twitter"></i>
-                        </a>
-                        <?php endif; ?>
-                        <?php if (!empty($consultant['social_facebook'])): ?>
-                        <a href="<?php echo htmlspecialchars($consultant['social_facebook']); ?>" target="_blank" class="social-link">
-                            <i class="fab fa-facebook"></i>
-                        </a>
-                        <?php endif; ?>
-                    </div>
-                    <?php endif; ?>
                 </div>
             </div>
+            <?php if (!empty($consultant['social_linkedin']) || !empty($consultant['social_twitter']) || !empty($consultant['social_facebook'])): ?>
+            <div class="social-links-header">
+                <?php if (!empty($consultant['social_linkedin'])): ?>
+                <a href="<?php echo htmlspecialchars($consultant['social_linkedin']); ?>" target="_blank" class="social-link">
+                    <i class="fab fa-linkedin"></i>
+                </a>
+                <?php endif; ?>
+                <?php if (!empty($consultant['social_twitter'])): ?>
+                <a href="<?php echo htmlspecialchars($consultant['social_twitter']); ?>" target="_blank" class="social-link">
+                    <i class="fab fa-twitter"></i>
+                </a>
+                <?php endif; ?>
+                <?php if (!empty($consultant['social_facebook'])): ?>
+                <a href="<?php echo htmlspecialchars($consultant['social_facebook']); ?>" target="_blank" class="social-link">
+                    <i class="fab fa-facebook"></i>
+                </a>
+                <?php endif; ?>
+            </div>
+            <?php endif; ?>
         </div>
     </div>
 </section>
@@ -154,77 +120,137 @@ include('includes/header.php');
         <div class="content-grid">
             <!-- Left Column -->
             <div class="main-content">
-                <!-- About Section -->
-                <div class="content-section">
-                    <h2>About</h2>
-                    <div class="bio">
-                        <?php echo nl2br(htmlspecialchars($consultant['bio'])); ?>
-                    </div>
-                </div>
-
-                <!-- Experience Section -->
-                <div class="content-section">
-                    <h2>Experience</h2>
-                    <div class="experience-details">
-                        <div class="detail-item">
-                            <i class="fas fa-briefcase"></i>
-                            <div>
-                                <h3>Years of Experience</h3>
-                                <p><?php echo $consultant['years_experience']; ?> years</p>
+                <!-- Tabs moved here -->
+                <ul class="profile-tabs">
+                    <li class="active" data-tab="about">About</li>
+                    <li data-tab="education">Education & Certification</li>
+                    <li data-tab="specializations">Specializations & Languages</li>
+                    <li data-tab="contact">Contact Details</li>
+                    <li data-tab="reviews">Reviews & Ratings</li>
+                </ul>
+                
+                <div class="profile-tab-content">
+                    <div class="tab-panel active" id="about">
+                        <div class="content-section">
+                            <h2>About</h2>
+                            <div class="bio">
+                                <?php echo nl2br(htmlspecialchars($consultant['bio'])); ?>
                             </div>
                         </div>
-                        <?php if (!empty($consultant['education'])): ?>
-                        <div class="detail-item">
-                            <i class="fas fa-graduation-cap"></i>
-                            <div>
-                                <h3>Education</h3>
-                                <p><?php echo nl2br(htmlspecialchars($consultant['education'])); ?></p>
+                    </div>
+                    <div class="tab-panel" id="education">
+                        <div class="content-section">
+                            <h2>Education & Certification</h2>
+                            <div class="experience-details">
+                                <div class="detail-item">
+                                    <i class="fas fa-briefcase"></i>
+                                    <div>
+                                        <h3>Years of Experience</h3>
+                                        <p><?php echo $consultant['years_experience']; ?> years</p>
+                                    </div>
+                                </div>
+                                <?php if (!empty($consultant['education'])): ?>
+                                <div class="detail-item">
+                                    <i class="fas fa-graduation-cap"></i>
+                                    <div>
+                                        <h3>Education</h3>
+                                        <p><?php echo nl2br(htmlspecialchars($consultant['education'])); ?></p>
+                                    </div>
+                                </div>
+                                <?php endif; ?>
+                                <?php if (!empty($consultant['certifications'])): ?>
+                                <div class="detail-item">
+                                    <i class="fas fa-certificate"></i>
+                                    <div>
+                                        <h3>Certifications</h3>
+                                        <p><?php echo nl2br(htmlspecialchars($consultant['certifications'])); ?></p>
+                                    </div>
+                                </div>
+                                <?php endif; ?>
                             </div>
                         </div>
-                        <?php endif; ?>
-                        <?php if (!empty($consultant['certifications'])): ?>
-                        <div class="detail-item">
-                            <i class="fas fa-certificate"></i>
-                            <div>
-                                <h3>Certifications</h3>
-                                <p><?php echo nl2br(htmlspecialchars($consultant['certifications'])); ?></p>
+                    </div>
+                    <div class="tab-panel" id="specializations">
+                        <div class="content-section">
+                            <h2>Specializations & Languages</h2>
+                            <div class="specializations-grid">
+                                <?php if (!empty($consultant['specializations'])): ?>
+                                <div class="specialization-section">
+                                    <h3><i class="fas fa-star"></i> Specializations</h3>
+                                    <div class="specialization-list">
+                                        <?php 
+                                        $specializations = explode(',', $consultant['specializations']);
+                                        foreach ($specializations as $spec): 
+                                        ?>
+                                        <div class="specialization-item">
+                                            <span><?php echo trim(htmlspecialchars($spec)); ?></span>
+                                        </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                                <?php endif; ?>
+                                
+                                <?php if (!empty($consultant['languages'])): ?>
+                                <div class="languages-section">
+                                    <h3><i class="fas fa-language"></i> Languages</h3>
+                                    <div class="languages-list">
+                                        <?php 
+                                        $languages = explode(',', $consultant['languages']);
+                                        foreach ($languages as $lang): 
+                                        ?>
+                                        <div class="language-item">
+                                            <span><?php echo trim(htmlspecialchars($lang)); ?></span>
+                                        </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                                <?php endif; ?>
                             </div>
                         </div>
-                        <?php endif; ?>
+                    </div>
+                    <div class="tab-panel" id="contact">
+                        <div class="content-section">
+                            <h2>Contact Details</h2>
+                            <div class="contact-info-tab">
+                                <?php if (!empty($consultant['email'])): ?>
+                                <div class="contact-item">
+                                    <i class="fas fa-envelope"></i>
+                                    <a href="mailto:<?php echo htmlspecialchars($consultant['email']); ?>">
+                                        <?php echo htmlspecialchars($consultant['email']); ?>
+                                    </a>
+                                </div>
+                                <?php endif; ?>
+                                <?php if (!empty($consultant['phone'])): ?>
+                                <div class="contact-item">
+                                    <i class="fas fa-phone"></i>
+                                    <a href="tel:<?php echo htmlspecialchars($consultant['phone']); ?>">
+                                        <?php echo htmlspecialchars($consultant['phone']); ?>
+                                    </a>
+                                </div>
+                                <?php endif; ?>
+                                <?php if (!empty($consultant['website'])): ?>
+                                <div class="contact-item">
+                                    <i class="fas fa-globe"></i>
+                                    <a href="<?php echo htmlspecialchars($consultant['website']); ?>" target="_blank">
+                                        Visit Website
+                                    </a>
+                                </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-panel" id="reviews">
+                        <div class="content-section">
+                            <h2>Reviews & Ratings</h2>
+                            <div>
+                                <b>Average Rating:</b> <?php echo number_format($consultant['average_rating'] ?? 0, 1); ?> / 5<br>
+                                <b>Total Reviews:</b> <?php echo $consultant['total_reviews'] ?? 0; ?>
+                            </div>
+                            <!-- Add reviews loop here if available -->
+                        </div>
                     </div>
                 </div>
-
-                <!-- Specializations Section -->
-                <?php if (!empty($consultant['specializations'])): ?>
-                <div class="content-section">
-                    <h2>Specializations</h2>
-                    <div class="specializations">
-                        <?php
-                        $specializations = explode(',', $consultant['specializations']);
-                        foreach ($specializations as $spec):
-                        ?>
-                        <span class="specialization-tag"><?php echo htmlspecialchars(trim($spec)); ?></span>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-                <?php endif; ?>
-
-                <!-- Languages Section -->
-                <?php if (!empty($consultant['languages'])): ?>
-                <div class="content-section">
-                    <h2>Languages</h2>
-                    <div class="languages">
-                        <?php
-                        $languages = explode(',', $consultant['languages']);
-                        foreach ($languages as $lang):
-                        ?>
-                        <span class="language-tag"><?php echo htmlspecialchars(trim($lang)); ?></span>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-                <?php endif; ?>
             </div>
-
             <!-- Right Column - Booking Form -->
             <div class="sidebar">
                 <div class="booking-form">
@@ -232,7 +258,8 @@ include('includes/header.php');
                     <form id="bookingForm" action="process-booking.php" method="POST">
                         <input type="hidden" name="consultant_id" value="<?php echo $consultant_id; ?>">
                         <?php if (!empty($consultant['organization_id'])): ?>
-                        <input type="hidden" name="organization_id" value="<?php echo $consultant['organization_id']; ?>">
+                        <input type="hidden" name="organization_id"
+                            value="<?php echo $consultant['organization_id']; ?>">
                         <?php endif; ?>
 
                         <!-- Service Selection -->
@@ -264,9 +291,9 @@ include('includes/header.php');
                                 
                                 foreach ($services as $service): 
                                 ?>
-                                <option value="<?php echo $service['visa_service_id']; ?>" 
-                                        data-price="<?php echo $service['base_price']; ?>"
-                                        data-modes="<?php echo htmlspecialchars($service['consultation_modes']); ?>">
+                                <option value="<?php echo $service['visa_service_id']; ?>"
+                                    data-price="<?php echo $service['base_price']; ?>"
+                                    data-modes="<?php echo htmlspecialchars($service['consultation_modes']); ?>">
                                     <?php echo htmlspecialchars($service['visa_type'] . ' - ' . $service['service_name']); ?>
                                     (<?php echo number_format($service['base_price'], 2); ?>)
                                 </option>
@@ -285,8 +312,8 @@ include('includes/header.php');
                         <!-- Date Selection -->
                         <div class="form-group">
                             <label for="booking_date">Select Date</label>
-                            <input type="date" id="booking_date" name="booking_date" required 
-                                   min="<?php echo date('Y-m-d'); ?>">
+                            <input type="date" id="booking_date" name="booking_date" required
+                                min="<?php echo date('Y-m-d'); ?>">
                         </div>
 
                         <!-- Time Selection -->
@@ -311,8 +338,8 @@ include('includes/header.php');
                         <!-- Notes -->
                         <div class="form-group">
                             <label for="notes">Additional Notes</label>
-                            <textarea name="client_notes" id="notes" rows="4" 
-                                      placeholder="Any specific questions or topics you'd like to discuss?"></textarea>
+                            <textarea name="client_notes" id="notes" rows="4"
+                                placeholder="Any specific questions or topics you'd like to discuss?"></textarea>
                         </div>
 
                         <!-- Submit Button -->
@@ -325,59 +352,41 @@ include('includes/header.php');
 </section>
 
 <style>
-/* Profile Header Styles */
-.profile-header {
-    margin-bottom: 2rem;
-    position: relative;
-    z-index: 1;
-}
-
-.profile-banner {
-    height: 300px;
-    background-size: cover;
-    background-position: center;
-    position: relative;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.profile-info {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 2rem;
-    background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.7));
-    color: white;
+/* Updated styles */
+.profile-banner-flex {
+    background: url('<?php echo !empty($consultant['banner_image']) ? '/uploads/' . $consultant['banner_image'] : '/assets/images/default-banner.jpg'; ?>') center/cover no-repeat;
+    width: 100%;
     display: flex;
     align-items: flex-end;
-    gap: 2rem;
+    min-height: 180px; /* Reduced height */
+    position: relative;
+    padding-bottom: 0;
 }
 
-.profile-image {
+.profile-header-flex {
+    display: flex;
+    align-items: center; /* Changed to center alignment */
+    width: 100%;
     position: relative;
+    padding: 2rem;
+}
+
+.header-profile-image-overlap {
+    position: relative;
+    z-index: 2;
     width: 150px;
     height: 150px;
     border-radius: 50%;
     overflow: hidden;
     border: 4px solid white;
-    flex-shrink: 0;
+    background: #fff;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    margin-bottom: 0; /* Removed negative margin */
 }
-
-.profile-image img {
+.header-profile-image-overlap img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-}
-
-.verified-badge {
-    position: absolute;
-    bottom: 5px;
-    right: 5px;
-    background: #4CAF50;
-    color: white;
-    border-radius: 50%;
-    padding: 5px;
 }
 
 .profile-details {
@@ -385,190 +394,93 @@ include('includes/header.php');
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    margin-left: 2rem;
 }
 
-.profile-details h1 {
-    margin: 0;
-    font-size: 2.5rem;
-    font-weight: 700;
-    line-height: 1.2;
-}
-
-.company-name {
-    font-size: 1.4rem;
-    margin: 0;
-    opacity: 0.9;
-}
-
-.organization {
-    font-size: 1rem;
-    margin: 0;
-    opacity: 0.8;
-    color: #ccc;
-}
-
-.profile-stats {
+.profile-header-row {
     display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
     gap: 2rem;
-    margin-top: 0.5rem;
-    font-size: 0.9rem;
 }
 
-.stat {
-    text-align: left;
-}
-
-.stat-value {
-    display: block;
-    font-size: 1.2rem;
-    font-weight: 600;
-}
-
-.stat-label {
-    font-size: 0.8rem;
-    opacity: 0.8;
-}
-
-/* Contact Info Styles */
-.contact-info {
-    margin-top: 1rem;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.5rem;
-    justify-content: flex-start;
-}
-
-.contact-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.contact-item i {
-    width: 20px;
-    color: white;
-}
-
-.contact-item a {
-    color: white;
-    text-decoration: none;
-    opacity: 0.9;
-    font-size: 0.9rem;
-}
-
-.contact-item a:hover {
-    opacity: 1;
-}
-
-/* Social Links Styles */
-.social-links {
+.social-links-header {
     position: absolute;
-    top: 1rem;
+    bottom: 1rem;
     right: 1rem;
     display: flex;
     gap: 0.5rem;
-    z-index: 2;
 }
 
 .social-link {
     width: 35px;
     height: 35px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--primary-color);
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     text-decoration: none;
     transition: all 0.3s ease;
-    backdrop-filter: blur(5px);
+    font-size: 1.2rem;
 }
 
 .social-link:hover {
-    background: white;
-    color: var(--primary-color);
+    background: var(--primary-dark);
+    transform: translateY(-2px);
 }
 
-/* Content Grid Styles */
-.content-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 2rem;
-}
-
-.content-section {
-    background: white;
-    border-radius: 10px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.content-section h2 {
-    margin: 0 0 1.5rem;
-    color: #333;
-    font-size: 1.5rem;
-}
-
-.bio {
-    line-height: 1.6;
-    color: #666;
-}
-
-.experience-details {
-    display: grid;
-    gap: 1.5rem;
-}
-
-.detail-item {
+/* Updated tab styles */
+.profile-tabs {
+    list-style: none;
     display: flex;
-    gap: 1rem;
-    align-items: flex-start;
+    border-bottom: 2px solid #eee;
+    padding: 1rem 0;
+    margin: 0 0 2rem 0;
+    background: white;
+    border-radius: 8px 8px 0 0;
 }
 
-.detail-item i {
-    font-size: 1.5rem;
-    color: var(--primary-color);
-}
-
-.detail-item h3 {
-    margin: 0 0 0.5rem;
-    font-size: 1.1rem;
-    color: #333;
-}
-
-.detail-item p {
-    margin: 0;
-    color: #666;
-    line-height: 1.5;
-}
-
-.specializations, .languages {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-}
-
-.specialization-tag, .language-tag {
-    background: var(--primary-light);
-    color: var(--primary-color);
+.profile-tabs li {
     padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-size: 0.9rem;
+    cursor: pointer;
+    font-weight: 500;
+    color: #888;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
 }
 
-/* Booking Form Styles */
-.booking-form {
-    background: white;
-    border-radius: 10px;
-    padding: 2rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+.profile-tabs li:hover {
+    color: var(--primary-color);
 }
 
-.booking-form h3 {
-    margin: 0 0 1.5rem;
-    color: #333;
-    font-size: 1.5rem;
+.profile-tabs li.active {
+    color: var(--primary-color);
+    border-bottom: 3px solid var(--primary-color);
+}
+
+.tab-panel { 
+    display: none;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.tab-panel.active { 
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.header-rating {
+    margin-top: 0.5rem;
+    font-size: 1.2rem;
+    color: #222;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .form-group {
@@ -596,64 +508,137 @@ include('includes/header.php');
     resize: vertical;
 }
 
-.btn-primary {
-    width: 100%;
-    padding: 1rem;
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.btn-primary:hover {
-    background: var(--primary-dark);
-}
-
-/* Responsive Styles */
-@media (max-width: 768px) {
-    .content-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .profile-info {
+/* Responsive styles */
+@media (max-width: 900px) {
+    .profile-header-flex {
         flex-direction: column;
         align-items: center;
         text-align: center;
+        padding: 2rem 1rem;
+    }
+    
+    .profile-details {
+        margin-left: 0;
+        margin-top: 1rem;
+    }
+    
+    .profile-header-row {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .social-links-header {
+        position: static;
+        margin-top: 1rem;
+        justify-content: center;
+    }
+    
+    .profile-tabs {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1rem;
+    }
+}
+
+/* Sidebar and Booking Form Styles */
+.content-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+.sidebar {
+    position: relative;
+}
+
+.booking-form {
+    background: white;
+    border-radius: 10px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+    position: sticky;
+    top: 2rem;
+}
+
+@media (max-width: 900px) {
+    .content-grid {
+        grid-template-columns: 1fr;
+    }
+    .sidebar {
+        position: static;
+        margin-top: 2rem;
+    }
+    .booking-form {
+        position: static;
+        width: 100%;
+        margin-top: 2rem;
+    }
+}
+
+/* Specializations & Languages Styles */
+.specializations-grid {
+    display: grid;
+    gap: 2rem;
+}
+
+.specialization-section,
+.languages-section {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.specialization-section h3,
+.languages-section h3 {
+    color: #333;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.specialization-section h3 i,
+.languages-section h3 i {
+    color: var(--primary-color);
+}
+
+.specialization-list,
+.languages-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.specialization-item,
+.language-item {
+    background: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    color: #555;
+    border: 1px solid #e0e0e0;
+    transition: all 0.3s ease;
+}
+
+.specialization-item:hover,
+.language-item:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+/* Responsive styles */
+@media (max-width: 900px) {
+    .content-section {
         padding: 1.5rem;
     }
-
-    .profile-image {
-        width: 120px;
-        height: 120px;
-    }
-
-    .profile-details h1 {
-        font-size: 2rem;
-        text-align: center;
-    }
-
-    .company-name {
-        font-size: 1.2rem;
-        text-align: center;
-    }
-
-    .profile-stats {
+    
+    .specialization-list,
+    .languages-list {
         justify-content: center;
-    }
-
-    .contact-info {
-        justify-content: center;
-    }
-
-    .social-links {
-        position: relative;
-        top: 0;
-        right: 0;
-        justify-content: center;
-        margin-top: 1rem;
     }
 }
 </style>
@@ -669,7 +654,7 @@ document.addEventListener('DOMContentLoaded', function() {
     serviceSelect.addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex];
         const modes = selectedOption.dataset.modes.split(',');
-        
+
         modeSelect.innerHTML = '<option value="">Select mode...</option>';
         modes.forEach(mode => {
             const option = document.createElement('option');
@@ -687,7 +672,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (date && serviceId) {
             // Fetch available time slots from the server
-            fetch(`get-available-slots.php?date=${date}&service_id=${serviceId}&consultant_id=${consultantId}`)
+            fetch(
+                    `get-available-slots.php?date=${date}&service_id=${serviceId}&consultant_id=${consultantId}`
+                )
                 .then(response => response.json())
                 .then(slots => {
                     timeSelect.innerHTML = '<option value="">Select time...</option>';
@@ -705,7 +692,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Form submission handling
     document.getElementById('bookingForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        
+
         // Validate form
         if (!this.checkValidity()) {
             e.stopPropagation();
@@ -716,23 +703,34 @@ document.addEventListener('DOMContentLoaded', function() {
         // Submit form
         const formData = new FormData(this);
         fetch('process-booking.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                window.location.href = `booking-confirmation.php?reference=${data.reference}`;
-            } else {
-                alert(data.message || 'An error occurred while processing your booking.');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while processing your booking.');
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = `booking-confirmation.php?reference=${data.reference}`;
+                } else {
+                    alert(data.message || 'An error occurred while processing your booking.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while processing your booking.');
+            });
+    });
+
+    // Tab switching
+    document.querySelectorAll('.profile-tabs li').forEach(tab => {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('.profile-tabs li').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById(this.getAttribute('data-tab')).classList.add('active');
         });
     });
 });
 </script>
 
 <?php include('includes/footer.php'); ?>
+
