@@ -1,6 +1,17 @@
 <?php
+// Start session if not already started
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Include database connection
+require_once 'config/db_connect.php';
+require_once 'includes/functions.php';
+
 // Set page title
 $page_title = "404 - Page Not Found";
+
+// Include header
 require_once 'includes/header.php';
 ?>
 
@@ -21,21 +32,22 @@ require_once 'includes/header.php';
 
 <style>
 .error-page {
-    min-height: calc(100vh - 200px);
+    min-height: calc(100vh - var(--header-height));
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 40px 20px;
-    background-color: var(--background-light);
+    background-color: var(--light-color);
+    margin-top: var(--header-height);
 }
 
 .error-content {
     text-align: center;
     max-width: 600px;
     padding: 40px;
-    background-color: var(--white);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-md);
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 .error-icon {
@@ -46,7 +58,7 @@ require_once 'includes/header.php';
 
 .error-content h1 {
     font-size: 6rem;
-    color: var(--dark-blue);
+    color: var(--primary-color);
     margin: 0;
     line-height: 1;
     font-weight: 700;
@@ -54,13 +66,13 @@ require_once 'includes/header.php';
 
 .error-content h2 {
     font-size: 2rem;
-    color: var(--dark-blue);
+    color: var(--dark-color);
     margin: 10px 0 20px;
     font-weight: 600;
 }
 
 .error-content p {
-    color: var(--text-light);
+    color: var(--secondary-color);
     font-size: 1.1rem;
     margin-bottom: 30px;
 }
@@ -74,13 +86,13 @@ require_once 'includes/header.php';
 .error-actions .btn {
     padding: 12px 25px;
     font-weight: 600;
-    border-radius: var(--border-radius);
-    transition: var(--transition);
+    border-radius: 4px;
+    transition: all 0.3s ease;
 }
 
 .error-actions .btn-primary {
     background-color: var(--primary-color);
-    color: var(--white);
+    color: #fff;
     border: 2px solid var(--primary-color);
 }
 
@@ -96,8 +108,8 @@ require_once 'includes/header.php';
 }
 
 .error-actions .btn-secondary:hover {
-    background-color: var(--primary-light);
-    color: var(--primary-color);
+    background-color: var(--primary-color);
+    color: #fff;
 }
 
 @media (max-width: 576px) {
