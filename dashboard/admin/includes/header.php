@@ -92,9 +92,7 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
                         <a href="profile.php" class="dropdown-item">
                             <i class="fas fa-user"></i> Profile
                         </a>
-                        <a href="settings.php" class="dropdown-item">
-                            <i class="fas fa-cog"></i> Settings
-                        </a>
+                       
                         <div class="dropdown-divider"></div>
                         <a href="../logout.php" class="dropdown-item">
                             <i class="fas fa-sign-out-alt"></i> Logout
@@ -112,8 +110,7 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
                     <span class="nav-item-text">Dashboard</span>
                 </a>
                 
-                <div class="sidebar-divider"></div>
-                <div class="sidebar-heading">Eligibility</div>
+            
                 
                 <a href="eligibility-calculator.php" class="nav-item <?php echo $current_page == 'eligibility-calculator' ? 'active' : ''; ?>">
                     <i class="fas fa-calculator"></i>
@@ -122,19 +119,13 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
                 
               
                 
-               
-                <div class="sidebar-divider"></div>
-                <div class="sidebar-heading">Consultants</div>
-                
+             
                 <a href="consultants.php" class="nav-item <?php echo $current_page == 'consultants' ? 'active' : ''; ?>">
                     <i class="fas fa-users"></i>
                     <span class="nav-item-text">All Consultants</span>
                 </a>
                 
-                <a href="verify-consultants.php" class="nav-item <?php echo $current_page == 'verify-consultants' ? 'active' : ''; ?>">
-                    <i class="fas fa-user-check"></i>
-                    <span class="nav-item-text">Verify Consultants</span>
-                </a>
+              
            
                 <a href="../logout.php" class="nav-item">
                     <i class="fas fa-sign-out-alt"></i>

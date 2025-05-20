@@ -512,4 +512,4 @@ $stats = $stats_stmt->get_result()->fetch_assoc();
 <?php
 // Include footer
 include('includes/footer.php');
-?>
+?> 

@@ -252,5 +252,7 @@ if ($result && $result->num_rows > 0) {
         </div>
     </div>
 </div>
-
-<?php require_once '../includes/admin-footer.php'; ?> 
+<?php
+// Include footer
+include('includes/footer.php');
+?> 
