@@ -5,16 +5,16 @@ $page_title = "View Consultant";
 // Include header
 include('includes/header.php');
 
-// Check if consultant ID is provided
-if (!isset($_GET['id']) || empty($_GET['id'])) {
-    echo '<div class="container-fluid"><div class="alert alert-danger">Invalid consultant ID.</div></div>';
-    include('includes/footer.php');
+// Get consultant ID from URL
+$consultant_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+
+if ($consultant_id <= 0) {
+    $_SESSION['error_message'] = "Invalid consultant ID.";
+    header("Location: consultants.php");
     exit;
 }
 
-$consultant_id = intval($_GET['id']);
-
-// Fetch consultant details
+// Get consultant details
 $query = "SELECT 
     u.id AS consultant_id,
     u.first_name,
@@ -23,27 +23,40 @@ $query = "SELECT
     u.phone,
     u.status,
     u.created_at,
+    u.profile_picture,
     c.company_name,
-    c.company_website,
-    c.company_address,
-    c.specialty_areas,
-    c.years_of_experience,
+    c.registration_number,
+    c.membership_plan_id,
+    mp.name AS membership_plan,
+    mp.max_team_members,
+    c.team_members_count,
     cp.bio,
+    cp.specializations,
+    cp.years_experience,
+    cp.certifications,
+    cp.languages,
+    cp.website,
+    cp.social_linkedin,
+    cp.social_twitter,
+    cp.social_facebook,
     cp.is_verified,
     cp.verified_at,
-    CONCAT(a.first_name, ' ', a.last_name) AS verified_by_name
+    CONCAT(v.first_name, ' ', v.last_name) AS verified_by_name,
+    o.name AS organization_name
 FROM 
     users u
 JOIN 
     consultants c ON u.id = c.user_id
+JOIN 
+    membership_plans mp ON c.membership_plan_id = mp.id
 LEFT JOIN 
     consultant_profiles cp ON u.id = cp.consultant_id
 LEFT JOIN 
-    users a ON cp.verified_by = a.id
+    users v ON cp.verified_by = v.id
+LEFT JOIN 
+    organizations o ON u.organization_id = o.id
 WHERE 
-    u.id = ? 
-    AND u.user_type = 'consultant'
-    AND u.deleted_at IS NULL";
+    u.id = ? AND u.user_type = 'consultant'";
 
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $consultant_id);
@@ -51,318 +64,325 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows === 0) {
-    echo '<div class="container-fluid"><div class="alert alert-danger">Consultant not found.</div></div>';
-    include('includes/footer.php');
+    $_SESSION['error_message'] = "Consultant not found.";
+    header("Location: consultants.php");
     exit;
 }
 
 $consultant = $result->fetch_assoc();
-$stmt->close();
 
-// Fetch consultant documents
+// Get verification documents
 $docs_query = "SELECT 
-    id, 
-    document_type, 
-    file_path, 
+    id,
+    document_type,
+    document_path,
     uploaded_at,
-    is_verified
+    verified,
+    verified_at,
+    notes
 FROM 
-    consultant_documents 
+    consultant_verifications 
 WHERE 
-    consultant_id = ?
+    consultant_id = ? 
 ORDER BY 
     uploaded_at DESC";
 
 $docs_stmt = $conn->prepare($docs_query);
 $docs_stmt->bind_param("i", $consultant_id);
 $docs_stmt->execute();
-$docs_result = $docs_stmt->get_result();
-$documents = [];
+$documents = $docs_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
-if ($docs_result->num_rows > 0) {
-    while ($doc = $docs_result->fetch_assoc()) {
-        $documents[] = $doc;
-    }
-}
-$docs_stmt->close();
-
-// Fetch consultant clients/applications
-$clients_query = "SELECT 
-    a.id AS application_id,
-    a.status AS application_status,
-    a.created_at AS application_date,
-    CONCAT(u.first_name, ' ', u.last_name) AS applicant_name,
-    u.email AS applicant_email
+// Get team members
+$team_query = "SELECT 
+    u.id,
+    u.first_name,
+    u.last_name,
+    u.email,
+    u.phone,
+    u.status,
+    tm.member_type,
+    tm.invitation_status,
+    tm.invited_at,
+    tm.accepted_at
 FROM 
-    applications a
+    team_members tm
 JOIN 
-    users u ON a.applicant_id = u.id
+    users u ON tm.member_user_id = u.id
 WHERE 
-    a.consultant_id = ?
+    tm.consultant_id = ?
 ORDER BY 
-    a.created_at DESC
-LIMIT 10";
+    tm.invited_at DESC";
 
-$clients_stmt = $conn->prepare($clients_query);
-$clients_stmt->bind_param("i", $consultant_id);
-$clients_stmt->execute();
-$clients_result = $clients_stmt->get_result();
-$clients = [];
+$team_stmt = $conn->prepare($team_query);
+$team_stmt->bind_param("i", $consultant_id);
+$team_stmt->execute();
+$team_members = $team_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
-if ($clients_result->num_rows > 0) {
-    while ($client = $clients_result->fetch_assoc()) {
-        $clients[] = $client;
-    }
-}
-$clients_stmt->close();
+// Get booking statistics
+$stats_query = "SELECT 
+    COUNT(DISTINCT b.id) AS total_bookings,
+    SUM(CASE WHEN bs.name = 'completed' THEN 1 ELSE 0 END) AS completed_bookings,
+    SUM(CASE WHEN bs.name IN ('cancelled_by_user', 'cancelled_by_admin', 'cancelled_by_consultant') THEN 1 ELSE 0 END) AS cancelled_bookings,
+    ROUND(AVG(bf.rating), 1) AS average_rating,
+    COUNT(DISTINCT bf.id) AS total_ratings
+FROM 
+    bookings b
+LEFT JOIN 
+    booking_statuses bs ON b.status_id = bs.id
+LEFT JOIN 
+    booking_feedback bf ON b.id = bf.booking_id
+WHERE 
+    b.consultant_id = ? AND b.deleted_at IS NULL";
 
-// Process verification action if submitted
-$action_message = '';
-$action_error = '';
-
-if (isset($_POST['action']) && $_POST['action'] === 'verify' && isset($_POST['consultant_id'])) {
-    $verify_id = intval($_POST['consultant_id']);
-    
-    if ($verify_id === $consultant_id) {
-        // Start transaction
-        $conn->begin_transaction();
-        
-        try {
-            // Update consultant profile verification status
-            $verify_query = "UPDATE consultant_profiles SET 
-                is_verified = 1, 
-                verified_at = NOW(), 
-                verified_by = ? 
-            WHERE consultant_id = ?";
-            
-            $verify_stmt = $conn->prepare($verify_query);
-            $verify_stmt->bind_param("ii", $user_id, $consultant_id);
-            $verify_stmt->execute();
-            $verify_stmt->close();
-            
-            // Update documents verification status
-            $docs_verify_query = "UPDATE consultant_documents SET 
-                is_verified = 1 
-            WHERE consultant_id = ?";
-            
-            $docs_verify_stmt = $conn->prepare($docs_verify_query);
-            $docs_verify_stmt->bind_param("i", $consultant_id);
-            $docs_verify_stmt->execute();
-            $docs_verify_stmt->close();
-            
-            // Log the verification action
-            $log_query = "INSERT INTO admin_logs (admin_id, action, entity_type, entity_id, details, created_at) 
-            VALUES (?, 'verify', 'consultant', ?, 'Verified consultant account', NOW())";
-            
-            $log_stmt = $conn->prepare($log_query);
-            $log_stmt->bind_param("ii", $user_id, $consultant_id);
-            $log_stmt->execute();
-            $log_stmt->close();
-            
-            // Commit transaction
-            $conn->commit();
-            
-            $action_message = "Consultant has been verified successfully.";
-            
-            // Update the consultant data in our current view
-            $consultant['is_verified'] = 1;
-            $consultant['verified_at'] = date('Y-m-d H:i:s');
-            $consultant['verified_by_name'] = $user_first_name . ' ' . $user_last_name;
-            
-        } catch (Exception $e) {
-            // Rollback transaction on error
-            $conn->rollback();
-            $action_error = "Failed to verify consultant: " . $e->getMessage();
-        }
-    } else {
-        $action_error = "Invalid consultant verification request.";
-    }
-}
+$stats_stmt = $conn->prepare($stats_query);
+$stats_stmt->bind_param("i", $consultant_id);
+$stats_stmt->execute();
+$stats = $stats_stmt->get_result()->fetch_assoc();
 ?>
 
 <div class="container-fluid">
-    <?php if (!empty($action_message)): ?>
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <?php echo $action_message; ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    <?php endif; ?>
-    
-    <?php if (!empty($action_error)): ?>
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <?php echo $action_error; ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    <?php endif; ?>
-
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Consultant Profile</h1>
-        <div>
-            <a href="consultants.php" class="btn btn-sm btn-secondary">
-                <i class="fas fa-arrow-left"></i> Back to Consultants
-            </a>
-            <?php if ($consultant['status'] === 'active'): ?>
-                <a href="consultants.php?action=suspend&id=<?php echo $consultant_id; ?>" class="btn btn-sm btn-warning" onclick="return confirm('Are you sure you want to suspend this consultant?')">
-                    <i class="fas fa-ban"></i> Suspend Consultant
-                </a>
-            <?php else: ?>
-                <a href="consultants.php?action=activate&id=<?php echo $consultant_id; ?>" class="btn btn-sm btn-success" onclick="return confirm('Are you sure you want to activate this consultant?')">
-                    <i class="fas fa-check"></i> Activate Consultant
-                </a>
-            <?php endif; ?>
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="mb-1">Consultant Details</h4>
+                            <p class="text-muted mb-0">View detailed information about the consultant</p>
+                        </div>
+                        <div>
+                            <a href="consultants.php" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to List
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <div class="row">
-        <!-- Profile Card -->
-        <div class="col-xl-4">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 font-weight-bold text-primary">Consultant Information</h6>
-                    <div>
+        <!-- Basic Information -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Basic Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <?php if ($consultant['profile_picture']): ?>
+                            <img src="<?php echo htmlspecialchars($consultant['profile_picture']); ?>" 
+                                 alt="Profile Picture" 
+                                 class="rounded-circle img-thumbnail" 
+                                 style="width: 150px; height: 150px; object-fit: cover;">
+                        <?php else: ?>
+                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto" 
+                                 style="width: 150px; height: 150px;">
+                                <i class="fas fa-user fa-4x text-white"></i>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <h4 class="text-center mb-3">
+                        <?php echo htmlspecialchars($consultant['first_name'] . ' ' . $consultant['last_name']); ?>
+                    </h4>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Status:</label>
                         <?php if ($consultant['status'] === 'active'): ?>
                             <span class="badge bg-success">Active</span>
                         <?php else: ?>
                             <span class="badge bg-danger">Suspended</span>
                         <?php endif; ?>
-                        
-                        <?php if ($consultant['is_verified'] == 1): ?>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Verification Status:</label>
+                        <?php if ($consultant['is_verified']): ?>
                             <span class="badge bg-info">Verified</span>
+                            <br>
+                            <small class="text-muted">
+                                Verified by: <?php echo htmlspecialchars($consultant['verified_by_name']); ?><br>
+                                On: <?php echo date('M d, Y', strtotime($consultant['verified_at'])); ?>
+                            </small>
                         <?php else: ?>
                             <span class="badge bg-warning">Unverified</span>
                         <?php endif; ?>
                     </div>
-                </div>
-                <div class="card-body">
-                    <div class="text-center mb-4">
-                        <img src="../assets/img/profile-placeholder.jpg" class="img-profile rounded-circle" style="width: 100px; height: 100px;">
-                        <h4 class="mt-3"><?php echo htmlspecialchars($consultant['first_name'] . ' ' . $consultant['last_name']); ?></h4>
-                        <p class="text-muted mb-1"><?php echo htmlspecialchars($consultant['company_name']); ?></p>
-                        <p class="small text-muted">Member since <?php echo date('M d, Y', strtotime($consultant['created_at'])); ?></p>
-                    </div>
-                    
-                    <hr>
-                    
+
                     <div class="mb-3">
-                        <h6 class="font-weight-bold">Contact Information</h6>
-                        <p>
-                            <i class="fas fa-envelope text-primary mr-2"></i> 
+                        <label class="form-label fw-bold">Contact Information:</label>
+                        <p class="mb-1">
+                            <i class="fas fa-envelope me-2"></i>
                             <?php echo htmlspecialchars($consultant['email']); ?>
                         </p>
-                        <p>
-                            <i class="fas fa-phone text-primary mr-2"></i> 
+                        <p class="mb-1">
+                            <i class="fas fa-phone me-2"></i>
                             <?php echo htmlspecialchars($consultant['phone']); ?>
                         </p>
                     </div>
-                    
-                    <hr>
-                    
+
                     <div class="mb-3">
-                        <h6 class="font-weight-bold">Company Details</h6>
-                        <p>
-                            <i class="fas fa-building text-primary mr-2"></i> 
-                            <?php echo htmlspecialchars($consultant['company_name']); ?>
-                        </p>
-                        <?php if (!empty($consultant['company_website'])): ?>
-                        <p>
-                            <i class="fas fa-globe text-primary mr-2"></i> 
-                            <a href="<?php echo htmlspecialchars($consultant['company_website']); ?>" target="_blank">
-                                <?php echo htmlspecialchars($consultant['company_website']); ?>
-                            </a>
-                        </p>
-                        <?php endif; ?>
-                        <?php if (!empty($consultant['company_address'])): ?>
-                        <p>
-                            <i class="fas fa-map-marker-alt text-primary mr-2"></i> 
-                            <?php echo htmlspecialchars($consultant['company_address']); ?>
-                        </p>
-                        <?php endif; ?>
+                        <label class="form-label fw-bold">Organization:</label>
+                        <p class="mb-0"><?php echo htmlspecialchars($consultant['organization_name']); ?></p>
                     </div>
-                    
-                    <hr>
-                    
+
                     <div class="mb-3">
-                        <h6 class="font-weight-bold">Professional Information</h6>
-                        <p>
-                            <i class="fas fa-briefcase text-primary mr-2"></i> 
-                            <?php echo htmlspecialchars($consultant['years_of_experience']); ?> years of experience
-                        </p>
-                        <?php if (!empty($consultant['specialty_areas'])): ?>
-                        <p>
-                            <i class="fas fa-star text-primary mr-2"></i> 
-                            Specialties: <?php echo htmlspecialchars($consultant['specialty_areas']); ?>
-                        </p>
-                        <?php endif; ?>
+                        <label class="form-label fw-bold">Member Since:</label>
+                        <p class="mb-0"><?php echo date('M d, Y', strtotime($consultant['created_at'])); ?></p>
                     </div>
-                    
-                    <?php if ($consultant['is_verified'] == 1): ?>
-                    <hr>
-                    
-                    <div class="mb-3">
-                        <h6 class="font-weight-bold">Verification Details</h6>
-                        <p>
-                            <i class="fas fa-user-check text-primary mr-2"></i> 
-                            Verified by: <?php echo htmlspecialchars($consultant['verified_by_name']); ?>
-                        </p>
-                        <p>
-                            <i class="fas fa-calendar-check text-primary mr-2"></i> 
-                            Verified on: <?php echo date('M d, Y', strtotime($consultant['verified_at'])); ?>
-                        </p>
-                    </div>
-                    <?php endif; ?>
                 </div>
             </div>
         </div>
-        
-        <!-- Bio and Documents -->
-        <div class="col-xl-8">
-            <!-- Bio -->
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Consultant Bio</h6>
+
+        <!-- Company & Membership -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Company & Membership Details</h5>
                 </div>
                 <div class="card-body">
-                    <?php if (!empty($consultant['bio'])): ?>
-                        <p><?php echo nl2br(htmlspecialchars($consultant['bio'])); ?></p>
-                    <?php else: ?>
-                        <p class="text-muted">No bio information provided.</p>
-                    <?php endif; ?>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Company Name:</label>
+                                <p class="mb-0"><?php echo htmlspecialchars($consultant['company_name']); ?></p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Registration Number:</label>
+                                <p class="mb-0"><?php echo htmlspecialchars($consultant['registration_number'] ?? 'N/A'); ?></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Membership Plan:</label>
+                                <p class="mb-0"><?php echo htmlspecialchars($consultant['membership_plan']); ?></p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Team Members:</label>
+                                <p class="mb-0">
+                                    <?php echo $consultant['team_members_count']; ?> / <?php echo $consultant['max_team_members']; ?>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Bio:</label>
+                        <p class="mb-0"><?php echo nl2br(htmlspecialchars($consultant['bio'] ?? 'No bio provided')); ?></p>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Specializations:</label>
+                                <p class="mb-0"><?php echo htmlspecialchars($consultant['specializations'] ?? 'Not specified'); ?></p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Years of Experience:</label>
+                                <p class="mb-0"><?php echo $consultant['years_experience'] ?? 'Not specified'; ?></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Certifications:</label>
+                        <p class="mb-0"><?php echo htmlspecialchars($consultant['certifications'] ?? 'Not specified'); ?></p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Languages:</label>
+                        <p class="mb-0"><?php echo htmlspecialchars($consultant['languages'] ?? 'Not specified'); ?></p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Social Media & Website:</label>
+                        <div class="d-flex gap-3">
+                            <?php if ($consultant['website']): ?>
+                                <a href="<?php echo htmlspecialchars($consultant['website']); ?>" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-globe"></i> Website
+                                </a>
+                            <?php endif; ?>
+                            <?php if ($consultant['social_linkedin']): ?>
+                                <a href="<?php echo htmlspecialchars($consultant['social_linkedin']); ?>" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="fab fa-linkedin"></i> LinkedIn
+                                </a>
+                            <?php endif; ?>
+                            <?php if ($consultant['social_twitter']): ?>
+                                <a href="<?php echo htmlspecialchars($consultant['social_twitter']); ?>" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="fab fa-twitter"></i> Twitter
+                                </a>
+                            <?php endif; ?>
+                            <?php if ($consultant['social_facebook']): ?>
+                                <a href="<?php echo htmlspecialchars($consultant['social_facebook']); ?>" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="fab fa-facebook"></i> Facebook
+                                </a>
+                            <?php endif; ?>
+                        </div>
+                    </div>
                 </div>
             </div>
-            
-            <!-- Documents -->
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Verification Documents</h6>
+        </div>
+    </div>
+
+    <!-- Verification Documents -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Verification Documents</h5>
                 </div>
                 <div class="card-body">
                     <?php if (empty($documents)): ?>
-                        <p class="text-muted">No documents uploaded.</p>
+                        <div class="alert alert-info">
+                            No verification documents have been uploaded.
+                        </div>
                     <?php else: ?>
                         <div class="table-responsive">
-                            <table class="table table-bordered" width="100%" cellspacing="0">
+                            <table class="table table-striped">
                                 <thead>
                                     <tr>
                                         <th>Document Type</th>
-                                        <th>Uploaded</th>
+                                        <th>Uploaded Date</th>
                                         <th>Status</th>
+                                        <th>Verified By</th>
+                                        <th>Notes</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php foreach ($documents as $doc): ?>
                                         <tr>
-                                            <td><?php echo htmlspecialchars($doc['document_type']); ?></td>
+                                            <td><?php echo ucwords(str_replace('_', ' ', $doc['document_type'])); ?></td>
                                             <td><?php echo date('M d, Y', strtotime($doc['uploaded_at'])); ?></td>
                                             <td>
-                                                <?php if ($doc['is_verified'] == 1): ?>
+                                                <?php if ($doc['verified']): ?>
                                                     <span class="badge bg-success">Verified</span>
                                                 <?php else: ?>
                                                     <span class="badge bg-warning">Pending</span>
                                                 <?php endif; ?>
                                             </td>
                                             <td>
-                                                <a href="../<?php echo htmlspecialchars($doc['file_path']); ?>" class="btn btn-sm btn-primary" target="_blank">
+                                                <?php if ($doc['verified']): ?>
+                                                    <?php echo date('M d, Y', strtotime($doc['verified_at'])); ?>
+                                                <?php else: ?>
+                                                    -
+                                                <?php endif; ?>
+                                            </td>
+                                            <td><?php echo htmlspecialchars($doc['notes'] ?? '-'); ?></td>
+                                            <td>
+                                                <a href="../<?php echo htmlspecialchars($doc['document_path']); ?>" 
+                                                   target="_blank" 
+                                                   class="btn btn-sm btn-primary">
                                                     <i class="fas fa-eye"></i> View
                                                 </a>
                                             </td>
@@ -374,61 +394,58 @@ if (isset($_POST['action']) && $_POST['action'] === 'verify' && isset($_POST['co
                     <?php endif; ?>
                 </div>
             </div>
-            
-            <!-- Clients/Applications -->
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Recent Clients (Applications)</h6>
+        </div>
+    </div>
+
+    <!-- Team Members -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Team Members</h5>
                 </div>
                 <div class="card-body">
-                    <?php if (empty($clients)): ?>
-                        <p class="text-muted">No clients/applications found.</p>
+                    <?php if (empty($team_members)): ?>
+                        <div class="alert alert-info">
+                            No team members have been added yet.
+                        </div>
                     <?php else: ?>
                         <div class="table-responsive">
-                            <table class="table table-bordered" width="100%" cellspacing="0">
+                            <table class="table table-striped">
                                 <thead>
                                     <tr>
-                                        <th>Applicant</th>
+                                        <th>Name</th>
                                         <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>Type</th>
                                         <th>Status</th>
-                                        <th>Date</th>
-                                        <th>Actions</th>
+                                        <th>Invited</th>
+                                        <th>Accepted</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($clients as $client): ?>
+                                    <?php foreach ($team_members as $member): ?>
                                         <tr>
-                                            <td><?php echo htmlspecialchars($client['applicant_name']); ?></td>
-                                            <td><?php echo htmlspecialchars($client['applicant_email']); ?></td>
                                             <td>
-                                                <?php 
-                                                $status_class = '';
-                                                switch($client['application_status']) {
-                                                    case 'pending':
-                                                        $status_class = 'bg-warning';
-                                                        break;
-                                                    case 'approved':
-                                                        $status_class = 'bg-success';
-                                                        break;
-                                                    case 'rejected':
-                                                        $status_class = 'bg-danger';
-                                                        break;
-                                                    case 'completed':
-                                                        $status_class = 'bg-info';
-                                                        break;
-                                                    default:
-                                                        $status_class = 'bg-secondary';
-                                                }
-                                                ?>
-                                                <span class="badge <?php echo $status_class; ?>">
-                                                    <?php echo ucfirst(htmlspecialchars($client['application_status'])); ?>
-                                                </span>
+                                                <?php echo htmlspecialchars($member['first_name'] . ' ' . $member['last_name']); ?>
                                             </td>
-                                            <td><?php echo date('M d, Y', strtotime($client['application_date'])); ?></td>
+                                            <td><?php echo htmlspecialchars($member['email']); ?></td>
+                                            <td><?php echo htmlspecialchars($member['phone']); ?></td>
+                                            <td><?php echo ucfirst($member['member_type']); ?></td>
                                             <td>
-                                                <a href="view-application.php?id=<?php echo $client['application_id']; ?>" class="btn btn-sm btn-primary">
-                                                    <i class="fas fa-eye"></i> View
-                                                </a>
+                                                <?php if ($member['status'] === 'active'): ?>
+                                                    <span class="badge bg-success">Active</span>
+                                                <?php else: ?>
+                                                    <span class="badge bg-danger">Suspended</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td><?php echo date('M d, Y', strtotime($member['invited_at'])); ?></td>
+                                            <td>
+                                                <?php if ($member['accepted_at']): ?>
+                                                    <?php echo date('M d, Y', strtotime($member['accepted_at'])); ?>
+                                                <?php else: ?>
+                                                    <span class="badge bg-warning">Pending</span>
+                                                <?php endif; ?>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -440,43 +457,59 @@ if (isset($_POST['action']) && $_POST['action'] === 'verify' && isset($_POST['co
             </div>
         </div>
     </div>
-    
-    <?php if ($consultant['is_verified'] == 0): ?>
-    <!-- Verification Action -->
+
+    <!-- Booking Statistics -->
     <div class="row">
         <div class="col-12">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Verification Action</h6>
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Booking Statistics</h5>
                 </div>
                 <div class="card-body">
-                    <form method="post" action="">
-                        <input type="hidden" name="action" value="verify">
-                        <input type="hidden" name="consultant_id" value="<?php echo $consultant_id; ?>">
-                        
-                        <div class="alert alert-info">
-                            <p>Please review all consultant information and documents before verification. Once verified, the consultant will be able to provide services to applicants.</p>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body">
+                                    <h6 class="card-title">Total Bookings</h6>
+                                    <h2 class="mb-0"><?php echo $stats['total_bookings']; ?></h2>
+                                </div>
+                            </div>
                         </div>
-                        
-                        <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" id="confirmVerification" required>
-                            <label class="form-check-label" for="confirmVerification">
-                                I confirm that I have reviewed all consultant information and documents, and they meet our verification requirements.
-                            </label>
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <h6 class="card-title">Completed Bookings</h6>
+                                    <h2 class="mb-0"><?php echo $stats['completed_bookings']; ?></h2>
+                                </div>
+                            </div>
                         </div>
-                        
-                        <button type="submit" class="btn btn-success" onclick="return confirm('Are you sure you want to verify this consultant?')">
-                            <i class="fas fa-user-check"></i> Verify Consultant
-                        </button>
-                    </form>
+                        <div class="col-md-3">
+                            <div class="card bg-danger text-white">
+                                <div class="card-body">
+                                    <h6 class="card-title">Cancelled Bookings</h6>
+                                    <h2 class="mb-0"><?php echo $stats['cancelled_bookings']; ?></h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body">
+                                    <h6 class="card-title">Average Rating</h6>
+                                    <h2 class="mb-0">
+                                        <?php echo $stats['average_rating'] ? number_format($stats['average_rating'], 1) : 'N/A'; ?>
+                                    </h2>
+                                    <small><?php echo $stats['total_ratings']; ?> ratings</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <?php endif; ?>
 </div>
 
 <?php
 // Include footer
 include('includes/footer.php');
-?> 
+?>
