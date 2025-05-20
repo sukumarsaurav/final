@@ -120,16 +120,9 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
                     <span class="nav-item-text">Eligibility Calculator</span>
                 </a>
                 
-                <a href="manage-questions.php" class="nav-item <?php echo $current_page == 'manage-questions' ? 'active' : ''; ?>">
-                    <i class="fas fa-question-circle"></i>
-                    <span class="nav-item-text">Manage Questions</span>
-                </a>
+              
                 
-                <a href="assessment-results.php" class="nav-item <?php echo $current_page == 'assessment-results' ? 'active' : ''; ?>">
-                    <i class="fas fa-clipboard-check"></i>
-                    <span class="nav-item-text">Assessment Results</span>
-                </a>
-                
+               
                 <div class="sidebar-divider"></div>
                 <div class="sidebar-heading">Consultants</div>
                 
