@@ -132,11 +132,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify_consultant']))
                                     <?php 
                                     $profile_img = '../../assets/images/default-profile.jpg';
                                     if (!empty($consultant['profile_picture'])) {
-                                        if (file_exists('../../uploads/profiles/' . $consultant['profile_picture'])) {
-                                            $profile_img = '../../uploads/profiles/' . $consultant['profile_picture'];
+                                        if (file_exists('../../uploads/users/' . $consultant['consultant_id'] . '/profile/' . $consultant['profile_picture'])) {
+                                            $profile_img = '../../uploads/users/' . $consultant['consultant_id'] . '/profile/' . $consultant['profile_picture'];
                                         }
                                     }
                                     ?>
+                                    
                                     <img src="<?php echo $profile_img; ?>" class="rounded-circle mr-2" width="40" height="40" alt="Profile">
                                     <div>
                                         <?php echo htmlspecialchars($consultant['first_name'] . ' ' . $consultant['last_name']); ?>
