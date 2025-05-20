@@ -5,8 +5,8 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // Include database connection
-require_once '../config/db_connect.php';
-require_once '../includes/functions.php';
+require_once '../../config/db_connect.php';
+require_once '../../includes/functions.php';
 
 // Check if user is logged in and is an admin
 if (!isset($_SESSION['loggedin']) || $_SESSION['user_type'] !== 'admin') {
