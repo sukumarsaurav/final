@@ -1,4 +1,5 @@
 <?php
+// Prevent any whitespace or output before this point
 require_once '../../../config/db_connect.php';
 
 // Start session if not already started
@@ -6,105 +7,136 @@ if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-// Check if user is logged in and is admin
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Unauthorized access']);
-    exit;
+// Set headers
+header('Content-Type: application/json');
+header('Cache-Control: no-cache, must-revalidate');
+
+// Helper function to darken colors for borders
+function darkenColor($hex) {
+    $hex = ltrim($hex, '#');
+    $r = max(0, hexdec(substr($hex, 0, 2)) - 32);
+    $g = max(0, hexdec(substr($hex, 2, 2)) - 32);
+    $b = max(0, hexdec(substr($hex, 4, 2)) - 32);
+    return sprintf("#%02x%02x%02x", $r, $g, $b);
 }
 
 try {
-    // Get all questions
-    $questions_query = "SELECT id, question_text, is_active FROM decision_tree_questions ORDER BY id";
-    $questions_result = $conn->query($questions_query);
+    // Initialize empty arrays
+    $data = ['nodes' => [], 'edges' => []];
     
-    $nodes = [];
-    $edges = [];
-    $node_colors = [
-        'active' => '#1cc88a',    // Green for active questions
-        'inactive' => '#858796',  // Gray for inactive questions
-        'endpoint' => '#e74a3b'   // Red for endpoints
-    ];
+    // Fetch all questions
+    $questions = [];
+    $stmt = $conn->prepare("SELECT id, question_text, is_active FROM decision_tree_questions ORDER BY id");
+    if (!$stmt) {
+        throw new Exception("Error preparing question query: " . $conn->error);
+    }
     
-    // Process questions into nodes
-    while ($question = $questions_result->fetch_assoc()) {
-        $nodes[] = [
-            'id' => 'q' . $question['id'],
-            'label' => $question['question_text'],
-            'title' => $question['question_text'],
-            'color' => $question['is_active'] ? $node_colors['active'] : $node_colors['inactive'],
+    $stmt->execute();
+    $result = $stmt->get_result();
+    while ($row = $result->fetch_assoc()) {
+        $questions[$row['id']] = $row;
+    }
+    $stmt->close();
+
+    // Fetch all options
+    $options = [];
+    $stmt = $conn->prepare("SELECT id, question_id, option_text, next_question_id, is_endpoint, endpoint_eligible 
+                          FROM decision_tree_options ORDER BY id");
+    if (!$stmt) {
+        throw new Exception("Error preparing options query: " . $conn->error);
+    }
+    
+    $stmt->execute();
+    $result = $stmt->get_result();
+    while ($row = $result->fetch_assoc()) {
+        if (!isset($options[$row['question_id']])) {
+            $options[$row['question_id']] = [];
+        }
+        $options[$row['question_id']][] = $row;
+    }
+    $stmt->close();
+
+    // Add question nodes
+    foreach ($questions as $id => $question) {
+        $color = $question['is_active'] ? '#4CAF50' : '#9E9E9E';
+        $data['nodes'][] = [
+            'id' => 'q' . $id,
+            'label' => 'Q: ' . substr($question['question_text'], 0, 40) . (strlen($question['question_text']) > 40 ? '...' : ''),
+            'color' => [
+                'background' => $color,
+                'border' => darkenColor($color)
+            ],
             'shape' => 'box',
-            'margin' => 10,
             'font' => [
-                'size' => 14,
-                'face' => 'Arial'
+                'color' => 'white',
+                'size' => 14
             ]
         ];
     }
-    
-    // Get all options
-    $options_query = "SELECT o.*, q.question_text as next_question_text 
-                     FROM decision_tree_options o
-                     LEFT JOIN decision_tree_questions q ON o.next_question_id = q.id
-                     ORDER BY o.question_id, o.id";
-    $options_result = $conn->query($options_query);
-    
-    // Process options into edges
-    while ($option = $options_result->fetch_assoc()) {
-        if ($option['is_endpoint']) {
-            // Create endpoint node
-            $endpoint_id = 'e' . $option['id'];
-            $nodes[] = [
-                'id' => $endpoint_id,
-                'label' => $option['endpoint_result'],
-                'title' => $option['endpoint_result'],
-                'color' => $node_colors['endpoint'],
-                'shape' => 'diamond',
-                'margin' => 10,
-                'font' => [
-                    'size' => 12,
-                    'face' => 'Arial'
-                ]
+
+    // Add option nodes and edges
+    foreach ($options as $question_id => $question_options) {
+        foreach ($question_options as $option) {
+            $option_id = 'o' . $option['id'];
+            
+            // Add option node
+            if ($option['is_endpoint']) {
+                $color = $option['endpoint_eligible'] ? '#2196F3' : '#F44336';
+                $data['nodes'][] = [
+                    'id' => $option_id,
+                    'label' => 'A: ' . substr($option['option_text'], 0, 30) . (strlen($option['option_text']) > 30 ? '...' : '') . '\n[ENDPOINT]',
+                    'color' => [
+                        'background' => $color,
+                        'border' => darkenColor($color)
+                    ],
+                    'shape' => 'ellipse'
+                ];
+            } else {
+                $data['nodes'][] = [
+                    'id' => $option_id,
+                    'label' => 'A: ' . substr($option['option_text'], 0, 30) . (strlen($option['option_text']) > 30 ? '...' : ''),
+                    'color' => [
+                        'background' => '#FFC107',
+                        'border' => '#FFA000'
+                    ],
+                    'shape' => 'ellipse'
+                ];
+            }
+            
+            // Add edge from question to option
+            $data['edges'][] = [
+                'from' => 'q' . $question_id,
+                'to' => $option_id,
+                'arrows' => 'to',
+                'color' => '#666666'
             ];
             
-            // Create edge to endpoint
-            $edges[] = [
-                'from' => 'q' . $option['question_id'],
-                'to' => $endpoint_id,
-                'label' => $option['option_text'],
-                'arrows' => 'to',
-                'smooth' => [
-                    'type' => 'cubicBezier',
-                    'forceDirection' => 'vertical'
-                ]
-            ];
-        } else {
-            // Create edge to next question
-            $edges[] = [
-                'from' => 'q' . $option['question_id'],
-                'to' => 'q' . $option['next_question_id'],
-                'label' => $option['option_text'],
-                'arrows' => 'to',
-                'smooth' => [
-                    'type' => 'cubicBezier',
-                    'forceDirection' => 'vertical'
-                ]
-            ];
+            // Add edge from option to next question if applicable
+            if (!$option['is_endpoint'] && !empty($option['next_question_id'])) {
+                $data['edges'][] = [
+                    'from' => $option_id,
+                    'to' => 'q' . $option['next_question_id'],
+                    'arrows' => 'to',
+                    'color' => '#666666'
+                ];
+            }
         }
     }
-    
-    // Return the tree data
-    echo json_encode([
-        'success' => true,
-        'nodes' => $nodes,
-        'edges' => $edges
-    ]);
-    
+
+    // Check if we have any data
+    if (empty($data['nodes'])) {
+        echo json_encode([
+            'error' => true,
+            'message' => 'No decision tree data found. Please add questions and options first.'
+        ]);
+    } else {
+        echo json_encode($data);
+    }
+
 } catch (Exception $e) {
-    http_response_code(500);
     echo json_encode([
-        'success' => false,
-        'message' => 'Database error: ' . $e->getMessage()
+        'error' => true,
+        'message' => 'Error fetching decision tree data: ' . $e->getMessage()
     ]);
 }
 ?>

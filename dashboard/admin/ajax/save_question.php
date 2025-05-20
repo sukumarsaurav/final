@@ -1,80 +1,65 @@
 <?php
 require_once '../../../config/db_connect.php';
+require_once '../../../includes/functions.php';
 
-// Start session if not already started
+// Check if user is logged in as admin - MODIFY THIS SECTION
+// Only start session if one isn't already active
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-// Check if user is logged in and is admin
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    http_response_code(403);
+if (!isset($_SESSION["loggedin"]) || !isset($_SESSION["user_type"]) || $_SESSION["user_type"] != 'admin') {
+    header('Content-Type: application/json');
     echo json_encode(['success' => false, 'message' => 'Unauthorized access']);
-    exit;
+    exit();
 }
 
-// Get and validate input data
-$question_id = filter_input(INPUT_POST, 'question_id', FILTER_VALIDATE_INT);
-$question_text = filter_input(INPUT_POST, 'question_text', FILTER_SANITIZE_STRING);
-$description = filter_input(INPUT_POST, 'description', FILTER_SANITIZE_STRING);
-$category_id = filter_input(INPUT_POST, 'category_id', FILTER_VALIDATE_INT);
-$is_active = isset($_POST['is_active']) ? 1 : 0;
+$response = ['success' => false, 'message' => 'Invalid request'];
 
-// Validate required fields
-if (empty($question_text)) {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Question text is required']);
-    exit;
-}
-
-try {
-    if ($question_id) {
-        // Update existing question
-        $query = "UPDATE decision_tree_questions 
-                 SET question_text = ?, 
-                     description = ?, 
-                     category_id = ?, 
-                     is_active = ?,
-                     updated_at = NOW()
-                 WHERE id = ?";
-        
-        $stmt = $conn->prepare($query);
-        $stmt->bind_param('ssiii', $question_text, $description, $category_id, $is_active, $question_id);
-    } else {
-        // Insert new question
-        $query = "INSERT INTO decision_tree_questions 
-                 (question_text, description, category_id, is_active, created_by, created_at, updated_at) 
-                 VALUES (?, ?, ?, ?, ?, NOW(), NOW())";
-        
-        $stmt = $conn->prepare($query);
-        $stmt->bind_param('ssiii', $question_text, $description, $category_id, $is_active, $_SESSION['user_id']);
-    }
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Get form data
+    $question_id = isset($_POST['question_id']) ? intval($_POST['question_id']) : 0;
+    $question_text = trim($_POST['question_text'] ?? '');
+    $description = trim($_POST['description'] ?? '');
+    $category_id = !empty($_POST['category_id']) ? intval($_POST['category_id']) : null;
+    $is_active = isset($_POST['is_active']) ? 1 : 0;
+    $user_id = $_SESSION['id'];
     
-    if ($stmt->execute()) {
-        $new_question_id = $question_id ?: $stmt->insert_id;
-        
-        // Create activity log
-        $activity_query = "INSERT INTO activity_logs 
-                          (user_id, activity_type, entity_type, entity_id, description) 
-                          VALUES (?, ?, 'question', ?, ?)";
-        
-        $activity_type = $question_id ? 'update' : 'create';
-        $activity_desc = $question_id ? 'Updated question' : 'Created new question';
-        
-        $activity_stmt = $conn->prepare($activity_query);
-        $activity_stmt->bind_param('isii', $_SESSION['user_id'], $activity_type, $new_question_id, $activity_desc);
-        $activity_stmt->execute();
-        
-        echo json_encode([
-            'success' => true,
-            'message' => $question_id ? 'Question updated successfully' : 'Question created successfully',
-            'question_id' => $new_question_id
-        ]);
+    // Validate form data
+    if (empty($question_text)) {
+        $response['message'] = 'Question text is required';
     } else {
-        throw new Exception($stmt->error);
+        if ($question_id > 0) {
+            // Update existing question
+            $stmt = $conn->prepare("UPDATE decision_tree_questions 
+                                 SET question_text = ?, description = ?, category_id = ?, is_active = ? 
+                                 WHERE id = ?");
+            $stmt->bind_param("ssiis", $question_text, $description, $category_id, $is_active, $question_id);
+            
+            if ($stmt->execute()) {
+                $response = ['success' => true, 'message' => 'Question updated successfully', 'question_id' => $question_id];
+            } else {
+                $response['message'] = 'Error updating question: ' . $stmt->error;
+            }
+            $stmt->close();
+        } else {
+            // Insert new question
+            $stmt = $conn->prepare("INSERT INTO decision_tree_questions 
+                                 (question_text, description, category_id, is_active, created_by) 
+                                 VALUES (?, ?, ?, ?, ?)");
+            $stmt->bind_param("ssiii", $question_text, $description, $category_id, $is_active, $user_id);
+            
+            if ($stmt->execute()) {
+                $new_id = $stmt->insert_id;
+                $response = ['success' => true, 'message' => 'Question added successfully', 'question_id' => $new_id];
+            } else {
+                $response['message'] = 'Error adding question: ' . $stmt->error;
+            }
+            $stmt->close();
+        }
     }
-    
-} catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
 }
+
+// Return response
+header('Content-Type: application/json');
+echo json_encode($response);

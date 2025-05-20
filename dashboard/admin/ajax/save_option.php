@@ -1,110 +1,82 @@
 <?php
-require_once '../../../config/db_connect.php';
-
-// Start session if not already started
+// Only start session if one isn't already active
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-// Check if user is logged in and is admin
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    http_response_code(403);
+require_once '../../../config/db_connect.php';
+require_once '../../../includes/functions.php';
+
+// Check if user is logged in as admin
+if (!isset($_SESSION["loggedin"]) || !isset($_SESSION["user_type"]) || $_SESSION["user_type"] != 'admin') {
+    header('Content-Type: application/json');
     echo json_encode(['success' => false, 'message' => 'Unauthorized access']);
-    exit;
+    exit();
 }
 
-// Get and validate input data
-$option_id = filter_input(INPUT_POST, 'option_id', FILTER_VALIDATE_INT);
-$question_id = filter_input(INPUT_POST, 'question_id', FILTER_VALIDATE_INT);
-$option_text = filter_input(INPUT_POST, 'option_text', FILTER_SANITIZE_STRING);
-$is_endpoint = isset($_POST['is_endpoint']) ? 1 : 0;
-$next_question_id = filter_input(INPUT_POST, 'next_question_id', FILTER_VALIDATE_INT);
-$endpoint_result = filter_input(INPUT_POST, 'endpoint_result', FILTER_SANITIZE_STRING);
-$endpoint_eligible = isset($_POST['endpoint_eligible']) ? 1 : 0;
+$response = ['success' => false, 'message' => 'Invalid request'];
 
-// Validate required fields
-if (empty($option_text) || empty($question_id)) {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Option text and question ID are required']);
-    exit;
-}
-
-// Validate endpoint data
-if ($is_endpoint && empty($endpoint_result)) {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Endpoint result is required for endpoint options']);
-    exit;
-}
-
-if (!$is_endpoint && empty($next_question_id)) {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Next question is required for non-endpoint options']);
-    exit;
-}
-
-try {
-    if ($option_id) {
-        // Update existing option
-        $query = "UPDATE decision_tree_options 
-                 SET option_text = ?, 
-                     is_endpoint = ?, 
-                     next_question_id = ?, 
-                     endpoint_result = ?, 
-                     endpoint_eligible = ?,
-                     updated_at = NOW()
-                 WHERE id = ?";
-        
-        $stmt = $conn->prepare($query);
-        $stmt->bind_param('siisii', 
-            $option_text, 
-            $is_endpoint, 
-            $next_question_id, 
-            $endpoint_result, 
-            $endpoint_eligible, 
-            $option_id
-        );
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Get form data
+    $option_id = isset($_POST['option_id']) ? intval($_POST['option_id']) : 0;
+    $question_id = intval($_POST['question_id'] ?? 0);
+    $option_text = trim($_POST['option_text'] ?? '');
+    $is_endpoint = isset($_POST['is_endpoint']) ? 1 : 0;
+    
+    // If it's an endpoint, get endpoint data, otherwise get next question
+    if ($is_endpoint) {
+        $next_question_id = null;
+        $endpoint_result = trim($_POST['endpoint_result'] ?? '');
+        $endpoint_eligible = isset($_POST['endpoint_eligible']) ? 1 : 0;
     } else {
-        // Insert new option
-        $query = "INSERT INTO decision_tree_options 
-                 (question_id, option_text, is_endpoint, next_question_id, endpoint_result, endpoint_eligible, created_at, updated_at) 
-                 VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())";
-        
-        $stmt = $conn->prepare($query);
-        $stmt->bind_param('isissi', 
-            $question_id, 
-            $option_text, 
-            $is_endpoint, 
-            $next_question_id, 
-            $endpoint_result, 
-            $endpoint_eligible
-        );
+        $next_question_id = !empty($_POST['next_question_id']) ? intval($_POST['next_question_id']) : null;
+        $endpoint_result = null;
+        $endpoint_eligible = null;
     }
     
-    if ($stmt->execute()) {
-        $new_option_id = $option_id ?: $stmt->insert_id;
-        
-        // Create activity log
-        $activity_query = "INSERT INTO activity_logs 
-                          (user_id, activity_type, entity_type, entity_id, description) 
-                          VALUES (?, ?, 'option', ?, ?)";
-        
-        $activity_type = $option_id ? 'update' : 'create';
-        $activity_desc = $option_id ? 'Updated option' : 'Created new option';
-        
-        $activity_stmt = $conn->prepare($activity_query);
-        $activity_stmt->bind_param('isii', $_SESSION['user_id'], $activity_type, $new_option_id, $activity_desc);
-        $activity_stmt->execute();
-        
-        echo json_encode([
-            'success' => true,
-            'message' => $option_id ? 'Option updated successfully' : 'Option created successfully',
-            'option_id' => $new_option_id
-        ]);
+    // Validate form data
+    if (empty($option_text)) {
+        $response['message'] = 'Option text is required';
+    } elseif ($question_id <= 0) {
+        $response['message'] = 'Invalid question ID';
+    } elseif (!$is_endpoint && empty($next_question_id)) {
+        $response['message'] = 'Next question is required for non-endpoint options';
     } else {
-        throw new Exception($stmt->error);
+        if ($option_id > 0) {
+            // Update existing option
+            $stmt = $conn->prepare("UPDATE decision_tree_options 
+                                   SET option_text = ?, next_question_id = ?, is_endpoint = ?, 
+                                   endpoint_result = ?, endpoint_eligible = ?
+                                   WHERE id = ?");
+            $stmt->bind_param("ssissi", $option_text, $next_question_id, $is_endpoint, 
+                            $endpoint_result, $endpoint_eligible, $option_id);
+            
+            if ($stmt->execute()) {
+                $response = ['success' => true, 'message' => 'Option updated successfully', 'option_id' => $option_id];
+            } else {
+                $response['message'] = 'Error updating option: ' . $stmt->error;
+            }
+            $stmt->close();
+        } else {
+            // Insert new option
+            $stmt = $conn->prepare("INSERT INTO decision_tree_options 
+                                   (question_id, option_text, next_question_id, is_endpoint, 
+                                   endpoint_result, endpoint_eligible) 
+                                   VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("isisis", $question_id, $option_text, $next_question_id, 
+                            $is_endpoint, $endpoint_result, $endpoint_eligible);
+            
+            if ($stmt->execute()) {
+                $new_id = $stmt->insert_id;
+                $response = ['success' => true, 'message' => 'Option added successfully', 'option_id' => $new_id];
+            } else {
+                $response['message'] = 'Error adding option: ' . $stmt->error;
+            }
+            $stmt->close();
+        }
     }
-    
-} catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
 }
+
+// Return response
+header('Content-Type: application/json');
+echo json_encode($response);

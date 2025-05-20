@@ -1,11 +1,11 @@
 <?php
 // Only start session if one isn't already active
-require_once '../../../config/db_connect.php';
-
-// Start session if not already started
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
+
+require_once '../../../config/db_connect.php';
+require_once '../../../includes/functions.php';
 
 // Check if user is logged in as admin
 if (!isset($_SESSION["loggedin"]) || !isset($_SESSION["user_type"]) || $_SESSION["user_type"] != 'admin') {
@@ -16,20 +16,17 @@ if (!isset($_SESSION["loggedin"]) || !isset($_SESSION["user_type"]) || $_SESSION
 
 $response = ['success' => false, 'message' => 'Invalid request'];
 
-if (isset($_GET['id']) && is_numeric($_GET['id'])) {
-    $option_id = intval($_GET['id']);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['option_id']) && is_numeric($_POST['option_id'])) {
+    $option_id = intval($_POST['option_id']);
     
-    $stmt = $conn->prepare("SELECT * FROM decision_tree_options WHERE id = ?");
+    // Delete the option
+    $stmt = $conn->prepare("DELETE FROM decision_tree_options WHERE id = ?");
     $stmt->bind_param("i", $option_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
     
-    if ($result->num_rows > 0) {
-        $option = $result->fetch_assoc();
-        $response = $option;
-        $response['success'] = true;
+    if ($stmt->execute()) {
+        $response = ['success' => true, 'message' => 'Option deleted successfully'];
     } else {
-        $response['message'] = 'Option not found';
+        $response['message'] = 'Error deleting option: ' . $stmt->error;
     }
     $stmt->close();
 }
