@@ -81,13 +81,13 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
                     <i class="fas fa-bars"></i>
                 </button>
                 <a href="index.php" class="header-logo">
-                    <img src="../assets/images/logo-Visafy-light.png" alt="Visafy Logo" class="desktop-logo">
+                    <img src="../../assets/images/logo-Visafy-light.png" alt="Visafy Logo" class="desktop-logo">
                 </a>
             </div>
             <div class="header-right">
                 <div class="user-dropdown">
                     <span class="user-name"><?php echo htmlspecialchars($_SESSION["first_name"] . ' ' . $_SESSION["last_name"]); ?></span>
-                    <img src="<?php echo $profile_img; ?>" alt="Profile" class="profile-img-header">
+                    <img src="<?php echo $profile_img; ?>" alt="Profile" class="profile-img-header" style="width: 32px; height: 32px;">
                     <div class="user-dropdown-menu">
                         <a href="profile.php" class="dropdown-item">
                             <i class="fas fa-user"></i> Profile
