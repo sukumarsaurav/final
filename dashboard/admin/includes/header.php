@@ -170,8 +170,3 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
         <main class="main-content <?php echo $main_content_class; ?>">
             <div class="content-wrapper">
                 <!-- Page content will be inserted here -->
-            </div>
-        </main>
-    </div>
-</body>
-</html> 
