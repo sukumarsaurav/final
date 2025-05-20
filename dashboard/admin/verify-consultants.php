@@ -1,18 +1,9 @@
 <?php
-// Start session if not already started
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+// Set page title
+$page_title = "Admin Dashboard";
 
-// Include database connection
-require_once '../config/db_connect.php';
-require_once '../includes/functions.php';
-
-// Check if user is logged in and is admin or visafy staff
-if (!isset($_SESSION['user_id']) || ($_SESSION['user_type'] !== 'admin' && $_SESSION['user_type'] !== 'visafy_staff')) {
-    header("Location: ../login.php");
-    exit;
-}
+// Include header
+include('includes/header.php');
 
 $page_title = "Verify Consultants";
 require_once '../includes/admin-header.php';
