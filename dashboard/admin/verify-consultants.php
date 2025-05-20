@@ -6,7 +6,7 @@ $page_title = "Admin Dashboard";
 include('includes/header.php');
 
 $page_title = "Verify Consultants";
-require_once '../includes/admin-header.php';
+
 
 // Handle verification action
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'verify') {
