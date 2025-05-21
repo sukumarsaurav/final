@@ -17,6 +17,11 @@ $user_id = isset($_SESSION["user_id"]) ? $_SESSION["user_id"] : (isset($_SESSION
 $user_upload_dir = '../../uploads/users/' . $user_id;
 $profile_dir = $user_upload_dir . '/profile';
 
+$upload_base = '../../uploads/users/';
+if (!is_dir($upload_base)) {
+    mkdir($upload_base, 0755, true);
+}
+
 if (!is_dir($user_upload_dir)) {
     mkdir($user_upload_dir, 0755, true);
 }
@@ -92,7 +97,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
             
             if ($upload_result['status']) {
-                $profile_picture = $upload_result['file_path'];
+                // Store relative path from uploads directory
+                $profile_picture = str_replace('../../uploads/', '', $upload_result['file_path']);
             } else {
                 $validation_errors[] = $upload_result['message'];
             }
@@ -201,6 +207,35 @@ if (!empty($user_data['profile_picture'])) {
     $profile_path = '../../uploads/' . $user_data['profile_picture'];
     if (file_exists($profile_path)) {
         $profile_img = $profile_path;
+    }
+}
+
+// Handle Google profile data
+if (isset($_SESSION['google_data']) && empty($user_data['profile_picture'])) {
+    // Get Google profile picture
+    $google_picture = $_SESSION['google_data']['picture'] ?? null;
+    
+    if ($google_picture) {
+        // Download and save Google profile picture
+        $img_content = file_get_contents($google_picture);
+        if ($img_content !== false) {
+            $file_extension = '.jpg'; // Most Google profile pics are JPG
+            $new_filename = 'profile_' . time() . $file_extension;
+            $relative_path = 'users/' . $user_id . '/profile/' . $new_filename;
+            $absolute_path = $user_upload_dir . '/' . $new_filename;
+            
+            if (file_put_contents($absolute_path, $img_content)) {
+                // Update database with new profile picture path
+                $update_picture = "UPDATE users SET profile_picture = ? WHERE id = ?";
+                $stmt = $conn->prepare($update_picture);
+                $stmt->bind_param('si', $relative_path, $user_id);
+                $stmt->execute();
+                $stmt->close();
+                
+                // Update session
+                $_SESSION['profile_picture'] = $relative_path;
+            }
+        }
     }
 }
 ?>

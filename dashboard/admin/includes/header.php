@@ -36,19 +36,13 @@ $profile_img = '../assets/images/default-profile.jpg';
 $profile_image = !empty($user['profile_picture']) ? $user['profile_picture'] : '';
 
 if (!empty($profile_image)) {
-    // Check if file exists - supports both old and new directory structure
-    if (strpos($profile_image, 'users/') === 0) {
-        // New structure - user specific directory
-        if (file_exists('../uploads/' . $profile_image)) {
-            $profile_img = '../uploads/' . $profile_image;
-        }
-    } else {
-        // Legacy structure
-        if (file_exists('../uploads/profiles/' . $profile_image)) {
-            $profile_img = '../uploads/profiles/' . $profile_image;
-        } else if (file_exists('../uploads/profile/' . $profile_image)) {
-            $profile_img = '../uploads/profile/' . $profile_image;
-        }
+    // Check if the path already contains 'uploads/'
+    $profile_path = strpos($profile_image, 'uploads/') === 0 
+        ? '../../' . $profile_image
+        : '../../uploads/' . $profile_image;
+        
+    if (file_exists($profile_path)) {
+        $profile_img = $profile_path;
     }
 }
 

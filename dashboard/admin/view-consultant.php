@@ -176,7 +176,11 @@ $average_rating = $booking_stats['average_rating'] ? number_format($booking_stat
 // Get profile image
 $profile_img = '../../assets/images/default-profile.jpg';
 if (!empty($consultant['profile_picture'])) {
-    $profile_path = '../../uploads/users/' . $consultant_id . '/profile/' . $consultant['profile_picture'];
+    // Check if the path already contains 'uploads/'
+    $profile_path = strpos($consultant['profile_picture'], 'uploads/') === 0 
+        ? '../../' . $consultant['profile_picture']
+        : '../../uploads/' . $consultant['profile_picture'];
+        
     if (file_exists($profile_path)) {
         $profile_img = $profile_path;
     }
