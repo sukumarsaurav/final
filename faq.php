@@ -1,394 +1,403 @@
 <?php
-// Start output buffering to prevent 'headers already sent' errors
-ob_start();
-
 // Include session management
 require_once "includes/session.php";
 
-// Include config files
-require_once "config/db_connect.php";
-
-$page_title = "Frequently Asked Questions";
-require_once 'includes/header.php';
-require_once 'includes/functions.php';
+$page_title = "FAQ | Visafy - Canadian Immigration Consultancy";
+include('includes/header.php');
 ?>
 
 <!-- Hero Section -->
-<section class="hero privacy-hero">
+<section class="hero faq-hero">
     <div class="container">
         <div class="hero-content text-center">
             <h1 class="hero-title">Frequently Asked Questions</h1>
-            <p class="hero-subtitle">Find answers to common questions about our services</p>
+            <p class="hero-subtitle">Find answers to common questions about immigration and our services</p>
         </div>
     </div>
 </section>
 
-<div class="content">
+<!-- FAQ Section -->
+<section class="section faq">
     <div class="container">
-        <div class="privacy-content">
+        <div class="faq-container">
             <!-- FAQ Categories -->
-            <div class="faq-categories">
-                <button class="category-btn active" data-category="general">General</button>
-                <button class="category-btn" data-category="visa">Visa Services</button>
-                <button class="category-btn" data-category="consultation">Consultations</button>
-                <button class="category-btn" data-category="payment">Payment & Fees</button>
+            <div class="faq-categories" data-aos="fade-right">
+                <h3>Categories</h3>
+                <ul class="category-list">
+                    <li class="active" data-category="general">General Questions</li>
+                    <li data-category="services">Our Services</li>
+                    <li data-category="process">Immigration Process</li>
+                    <li data-category="documents">Documentation</li>
+                    <li data-category="fees">Fees & Payments</li>
+                    <li data-category="platform">Platform Usage</li>
+                </ul>
             </div>
 
-            <!-- General FAQs -->
-            <div class="faq-section active" id="general">
-                <div class="accordion">
-                    <div class="accordion-item">
-                        <button class="accordion-header">
-                            What is Visafy?
-                            <span class="icon">+</span>
-                        </button>
-                        <div class="accordion-content">
-                            <p>Visafy is a platform that connects visa applicants with professional immigration consultants. We provide a secure and efficient way to get expert guidance for your visa application process.</p>
+            <!-- FAQ Content -->
+            <div class="faq-content" data-aos="fade-left">
+                <!-- General Questions -->
+                <div class="faq-group active" id="general">
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h3>What is Visafy and how can it help me?</h3>
+                            <span class="toggle-icon"></span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Visafy is a comprehensive immigration platform that connects applicants with licensed immigration consultants. We simplify the immigration process by providing digital tools, expert guidance, and real-time application tracking to ensure a smooth journey towards your immigration goals.</p>
                         </div>
                     </div>
 
-                    <div class="accordion-item">
-                        <button class="accordion-header">
-                            How do I get started with Visafy?
-                            <span class="icon">+</span>
-                        </button>
-                        <div class="accordion-content">
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h3>Are your immigration consultants licensed?</h3>
+                            <span class="toggle-icon"></span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Yes, all our immigration consultants are licensed by ICCRC (Immigration Consultants of Canada Regulatory Council) and maintain good standing. You can verify their credentials through the ICCRC registry using their membership numbers provided on their profiles.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h3>How do I get started with Visafy?</h3>
+                            <span class="toggle-icon"></span>
+                        </div>
+                        <div class="faq-answer">
                             <p>Getting started is easy:</p>
                             <ol>
                                 <li>Create a free account</li>
-                                <li>Browse our verified consultants</li>
-                                <li>Book a consultation</li>
-                                <li>Get expert guidance for your visa process</li>
+                                <li>Complete our eligibility assessment</li>
+                                <li>Book a consultation with an expert</li>
+                                <li>Begin your immigration journey with our guidance</li>
                             </ol>
                         </div>
                     </div>
-
-                    <div class="accordion-item">
-                        <button class="accordion-header">
-                            Are your consultants verified?
-                            <span class="icon">+</span>
-                        </button>
-                        <div class="accordion-content">
-                            <p>Yes, all consultants on our platform go through a rigorous verification process. We check their credentials, licenses, and professional experience to ensure they meet our quality standards.</p>
-                        </div>
-                    </div>
                 </div>
-            </div>
 
-            <!-- Visa Services FAQs -->
-            <div class="faq-section" id="visa">
-                <div class="accordion">
-                    <div class="accordion-item">
-                        <button class="accordion-header">
-                            What types of visas do you handle?
-                            <span class="icon">+</span>
-                        </button>
-                        <div class="accordion-content">
-                            <p>Our consultants handle various visa types including:</p>
+                <!-- Services -->
+                <div class="faq-group" id="services">
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h3>What immigration services do you offer?</h3>
+                            <span class="toggle-icon"></span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>We offer comprehensive immigration services including:</p>
                             <ul>
-                                <li>Student Visas</li>
-                                <li>Work Visas</li>
-                                <li>Tourist Visas</li>
-                                <li>Business Visas</li>
-                                <li>Permanent Residency</li>
-                                <li>Family Sponsorship</li>
+                                <li>Express Entry applications</li>
+                                <li>Study permits</li>
+                                <li>Work permits</li>
+                                <li>Family sponsorship</li>
+                                <li>Provincial Nominee Programs</li>
+                                <li>Business immigration</li>
+                                <li>Visitor visas</li>
                             </ul>
                         </div>
                     </div>
 
-                    <div class="accordion-item">
-                        <button class="accordion-header">
-                            How long does the visa process take?
-                            <span class="icon">+</span>
-                        </button>
-                        <div class="accordion-content">
-                            <p>Processing times vary depending on the type of visa and destination country. Your consultant will provide specific timelines during your consultation.</p>
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h3>Do you provide document translation services?</h3>
+                            <span class="toggle-icon"></span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Yes, we provide certified translation services for all immigration-related documents through our network of authorized translators. We ensure all translations meet IRCC requirements.</p>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Consultation FAQs -->
-            <div class="faq-section" id="consultation">
-                <div class="accordion">
-                    <div class="accordion-item">
-                        <button class="accordion-header">
-                            How do consultations work?
-                            <span class="icon">+</span>
-                        </button>
-                        <div class="accordion-content">
-                            <p>Consultations can be conducted online or in-person, depending on your preference and the consultant's availability. During the consultation, you'll discuss your visa requirements, eligibility, and get expert guidance on the application process.</p>
+                <!-- Process -->
+                <div class="faq-group" id="process">
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h3>How long does the immigration process take?</h3>
+                            <span class="toggle-icon"></span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Processing times vary depending on the type of application and current IRCC processing times. During your consultation, your immigration consultant will provide an estimated timeline based on your specific case and the latest processing times.</p>
                         </div>
                     </div>
 
-                    <div class="accordion-item">
-                        <button class="accordion-header">
-                            Can I change my consultant?
-                            <span class="icon">+</span>
-                        </button>
-                        <div class="accordion-content">
-                            <p>Yes, you can change your consultant if you're not satisfied with the service. Contact our support team, and we'll help you find a better match for your needs.</p>
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h3>Can I track my application status?</h3>
+                            <span class="toggle-icon"></span>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Payment FAQs -->
-            <div class="faq-section" id="payment">
-                <div class="accordion">
-                    <div class="accordion-item">
-                        <button class="accordion-header">
-                            What are your fees?
-                            <span class="icon">+</span>
-                        </button>
-                        <div class="accordion-content">
-                            <p>Consultation fees vary by consultant and service type. Each consultant sets their own rates, which are clearly displayed on their profile. Additional services and fees will be discussed during your consultation.</p>
-                        </div>
-                    </div>
-
-                    <div class="accordion-item">
-                        <button class="accordion-header">
-                            What payment methods do you accept?
-                            <span class="icon">+</span>
-                        </button>
-                        <div class="accordion-content">
-                            <p>We accept various payment methods including:</p>
-                            <ul>
-                                <li>Credit/Debit Cards</li>
-                                <li>Bank Transfers</li>
-                                <li>Digital Wallets</li>
-                            </ul>
-                            <p>All payments are processed securely through our platform.</p>
+                        <div class="faq-answer">
+                            <p>Yes, through our platform you can track your application status in real-time. You'll receive notifications for important updates and can view detailed progress through your personalized dashboard.</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</section>
+
+<!-- Still Have Questions Section -->
+<section class="section contact-cta">
+    <div class="container">
+        <div class="cta-content text-center" data-aos="fade-up">
+            <h2>Still Have Questions?</h2>
+            <p>Can't find the answer you're looking for? Our team is here to help!</p>
+            <div class="cta-buttons">
+                <a href="contact.php" class="btn btn-primary">Contact Us</a>
+                <a href="book-consultation.php" class="btn btn-secondary">Book a Consultation</a>
+            </div>
+        </div>
+    </div>
+</section>
 
 <style>
-:root {
-    --primary-color: #eaaa34;
-    --primary-light: rgba(234, 170, 52, 0.1);
-    --dark-blue: #042167;
-    --text-color: #333;
-    --text-light: #666;
-    --background-light: #f8f9fa;
-    --white: #fff;
-    --border-color: #e5e7eb;
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --border-radius: 0.5rem;
+/* FAQ Page Styles */
+.faq-hero {
+    background-color: var(--primary-light);
+    padding: 4rem 0;
 }
 
-/* Inherit existing styles */
-.privacy-hero {
-    background-color: rgba(234, 170, 52, 0.05);
-    padding: 60px 0;
-    text-align: center;
+.faq-container {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: 2rem;
+    margin-top: 2rem;
 }
 
-.hero-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: var(--dark-blue);
-    margin-bottom: 15px;
-}
-
-.hero-subtitle {
-    font-size: 1.2rem;
-    color: var(--text-light);
-}
-
-.content {
-    padding: 50px 0;
-}
-
-.privacy-content {
-    max-width: 900px;
-    margin: 0 auto;
-    background-color: var(--white);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
-    padding: 40px;
-}
-
-/* FAQ specific styles */
+/* Categories Sidebar */
 .faq-categories {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 30px;
-    flex-wrap: wrap;
+    background: var(--white);
+    padding: 1.5rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
 }
 
-.category-btn {
-    padding: 10px 20px;
-    border: 2px solid var(--primary-color);
-    border-radius: 25px;
-    background: none;
-    color: var(--primary-color);
+.faq-categories h3 {
+    margin-bottom: 1rem;
+    color: var(--dark-color);
+    font-size: 1.25rem;
+}
+
+.category-list {
+    list-style: none;
+    padding: 0;
+}
+
+.category-list li {
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: var(--radius);
     cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: 600;
+    transition: var(--transition);
+    color: var(--text-color);
 }
 
-.category-btn.active {
+.category-list li:hover {
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+}
+
+.category-list li.active {
     background-color: var(--primary-color);
-    color: white;
+    color: var(--white);
 }
 
-.faq-section {
+/* FAQ Content */
+.faq-content {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+.faq-group {
     display: none;
 }
 
-.faq-section.active {
+.faq-group.active {
     display: block;
 }
 
-.accordion {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+.faq-item {
+    border-bottom: 1px solid var(--border-color);
 }
 
-.accordion-item {
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    overflow: hidden;
-}
-
-.accordion-header {
-    width: 100%;
-    padding: 20px;
-    background-color: var(--white);
-    border: none;
-    text-align: left;
-    cursor: pointer;
+.faq-question {
+    padding: 1.5rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-weight: 600;
-    color: var(--dark-blue);
-    transition: all 0.3s ease;
+    cursor: pointer;
 }
 
-.accordion-header:hover {
-    background-color: var(--primary-light);
+.faq-question h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--dark-color);
 }
 
-.accordion-header .icon {
-    font-size: 20px;
-    transition: transform 0.3s ease;
+.toggle-icon {
+    width: 24px;
+    height: 24px;
+    position: relative;
 }
 
-.accordion-header.active .icon {
-    transform: rotate(45deg);
+.toggle-icon::before,
+.toggle-icon::after {
+    content: '';
+    position: absolute;
+    background-color: var(--primary-color);
+    transition: var(--transition);
 }
 
-.accordion-content {
-    padding: 0;
+.toggle-icon::before {
+    width: 2px;
+    height: 16px;
+    top: 4px;
+    left: 11px;
+}
+
+.toggle-icon::after {
+    width: 16px;
+    height: 2px;
+    top: 11px;
+    left: 4px;
+}
+
+.faq-item.active .toggle-icon::before {
+    transform: rotate(90deg);
+}
+
+.faq-answer {
+    padding: 0 1.5rem;
     max-height: 0;
     overflow: hidden;
-    transition: all 0.3s ease;
-    background-color: var(--background-light);
+    transition: max-height 0.3s ease-out;
 }
 
-.accordion-content.active {
-    padding: 20px;
-    max-height: none; /* Changed from fixed height to none */
+.faq-item.active .faq-answer {
+    padding: 0 1.5rem 1.5rem;
+    max-height: 500px;
 }
 
-.accordion-content p {
-    margin-bottom: 15px;
+.faq-answer p {
+    margin-bottom: 1rem;
+    color: var(--text-color);
     line-height: 1.6;
+}
+
+.faq-answer ul,
+.faq-answer ol {
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.faq-answer li {
+    margin-bottom: 0.5rem;
     color: var(--text-color);
 }
 
-.accordion-content ul,
-.accordion-content ol {
-    margin-bottom: 15px;
-    padding-left: 20px;
+/* Contact CTA Section */
+.contact-cta {
+    background-color: var(--primary-light);
+    padding: 4rem 0;
 }
 
-.accordion-content li {
-    margin-bottom: 8px;
-    line-height: 1.6;
+.cta-content {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.cta-content h2 {
+    margin-bottom: 1rem;
+    color: var(--dark-color);
+}
+
+.cta-content p {
+    margin-bottom: 2rem;
     color: var(--text-color);
 }
 
+.cta-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
-    .privacy-content {
-        padding: 20px;
+    .faq-container {
+        grid-template-columns: 1fr;
     }
-    
+
     .faq-categories {
+        margin-bottom: 1rem;
+    }
+
+    .category-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .category-list li {
+        margin-bottom: 0;
+    }
+
+    .cta-buttons {
         flex-direction: column;
     }
-    
-    .category-btn {
+
+    .btn {
         width: 100%;
-    }
-    
-    .accordion-header {
-        padding: 15px;
     }
 }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Category switching
-    const categoryBtns = document.querySelectorAll('.category-btn');
-    const faqSections = document.querySelectorAll('.faq-section');
-    
-    categoryBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            // Remove active class from all buttons and sections
-            categoryBtns.forEach(b => b.classList.remove('active'));
-            faqSections.forEach(s => s.classList.remove('active'));
-            
-            // Add active class to clicked button and corresponding section
-            btn.classList.add('active');
-            document.getElementById(btn.dataset.category).classList.add('active');
+    // FAQ Category Switching
+    const categoryButtons = document.querySelectorAll('.category-list li');
+    const faqGroups = document.querySelectorAll('.faq-group');
+
+    categoryButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Remove active class from all buttons and groups
+            categoryButtons.forEach(btn => btn.classList.remove('active'));
+            faqGroups.forEach(group => group.classList.remove('active'));
+
+            // Add active class to clicked button and corresponding group
+            button.classList.add('active');
+            const category = button.getAttribute('data-category');
+            document.getElementById(category).classList.add('active');
         });
     });
-    
-    // Accordion functionality
-    const accordionHeaders = document.querySelectorAll('.accordion-header');
-    
-    accordionHeaders.forEach(header => {
-        header.addEventListener('click', () => {
-            const content = header.nextElementSibling;
-            const isActive = header.classList.contains('active');
+
+    // FAQ Item Toggle
+    const faqItems = document.querySelectorAll('.faq-item');
+
+    faqItems.forEach(item => {
+        const question = item.querySelector('.faq-question');
+        question.addEventListener('click', () => {
+            const isActive = item.classList.contains('active');
             
-            // Close all accordions
-            accordionHeaders.forEach(h => {
-                h.classList.remove('active');
-                h.nextElementSibling.classList.remove('active');
-                h.nextElementSibling.style.maxHeight = '0';
+            // Close all other items
+            faqItems.forEach(otherItem => {
+                if (otherItem !== item) {
+                    otherItem.classList.remove('active');
+                }
             });
-            
-            // If the clicked accordion wasn't active, open it
-            if (!isActive) {
-                header.classList.add('active');
-                content.classList.add('active');
-                
-                // Set initial height to auto to get the full content height
-                content.style.display = 'block';
-                const height = content.scrollHeight;
-                content.style.display = '';
-                
-                // Now set the max height to the calculated height
-                content.style.maxHeight = height + 'px';
-            }
+
+            // Toggle current item
+            item.classList.toggle('active');
         });
     });
+
+    // Initialize AOS
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true
+        });
+    }
 });
 </script>
 
-<?php
-// End output buffering and send content to browser
-ob_end_flush();
-?>
-
-<?php require_once 'includes/footer.php'; ?>
+<?php include('includes/footer.php'); ?>
