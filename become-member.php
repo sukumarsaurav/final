@@ -30,12 +30,7 @@ if ($result && $result->num_rows > 0) {
         <div class="hero-content text-center">
             <h1 class="hero-title">Transform Your Immigration Consulting Practice</h1>
             <p class="hero-subtitle">Join Visafy to access 30+ powerful features designed for immigration consultants</p>
-            <div class="feature-search">
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Search features (Press ⌘K)" id="featureSearch">
-                </div>
-            </div>
+            
         </div>
     </div>
 </section>
