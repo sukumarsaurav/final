@@ -403,9 +403,55 @@ $docs_stmt->close();
                                             <?php endif; ?>
                                         </td>
                                         <td>
-                                            <a href="../../<?php echo $doc['document_path']; ?>" target="_blank" class="btn btn-primary btn-sm">
+                                            <a href="#" data-bs-toggle="modal" data-bs-target="#documentModal<?php echo $doc['id']; ?>" class="btn btn-primary btn-sm">
                                                 <i class="fas fa-eye"></i> View
                                             </a>
+                                            
+                                            <!-- Document Modal -->
+                                            <div class="modal fade" id="documentModal<?php echo $doc['id']; ?>" tabindex="-1" aria-labelledby="documentModalLabel<?php echo $doc['id']; ?>" aria-hidden="true">
+                                                <div class="modal-dialog modal-lg">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="documentModal<?php echo $doc['id']; ?>">
+                                                                <?php echo ucwords(str_replace('_', ' ', $doc['document_type'])); ?>
+                                                            </h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <?php
+                                                            $doc_path = '../../uploads/' . $doc['document_path'];
+                                                            $file_extension = pathinfo($doc_path, PATHINFO_EXTENSION);
+                                                            
+                                                            // Check if it's an image
+                                                            if (in_array(strtolower($file_extension), ['jpg', 'jpeg', 'png', 'gif'])) {
+                                                                echo '<img src="' . $doc_path . '" class="img-fluid" alt="Document">';
+                                                            } 
+                                                            // Check if it's a PDF
+                                                            else if (strtolower($file_extension) === 'pdf') {
+                                                                echo '<div class="ratio ratio-16x9">
+                                                                        <iframe src="' . $doc_path . '" allowfullscreen></iframe>
+                                                                      </div>';
+                                                            } 
+                                                            // For other file types
+                                                            else {
+                                                                echo '<div class="alert alert-info">
+                                                                        This document cannot be previewed. 
+                                                                        <a href="' . $doc_path . '" target="_blank" class="btn btn-sm btn-primary ms-2">
+                                                                            <i class="fas fa-download"></i> Download
+                                                                        </a>
+                                                                      </div>';
+                                                            }
+                                                            ?>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                            <a href="<?php echo $doc_path; ?>" target="_blank" class="btn btn-primary">
+                                                                <i class="fas fa-external-link-alt"></i> Open in New Tab
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </td>
                                     </tr>
                                     <?php endforeach; ?>
