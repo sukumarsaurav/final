@@ -276,71 +276,123 @@ $stmt->close();
 </div>
 
 <style>
-.welcome-card {
+:root {
+    --primary-color: #042167;
+    --secondary-color: #858796;
+    --success-color: #1cc88a;
+    --danger-color: #e74a3b;
+    --warning-color: #f6c23e;
+    --info-color: #36b9cc;
+    --light-color: #f8f9fc;
+    --dark-color: #5a5c69;
+    --border-color: #e3e6f0;
+    --message-color: #4e73df;
+    --notification-color: #f6c23e;
+}
+
+/* Ensure all cards, buttons, badges, alerts, and tables use the same style as the rest of the dashboard */
+
+.card, .stats-card, .shadow {
     background-color: #fff;
-    border-radius: 5px;
+    border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     padding: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.welcome-content h2 {
-    margin: 0;
-    color: var(--primary-color);
-    font-size: 1.8rem;
-}
-
-.welcome-content p {
-    margin: 5px 0 0;
-    color: var(--secondary-color);
-}
-
-.welcome-date {
-    text-align: right;
-}
-
-.welcome-date .date {
-    font-size: 1.2rem;
-    color: var(--secondary-color);
-    font-weight: 600;
+    margin-bottom: 20px;
 }
 
 .stats-card {
     border-left: 4px solid;
 }
 
-.border-left-primary {
-    border-left-color: var(--primary-color);
-}
+.border-left-primary { border-left-color: var(--primary-color); }
+.border-left-success { border-left-color: var(--success-color); }
+.border-left-info { border-left-color: var(--info-color); }
+.border-left-warning { border-left-color: var(--warning-color); }
 
-.border-left-success {
-    border-left-color: var(--success-color);
-}
-
-.border-left-info {
-    border-left-color: var(--info-color);
-}
-
-.border-left-warning {
-    border-left-color: var(--warning-color);
-}
-
-.action-btn {
-    display: flex;
+.btn, .btn-primary, .btn-warning, .btn-info, .btn-success, .btn-secondary {
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    padding: 12px;
+    gap: 5px;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-primary { background-color: var(--primary-color); color: white; }
+.btn-primary:hover { background-color: #031c56; }
+.btn-warning { background-color: var(--warning-color); color: white; }
+.btn-warning:hover { background-color: #e0b137; }
+.btn-info { background-color: var(--info-color); color: white; }
+.btn-info:hover { background-color: #2fa9bd; }
+.btn-success { background-color: var(--success-color); color: white; }
+.btn-success:hover { background-color: #17a673; }
+.btn-secondary { background-color: var(--secondary-color); color: white; }
+.btn-secondary:hover { background-color: #757382; }
+
+.badge, .bg-success, .bg-danger, .bg-warning, .bg-info, .bg-secondary {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    color: white;
+}
+.bg-success { background-color: var(--success-color) !important; }
+.bg-danger { background-color: var(--danger-color) !important; }
+.bg-warning { background-color: var(--warning-color) !important; color: #212529 !important; }
+.bg-info { background-color: var(--info-color) !important; }
+.bg-secondary { background-color: var(--secondary-color) !important; }
+
+.alert, .alert-success, .alert-danger {
+    padding: 12px 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+.alert-success { background-color: rgba(28, 200, 138, 0.1); color: var(--success-color); border: 1px solid rgba(28, 200, 138, 0.2); }
+.alert-danger { background-color: rgba(231, 74, 59, 0.1); color: var(--danger-color); border: 1px solid rgba(231, 74, 59, 0.2); }
+
+.table, .table-bordered {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+}
+.table th, .table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--dark-color);
+    font-size: 0.95rem;
+}
+.table th {
+    background-color: var(--light-color);
+    color: var(--primary-color);
     font-weight: 600;
 }
-
-.action-btn i {
-    margin-right: 10px;
+.table-bordered th, .table-bordered td {
+    border: 1px solid var(--border-color);
 }
 
-.btn-block {
-    width: 100%;
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+    .dashboard-charts {
+        grid-template-columns: 1fr;
+    }
+}
+@media (max-width: 576px) {
+    .stat-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    .actions-grid {
+        grid-template-columns: 1fr;
+    }
 }
 </style>
 
