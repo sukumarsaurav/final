@@ -102,7 +102,7 @@ foreach ($consultants as $consultant) {
 }
 ?>
 
-<div class="container-fluid">
+<div class="content">
     <?php if (!empty($action_message)): ?>
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         <?php echo $action_message; ?>
@@ -117,219 +117,157 @@ foreach ($consultants as $consultant) {
     </div>
     <?php endif; ?>
 
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="me-3">
-                            <i class="fas fa-users fa-3x text-primary"></i>
-                        </div>
-                        <div>
-                            <h4 class="mb-1">Consultants Management</h4>
-                            <p class="text-muted mb-0">View and manage all consultants on the platform</p>
-                        </div>
-                    </div>
-                </div>
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div class="header-content">
+            <h1>Consultants Management</h1>
+            <p class="text-muted">View and manage all consultants on the platform</p>
+        </div>
+    </div>
+
+    <!-- Stats Container -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-icon booking-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Total Consultants</h3>
+                <div class="stat-number"><?php echo $total_consultants; ?></div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon client-icon">
+                <i class="fas fa-user-check"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Active Consultants</h3>
+                <div class="stat-number"><?php echo $active_consultants; ?></div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon message-icon">
+                <i class="fas fa-user-slash"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Suspended Consultants</h3>
+                <div class="stat-number"><?php echo $suspended_consultants; ?></div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon notification-icon">
+                <i class="fas fa-certificate"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Verified Consultants</h3>
+                <div class="stat-number"><?php echo $verified_consultants; ?></div>
             </div>
         </div>
     </div>
-    
-    <div class="row">
-        <!-- Stats Cards -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card stats-card border-left-primary shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                Total Consultants</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $total_consultants; ?></div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-users fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
+
+    <!-- Main Content Section -->
+    <div class="dashboard-section">
+        <div class="section-header">
+            <h2>Consultants List</h2>
+            <div class="filter-controls">
+                <form action="" method="get" class="d-flex gap-2">
+                    <select name="status" class="form-select form-select-sm">
+                        <option value="all" <?php echo $status_filter === 'all' ? 'selected' : ''; ?>>All Status</option>
+                        <option value="active" <?php echo $status_filter === 'active' ? 'selected' : ''; ?>>Active</option>
+                        <option value="suspended" <?php echo $status_filter === 'suspended' ? 'selected' : ''; ?>>Suspended</option>
+                    </select>
+                    <select name="verification" class="form-select form-select-sm">
+                        <option value="all" <?php echo $verification_filter === 'all' ? 'selected' : ''; ?>>All Verification</option>
+                        <option value="verified" <?php echo $verification_filter === 'verified' ? 'selected' : ''; ?>>Verified</option>
+                        <option value="unverified" <?php echo $verification_filter === 'unverified' ? 'selected' : ''; ?>>Unverified</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+                </form>
             </div>
         </div>
-        
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card stats-card border-left-success shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                Active Consultants</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $active_consultants; ?></div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-user-check fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card stats-card border-left-warning shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                Suspended Consultants</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $suspended_consultants; ?></div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-user-slash fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card stats-card border-left-info shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                Verified Consultants</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $verified_consultants; ?></div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-certificate fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card shadow">
-                <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 font-weight-bold text-primary">Consultants List</h6>
-                    <div class="filter-controls">
-                        <form action="" method="get" class="d-flex">
-                            <div class="me-2">
-                                <select name="status" class="form-select form-select-sm">
-                                    <option value="all" <?php echo $status_filter === 'all' ? 'selected' : ''; ?>>All Status</option>
-                                    <option value="active" <?php echo $status_filter === 'active' ? 'selected' : ''; ?>>Active</option>
-                                    <option value="suspended" <?php echo $status_filter === 'suspended' ? 'selected' : ''; ?>>Suspended</option>
-                                </select>
-                            </div>
-                            <div class="me-2">
-                                <select name="verification" class="form-select form-select-sm">
-                                    <option value="all" <?php echo $verification_filter === 'all' ? 'selected' : ''; ?>>All Verification</option>
-                                    <option value="verified" <?php echo $verification_filter === 'verified' ? 'selected' : ''; ?>>Verified</option>
-                                    <option value="unverified" <?php echo $verification_filter === 'unverified' ? 'selected' : ''; ?>>Unverified</option>
-                                </select>
-                            </div>
-                            <button type="submit" class="btn btn-sm btn-primary">Filter</button>
-                        </form>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered datatable" width="100%" cellspacing="0">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Company</th>
-                                    <th>Contact</th>
-                                    <th>Status</th>
-                                    <th>Verification</th>
-                                    <th>Joined</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (empty($consultants)): ?>
-                                    <tr>
-                                        <td colspan="7" class="text-center">No consultants found.</td>
-                                    </tr>
-                                <?php else: ?>
-                                    <?php foreach ($consultants as $consultant): ?>
-                                        <tr>
-                                            <td><?php echo htmlspecialchars($consultant['consultant_name']); ?></td>
-                                            <td><?php echo htmlspecialchars($consultant['company_name'] ?? 'N/A'); ?></td>
-                                            <td>
-                                                <?php echo htmlspecialchars($consultant['email']); ?><br>
-                                                <small><?php echo htmlspecialchars($consultant['phone']); ?></small>
-                                            </td>
-                                            <td>
-                                                <?php if ($consultant['status'] === 'active'): ?>
-                                                    <span class="badge bg-success">Active</span>
-                                                <?php else: ?>
-                                                    <span class="badge bg-danger">Suspended</span>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td>
-                                                <?php if ($consultant['is_verified'] == 1): ?>
-                                                    <span class="badge bg-info">Verified</span>
-                                                    <br>
-                                                    <small>by <?php echo htmlspecialchars($consultant['verified_by_name'] ?? 'System'); ?></small>
-                                                    <br>
-                                                    <small><?php echo date('M d, Y', strtotime($consultant['verified_at'])); ?></small>
-                                                <?php else: ?>
-                                                    <span class="badge bg-warning">Unverified</span>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td><?php echo date('M d, Y', strtotime($consultant['created_at'])); ?></td>
-                                            <td>
-                                                <div class="btn-group">
-                                                    <a href="view-consultant.php?id=<?php echo $consultant['consultant_id']; ?>" class="btn btn-sm btn-primary">
-                                                        <i class="fas fa-eye"></i>
-                                                    </a>
-                                                    
-                                                    <?php if ($consultant['status'] === 'active'): ?>
-                                                        <a href="consultants.php?action=suspend&id=<?php echo $consultant['consultant_id']; ?>" class="btn btn-sm btn-warning" onclick="return confirm('Are you sure you want to suspend this consultant?')">
-                                                            <i class="fas fa-ban"></i>
-                                                        </a>
-                                                    <?php else: ?>
-                                                        <a href="consultants.php?action=activate&id=<?php echo $consultant['consultant_id']; ?>" class="btn btn-sm btn-success" onclick="return confirm('Are you sure you want to activate this consultant?')">
-                                                            <i class="fas fa-check"></i>
-                                                        </a>
-                                                    <?php endif; ?>
-                                                    
-                                                    <?php if ($consultant['is_verified'] == 0): ?>
-                                                        <a href="verify-consultants.php?id=<?php echo $consultant['consultant_id']; ?>" class="btn btn-sm btn-info">
-                                                            <i class="fas fa-user-check"></i>
-                                                        </a>
-                                                    <?php endif; ?>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+        <div class="table-responsive">
+            <table class="dashboard-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Company</th>
+                        <th>Contact</th>
+                        <th>Status</th>
+                        <th>Verification</th>
+                        <th>Joined</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($consultants)): ?>
+                        <tr>
+                            <td colspan="7" class="text-center">No consultants found.</td>
+                        </tr>
+                    <?php else: ?>
+                        <?php foreach ($consultants as $consultant): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($consultant['consultant_name']); ?></td>
+                                <td><?php echo htmlspecialchars($consultant['company_name'] ?? 'N/A'); ?></td>
+                                <td>
+                                    <?php echo htmlspecialchars($consultant['email']); ?><br>
+                                    <small><?php echo htmlspecialchars($consultant['phone']); ?></small>
+                                </td>
+                                <td>
+                                    <?php if ($consultant['status'] === 'active'): ?>
+                                        <span class="badge bg-success">Active</span>
+                                    <?php else: ?>
+                                        <span class="badge bg-danger">Suspended</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <?php if ($consultant['is_verified'] == 1): ?>
+                                        <span class="badge bg-info">Verified</span>
+                                        <br>
+                                        <small>by <?php echo htmlspecialchars($consultant['verified_by_name'] ?? 'System'); ?></small>
+                                        <br>
+                                        <small><?php echo date('M d, Y', strtotime($consultant['verified_at'])); ?></small>
+                                    <?php else: ?>
+                                        <span class="badge bg-warning">Unverified</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?php echo date('M d, Y', strtotime($consultant['created_at'])); ?></td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="view-consultant.php?id=<?php echo $consultant['consultant_id']; ?>" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        
+                                        <?php if ($consultant['status'] === 'active'): ?>
+                                            <a href="consultants.php?action=suspend&id=<?php echo $consultant['consultant_id']; ?>" class="btn btn-sm btn-warning" onclick="return confirm('Are you sure you want to suspend this consultant?')">
+                                                <i class="fas fa-ban"></i>
+                                            </a>
+                                        <?php else: ?>
+                                            <a href="consultants.php?action=activate&id=<?php echo $consultant['consultant_id']; ?>" class="btn btn-sm btn-success" onclick="return confirm('Are you sure you want to activate this consultant?')">
+                                                <i class="fas fa-check"></i>
+                                            </a>
+                                        <?php endif; ?>
+                                        
+                                        <?php if ($consultant['is_verified'] == 0): ?>
+                                            <a href="verify-consultants.php?id=<?php echo $consultant['consultant_id']; ?>" class="btn btn-sm btn-info">
+                                                <i class="fas fa-user-check"></i>
+                                            </a>
+                                        <?php endif; ?>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize DataTable
-    if ($.fn.DataTable) {
-        $('.datatable').DataTable({
-            "order": [[5, "desc"]], // Sort by joined date by default
-            "pageLength": 25,
-            "language": {
-                "emptyTable": "No consultants found"
-            }
-        });
-    }
-});
-</script>
-
 <style>
-    :root {
+:root {
     --primary-color: #042167;
     --secondary-color: #858796;
     --success-color: #1cc88a;
@@ -342,50 +280,130 @@ document.addEventListener('DOMContentLoaded', function() {
     --message-color: #4e73df;
     --notification-color: #f6c23e;
 }
-/* Container Styles */
-.container-fluid {
+
+/* Content Container */
+.content {
     padding: 20px;
+    margin: 0 auto;
 }
 
-/* Stats Cards */
-.stats-card {
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    padding: 20px;
-    height: 100%;
-    border-left: 4px solid;
-}
-
-.border-left-primary { border-left-color: var(--primary-color); }
-.border-left-success { border-left-color: var(--success-color); }
-.border-left-warning { border-left-color: var(--warning-color); }
-.border-left-info { border-left-color: var(--info-color); }
-
-/* Table Styles */
-.card {
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+/* Dashboard Header */
+.dashboard-header {
     margin-bottom: 20px;
 }
 
-.card-header {
+.header-content {
     background-color: white;
-    border-bottom: 1px solid var(--border-color);
-    padding: 15px 20px;
-}
-
-.card-body {
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     padding: 20px;
 }
 
-.table {
+.dashboard-header h1 {
+    margin: 0;
+    color: var(--primary-color);
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+/* Stats Container */
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    transition: transform 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+}
+
+.booking-icon { background-color: var(--primary-color); }
+.client-icon { background-color: var(--info-color); }
+.message-icon { background-color: var(--message-color); }
+.notification-icon { background-color: var(--notification-color); }
+
+.stat-info h3 {
+    margin: 0 0 5px 0;
+    color: var(--secondary-color);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.stat-number {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--dark-color);
+}
+
+/* Dashboard Section */
+.dashboard-section {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.section-header h2 {
+    margin: 0;
+    color: var(--primary-color);
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+/* Filter Controls */
+.filter-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.form-select {
+    padding: 6px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 0.85rem;
+    color: var(--dark-color);
+}
+
+/* Table Styles */
+.dashboard-table {
     width: 100%;
     border-collapse: collapse;
 }
 
-.table th {
+.dashboard-table th {
     background-color: var(--light-color);
     color: var(--primary-color);
     font-weight: 600;
@@ -394,7 +412,7 @@ document.addEventListener('DOMContentLoaded', function() {
     text-align: left;
 }
 
-.table td {
+.dashboard-table td {
     padding: 12px;
     border-top: 1px solid var(--border-color);
     font-size: 0.9rem;
@@ -409,11 +427,6 @@ document.addEventListener('DOMContentLoaded', function() {
     font-size: 12px;
     font-weight: 500;
 }
-
-.bg-success { background-color: var(--success-color) !important; color: white; }
-.bg-danger { background-color: var(--danger-color) !important; color: white; }
-.bg-warning { background-color: var(--warning-color) !important; color: #212529; }
-.bg-info { background-color: var(--info-color) !important; color: white; }
 
 /* Button Styles */
 .btn {
@@ -435,32 +448,8 @@ document.addEventListener('DOMContentLoaded', function() {
     font-size: 0.8rem;
 }
 
-.btn-primary { background-color: var(--primary-color); color: white; }
-.btn-success { background-color: var(--success-color); color: white; }
-.btn-warning { background-color: var(--warning-color); color: #212529; }
-.btn-info { background-color: var(--info-color); color: white; }
-.btn-secondary { background-color: var(--secondary-color); color: white; }
-
-/* Filter Controls */
-.filter-controls {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-.form-select {
-    padding: 6px 12px;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    font-size: 0.85rem;
-    color: var(--dark-color);
-}
 /* Responsive Design */
 @media (max-width: 992px) {
-    .container-fluid {
-        padding: 15px;
-    }
-    
     .stats-container {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -473,25 +462,45 @@ document.addEventListener('DOMContentLoaded', function() {
     
     .filter-controls {
         flex-direction: column;
-        align-items: stretch;
     }
     
-    .table-responsive {
-        overflow-x: auto;
+    .section-header {
+        flex-direction: column;
+        gap: 15px;
     }
 }
 
 @media (max-width: 576px) {
-    .profile-image {
-        width: 120px;
-        height: 120px;
+    .stat-card {
+        flex-direction: column;
+        text-align: center;
     }
     
-    .social-links {
-        flex-wrap: wrap;
+    .btn-group {
+        flex-direction: column;
+        gap: 5px;
     }
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize DataTable with consistent styling
+    if ($.fn.DataTable) {
+        $('.dashboard-table').DataTable({
+            "order": [[5, "desc"]], // Sort by joined date by default
+            "pageLength": 25,
+            "language": {
+                "emptyTable": "No consultants found"
+            },
+            "dom": '<"table-responsive"t>p',
+            "drawCallback": function() {
+                // Add any custom styling after table draw
+            }
+        });
+    }
+});
+</script>
 
 <?php
 // Include footer
