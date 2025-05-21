@@ -295,7 +295,7 @@ require_once 'includes/functions.php';
 
 .accordion-content.active {
     padding: 20px;
-    max-height: 1000px;
+    max-height: none; /* Changed from fixed height to none */
 }
 
 .accordion-content p {
@@ -372,7 +372,14 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!isActive) {
                 header.classList.add('active');
                 content.classList.add('active');
-                content.style.maxHeight = content.scrollHeight + 'px';
+                
+                // Set initial height to auto to get the full content height
+                content.style.display = 'block';
+                const height = content.scrollHeight;
+                content.style.display = '';
+                
+                // Now set the max height to the calculated height
+                content.style.maxHeight = height + 'px';
             }
         });
     });
