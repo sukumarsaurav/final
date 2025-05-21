@@ -242,11 +242,61 @@ include('includes/header.php');
                     <div class="tab-panel" id="reviews">
                         <div class="content-section">
                             <h2>Reviews & Ratings</h2>
-                            <div>
-                                <b>Average Rating:</b> <?php echo number_format($consultant['average_rating'] ?? 0, 1); ?> / 5<br>
-                                <b>Total Reviews:</b> <?php echo $consultant['total_reviews'] ?? 0; ?>
+                            <div class="reviews-section">
+                                <div class="rating-summary">
+                                    <div class="rating-average">
+                                        <div class="number"><?php echo number_format($consultant['average_rating'] ?? 0, 1); ?></div>
+                                        <div class="stars">
+                                            <?php
+                                            $rating = round($consultant['average_rating'] * 2) / 2;
+                                            for ($i = 1; $i <= 5; $i++) {
+                                                if ($rating >= $i) {
+                                                    echo '<i class="fas fa-star"></i>';
+                                                } elseif ($rating >= $i - 0.5) {
+                                                    echo '<i class="fas fa-star-half-alt"></i>';
+                                                } else {
+                                                    echo '<i class="far fa-star"></i>';
+                                                }
+                                            }
+                                            ?>
+                                        </div>
+                                        <div class="total-reviews">
+                                            <?php echo $consultant['total_reviews'] ?? 0; ?> reviews
+                                        </div>
+                                    </div>
+                                    <div class="rating-bars">
+                                        <?php
+                                        // You would need to fetch this data from your database
+                                        $rating_distribution = [
+                                            5 => 0,
+                                            4 => 0,
+                                            3 => 0,
+                                            2 => 0,
+                                            1 => 0
+                                        ];
+                                        $total_reviews = $consultant['total_reviews'] ?? 0;
+                                        
+                                        for ($i = 5; $i >= 1; $i--) {
+                                            $percentage = $total_reviews > 0 ? ($rating_distribution[$i] / $total_reviews) * 100 : 0;
+                                            ?>
+                                            <div class="rating-bar">
+                                                <div class="stars"><?php echo $i; ?> <i class="fas fa-star"></i></div>
+                                                <div class="progress">
+                                                    <div class="progress-bar" style="width: <?php echo $percentage; ?>%"></div>
+                                                </div>
+                                                <div class="count"><?php echo $rating_distribution[$i]; ?></div>
+                                            </div>
+                                            <?php
+                                        }
+                                        ?>
+                                    </div>
+                                </div>
+                                
+                                <!-- Individual reviews would go here -->
+                                <div class="reviews-list">
+                                    <!-- Add your reviews loop here -->
+                                </div>
                             </div>
-                            <!-- Add reviews loop here if available -->
                         </div>
                     </div>
                 </div>
@@ -640,6 +690,336 @@ include('includes/header.php');
     .languages-list {
         justify-content: center;
     }
+}
+
+/* Tab Content Styling */
+.profile-tab-content {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    margin-top: 20px;
+}
+
+/* About Tab */
+.content-section {
+    padding: 25px;
+}
+
+.content-section h2 {
+    color: var(--primary-color);
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--primary-light);
+}
+
+.bio {
+    line-height: 1.8;
+    color: #555;
+    font-size: 1.1rem;
+    white-space: pre-line;
+}
+
+/* Education & Certification Tab */
+.experience-details {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.detail-item {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    transition: transform 0.2s ease;
+}
+
+.detail-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.detail-item i {
+    font-size: 24px;
+    color: var(--primary-color);
+    margin-top: 5px;
+}
+
+.detail-item div {
+    flex: 1;
+}
+
+.detail-item h3 {
+    color: #333;
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+}
+
+.detail-item p {
+    color: #666;
+    line-height: 1.6;
+    white-space: pre-line;
+}
+
+/* Specializations & Languages Tab */
+.specializations-grid {
+    display: grid;
+    gap: 25px;
+}
+
+.specialization-section,
+.languages-section {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 25px;
+}
+
+.specialization-section h3,
+.languages-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #333;
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+}
+
+.specialization-section h3 i,
+.languages-section h3 i {
+    color: var(--primary-color);
+}
+
+.specialization-list,
+.languages-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.specialization-item,
+.language-item {
+    background: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    color: #555;
+    border: 1px solid #e0e0e0;
+    transition: all 0.3s ease;
+}
+
+.specialization-item:hover,
+.language-item:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+/* Contact Details Tab */
+.contact-info-tab {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.contact-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.contact-item i {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    font-size: 1.2rem;
+}
+
+.contact-item a {
+    color: #333;
+    text-decoration: none;
+    font-size: 1.1rem;
+    transition: color 0.3s ease;
+}
+
+.contact-item a:hover {
+    color: var(--primary-color);
+}
+
+/* Reviews & Ratings Tab */
+.reviews-section {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.rating-summary {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.rating-average {
+    text-align: center;
+    padding-right: 30px;
+    border-right: 2px solid #e0e0e0;
+}
+
+.rating-average .number {
+    font-size: 3rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    line-height: 1;
+    margin-bottom: 5px;
+}
+
+.rating-average .stars {
+    color: #ffc107;
+    font-size: 1.2rem;
+}
+
+.rating-average .total-reviews {
+    color: #666;
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
+
+.rating-bars {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.rating-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.rating-bar .stars {
+    width: 100px;
+    white-space: nowrap;
+}
+
+.rating-bar .progress {
+    flex: 1;
+    height: 8px;
+    background: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.rating-bar .progress-bar {
+    height: 100%;
+    background: var(--primary-color);
+    border-radius: 4px;
+}
+
+.rating-bar .count {
+    width: 50px;
+    text-align: right;
+    color: #666;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .rating-summary {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .rating-average {
+        padding-right: 0;
+        padding-bottom: 20px;
+        border-right: none;
+        border-bottom: 2px solid #e0e0e0;
+        margin-bottom: 20px;
+    }
+    
+    .detail-item {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .detail-item i {
+        margin: 0 auto;
+    }
+    
+    .specialization-list,
+    .languages-list {
+        justify-content: center;
+    }
+    
+    .contact-item {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .contact-item i {
+        margin: 0 auto;
+    }
+}
+
+/* Animation for tab transitions */
+.tab-panel {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.tab-panel.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Custom scrollbar for tab content */
+.profile-tab-content {
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-color) #f0f0f0;
+}
+
+.profile-tab-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.profile-tab-content::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 4px;
+}
+
+.profile-tab-content::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 4px;
+}
+
+/* Add hover effects for interactive elements */
+.detail-item,
+.contact-item,
+.specialization-item,
+.language-item {
+    cursor: pointer;
+    will-change: transform;
 }
 </style>
 
