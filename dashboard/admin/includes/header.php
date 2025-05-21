@@ -94,7 +94,7 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
                         </a>
                        
                         <div class="dropdown-divider"></div>
-                        <a href="../logout.php" class="dropdown-item">
+                        <a href="../../logout.php" class="dropdown-item">
                             <i class="fas fa-sign-out-alt"></i> Logout
                         </a>
                     </div>
@@ -127,7 +127,7 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
                 
               
            
-                <a href="../logout.php" class="nav-item">
+                <a href="../../logout.php" class="nav-item">
                     <i class="fas fa-sign-out-alt"></i>
                     <span class="nav-item-text">Logout</span>
                 </a>

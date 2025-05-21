@@ -36,143 +36,121 @@ $assessments_count = $stmt->get_result()->fetch_assoc()['count'];
 $stmt->close();
 ?>
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="welcome-card mb-4">
-                <div class="welcome-content">
-                    <h2>Welcome, <?php echo htmlspecialchars($_SESSION["first_name"]); ?>!</h2>
-                    <p>Here's what's happening with your platform today.</p>
+<div class="content">
+    <div class="dashboard-header">
+        <h1>Admin Dashboard</h1>
+        <p>Welcome back, <?php echo htmlspecialchars($_SESSION["first_name"]); ?></p>
+    </div>
+    
+    <!-- Stats Cards -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-icon booking-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Total Consultants</h3>
+                <div class="stat-number"><?php echo number_format($consultants_count); ?></div>
+                <div class="stat-detail">
+                    <a href="consultants.php" class="stat-link">View All Consultants</a>
                 </div>
-                <div class="welcome-date">
-                    <div class="date"><?php echo date('l, F j, Y'); ?></div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon client-icon">
+                <i class="fas fa-user-check"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Pending Verification</h3>
+                <div class="stat-number"><?php echo number_format($pending_verification); ?></div>
+                <div class="stat-detail">
+                    <a href="verify-consultants.php" class="stat-link">View Pending</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon message-icon">
+                <i class="fas fa-question-circle"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Eligibility Questions</h3>
+                <div class="stat-number"><?php echo number_format($questions_count); ?></div>
+                <div class="stat-detail">
+                    <a href="manage-questions.php" class="stat-link">Manage Questions</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon notification-icon">
+                <i class="fas fa-clipboard-check"></i>
+            </div>
+            <div class="stat-info">
+                <h3>User Assessments</h3>
+                <div class="stat-number"><?php echo number_format($assessments_count); ?></div>
+                <div class="stat-detail">
+                    <a href="assessment-results.php" class="stat-link">View Results</a>
                 </div>
             </div>
         </div>
     </div>
     
-    <div class="row">
-        <!-- Stats Cards -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card stats-card border-left-primary shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                Total Consultants</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $consultants_count; ?></div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-users fa-2x text-gray-300"></i>
-                        </div>
+    <div class="dashboard-grid">
+        <!-- Quick Actions Section -->
+        <div class="dashboard-section quick-actions">
+            <div class="section-header">
+                <h2>Quick Actions</h2>
+            </div>
+            <div class="actions-grid">
+                <a href="eligibility-calculator.php" class="action-card">
+                    <div class="action-icon">
+                        <i class="fas fa-calculator"></i>
                     </div>
-                </div>
+                    <div class="action-title">Manage Eligibility Calculator</div>
+                    <div class="action-description">Configure and update eligibility criteria</div>
+                </a>
+                <a href="verify-consultants.php" class="action-card">
+                    <div class="action-icon">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="action-title">Verify Consultants</div>
+                    <div class="action-description">Review and verify consultant applications</div>
+                </a>
+                <a href="manage-questions.php" class="action-card">
+                    <div class="action-icon">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                    <div class="action-title">Manage Questions</div>
+                    <div class="action-description">Update eligibility assessment questions</div>
+                </a>
+                <a href="assessment-results.php" class="action-card">
+                    <div class="action-icon">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                    <div class="action-title">Assessment Results</div>
+                    <div class="action-description">View and analyze user assessment data</div>
+                </a>
             </div>
         </div>
         
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card stats-card border-left-warning shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                Pending Verification</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $pending_verification; ?></div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-user-check fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
+        <!-- Recent Verifications Section -->
+        <div class="dashboard-section recent-verifications">
+            <div class="section-header">
+                <h2>Recent Verifications</h2>
+                <a href="verify-consultants.php" class="btn-link">View All</a>
             </div>
-        </div>
-        
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card stats-card border-left-info shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                Eligibility Questions</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $questions_count; ?></div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-question-circle fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card stats-card border-left-success shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                User Assessments</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $assessments_count; ?></div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-clipboard-check fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="row">
-        <!-- Quick Actions -->
-        <div class="col-lg-6 mb-4">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <a href="eligibility-calculator.php" class="btn btn-primary btn-block action-btn">
-                                <i class="fas fa-calculator"></i> Manage Eligibility Calculator
-                            </a>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <a href="verify-consultants.php" class="btn btn-warning btn-block action-btn">
-                                <i class="fas fa-user-check"></i> Verify Consultants
-                            </a>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <a href="manage-questions.php" class="btn btn-info btn-block action-btn">
-                                <i class="fas fa-question-circle"></i> Manage Questions
-                            </a>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <a href="assessment-results.php" class="btn btn-success btn-block action-btn">
-                                <i class="fas fa-clipboard-check"></i> View Assessment Results
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Recent Verifications -->
-        <div class="col-lg-6 mb-4">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Recent Verifications</h6>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered" width="100%" cellspacing="0">
-                            <thead>
-                                <tr>
-                                    <th>Consultant</th>
-                                    <th>Verified By</th>
-                                    <th>Date</th>
-                                </tr>
-                            </thead>
-                            <tbody>
+            <div class="table-responsive">
+                <table class="dashboard-table">
+                    <thead>
+                        <tr>
+                            <th>Consultant</th>
+                            <th>Verified By</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
                                 <?php
                                 // Get recent verifications
                                 $stmt = $conn->prepare("SELECT cp.consultant_id, cp.verified_at, 
@@ -207,26 +185,24 @@ $stmt->close();
         </div>
     </div>
     
-    <div class="row">
-        <!-- Recent Assessments -->
-        <div class="col-12 mb-4">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 font-weight-bold text-primary">Recent Eligibility Assessments</h6>
-                    <a href="assessment-results.php" class="btn btn-sm btn-primary">View All</a>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered" width="100%" cellspacing="0">
-                            <thead>
-                                <tr>
-                                    <th>User</th>
-                                    <th>Date</th>
-                                    <th>Result</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
+    <div class="dashboard-grid">
+        <!-- Recent Assessments Section -->
+        <div class="dashboard-section recent-assessments">
+            <div class="section-header">
+                <h2>Recent Eligibility Assessments</h2>
+                <a href="assessment-results.php" class="btn-link">View All</a>
+            </div>
+            <div class="table-responsive">
+                <table class="dashboard-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Date</th>
+                            <th>Result</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
                                 <?php
                                 // Get recent assessments
                                 $stmt = $conn->prepare("SELECT ua.id, ua.start_time, ua.end_time, ua.is_complete, 
@@ -292,22 +268,33 @@ $stmt->close();
 
 /* Ensure all cards, buttons, badges, alerts, and tables use the same style as the rest of the dashboard */
 
-.card, .stats-card, .shadow {
-    background-color: #fff;
+.stat-card {
+    background-color: white;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     padding: 20px;
-    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    max-height: 200px;
+    overflow-y: auto;
 }
 
-.stats-card {
-    border-left: 4px solid;
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
 }
 
-.border-left-primary { border-left-color: var(--primary-color); }
-.border-left-success { border-left-color: var(--success-color); }
-.border-left-info { border-left-color: var(--info-color); }
-.border-left-warning { border-left-color: var(--warning-color); }
+.booking-icon { background-color: var(--primary-color); }
+.client-icon { background-color: var(--info-color); }
+.message-icon { background-color: var(--message-color); }
+.notification-icon { background-color: var(--notification-color); }
 
 .btn, .btn-primary, .btn-warning, .btn-info, .btn-success, .btn-secondary {
     display: inline-flex;
