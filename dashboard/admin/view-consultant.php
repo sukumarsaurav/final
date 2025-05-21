@@ -202,7 +202,7 @@ if ($docs_result->num_rows > 0) {
 $docs_stmt->close();
 ?>
 
-<div class="container-fluid">
+<div class="content">
     <?php if (!empty($action_message)): ?>
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         <?php echo $action_message; ?>
@@ -217,300 +217,305 @@ $docs_stmt->close();
     </div>
     <?php endif; ?>
 
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Consultant Profile</h1>
-        <div>
-            <a href="consultants.php" class="btn btn-sm btn-secondary">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <h1>Consultant Profile</h1>
+        <div class="header-actions">
+            <a href="consultants.php" class="btn-link">
                 <i class="fas fa-arrow-left"></i> Back to List
             </a>
             
             <?php if (!$consultant['is_verified']): ?>
-            <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#verifyModal">
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#verifyModal">
                 <i class="fas fa-check-circle"></i> Verify Consultant
             </button>
             <?php endif; ?>
         </div>
     </div>
 
-    <!-- Verification Modal -->
-    <?php if (!$consultant['is_verified']): ?>
-    <div class="modal fade" id="verifyModal" tabindex="-1" aria-labelledby="verifyModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="verifyModalLabel">Confirm Verification</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Are you sure you want to verify this consultant?</p>
-                    <p>This will mark their profile as verified and display a verification badge on their profile.</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <form method="post">
-                        <input type="hidden" name="consultant_id" value="<?php echo $consultant_id; ?>">
-                        <button type="submit" name="verify_consultant" class="btn btn-success">Verify Consultant</button>
-                    </form>
-                </div>
+    <!-- Stats Container -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-icon booking-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Total Bookings</h3>
+                <div class="stat-number"><?php echo number_format($booking_stats['total_bookings']); ?></div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon client-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Completed Sessions</h3>
+                <div class="stat-number"><?php echo number_format($booking_stats['completed_bookings']); ?></div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon message-icon">
+                <i class="fas fa-star"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Average Rating</h3>
+                <div class="stat-number"><?php echo $average_rating; ?></div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon notification-icon">
+                <i class="fas fa-comments"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Total Reviews</h3>
+                <div class="stat-number"><?php echo number_format($booking_stats['total_reviews']); ?></div>
             </div>
         </div>
     </div>
-    <?php endif; ?>
 
-    <div class="row">
-        <!-- Consultant Profile Card -->
-        <div class="col-xl-4 col-lg-5">
-            <div class="card shadow mb-4">
-                <!-- Card Header -->
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-primary">Profile Information</h6>
-                    <div class="dropdown no-arrow">
-                        <?php if ($consultant['is_verified']): ?>
-                        <span class="badge bg-success text-white">Verified</span>
-                        <?php else: ?>
-                        <span class="badge bg-warning text-dark">Not Verified</span>
+    <!-- Dashboard Grid -->
+    <div class="dashboard-grid">
+        <!-- Profile Section -->
+        <div class="dashboard-section">
+            <div class="section-header">
+                <h2>Profile Information</h2>
+                <div class="header-actions">
+                    <?php if ($consultant['is_verified']): ?>
+                    <span class="badge bg-success">Verified</span>
+                    <?php else: ?>
+                    <span class="badge bg-warning">Not Verified</span>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <div class="profile-content">
+                <div class="text-center mb-4">
+                    <img class="img-fluid rounded-circle mb-2" style="width: 150px; height: 150px; object-fit: cover;" 
+                         src="<?php echo $profile_img; ?>" alt="Profile Image">
+                    <h5 class="mb-0"><?php echo htmlspecialchars($consultant['first_name'] . ' ' . $consultant['last_name']); ?></h5>
+                    <p class="text-muted"><?php echo htmlspecialchars($consultant['company_name']); ?></p>
+                    
+                    <?php if ($consultant['is_verified']): ?>
+                    <div class="mb-2">
+                        <span class="badge bg-success text-white p-2">
+                            <i class="fas fa-check-circle me-1"></i> Verified Consultant
+                        </span>
+                    </div>
+                    <small class="text-muted">
+                        Verified on <?php echo date('M d, Y', strtotime($consultant['verified_at'])); ?>
+                        <?php if (!empty($consultant['verified_by_name'])): ?>
+                        by <?php echo htmlspecialchars($consultant['verified_by_name']); ?>
+                        <?php endif; ?>
+                    </small>
+                    <?php endif; ?>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="font-weight-bold">Contact Information</h6>
+                    <div class="mb-2">
+                        <i class="fas fa-envelope text-primary me-2"></i>
+                        <span><?php echo htmlspecialchars($consultant['email']); ?></span>
+                    </div>
+                    <div class="mb-2">
+                        <i class="fas fa-phone text-primary me-2"></i>
+                        <span><?php echo htmlspecialchars($consultant['phone']); ?></span>
+                    </div>
+                    <?php if (!empty($consultant['website'])): ?>
+                    <div class="mb-2">
+                        <i class="fas fa-globe text-primary me-2"></i>
+                        <a href="<?php echo htmlspecialchars($consultant['website']); ?>" target="_blank">
+                            <?php echo htmlspecialchars($consultant['website']); ?>
+                        </a>
+                    </div>
+                    <?php endif; ?>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="font-weight-bold">Social Media</h6>
+                    <div class="d-flex">
+                        <?php if (!empty($consultant['social_linkedin'])): ?>
+                        <a href="<?php echo htmlspecialchars($consultant['social_linkedin']); ?>" target="_blank" class="btn btn-sm btn-outline-primary me-2">
+                            <i class="fab fa-linkedin"></i>
+                        </a>
+                        <?php endif; ?>
+                        
+                        <?php if (!empty($consultant['social_twitter'])): ?>
+                        <a href="<?php echo htmlspecialchars($consultant['social_twitter']); ?>" target="_blank" class="btn btn-sm btn-outline-info me-2">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <?php endif; ?>
+                        
+                        <?php if (!empty($consultant['social_facebook'])): ?>
+                        <a href="<?php echo htmlspecialchars($consultant['social_facebook']); ?>" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <i class="fab fa-facebook"></i>
+                        </a>
                         <?php endif; ?>
                     </div>
                 </div>
-                <!-- Card Body -->
-                <div class="card-body">
-                    <div class="text-center mb-4">
-                        <img class="img-fluid rounded-circle mb-2" style="width: 150px; height: 150px; object-fit: cover;" 
-                             src="<?php echo $profile_img; ?>" alt="Profile Image">
-                        <h5 class="mb-0"><?php echo htmlspecialchars($consultant['first_name'] . ' ' . $consultant['last_name']); ?></h5>
-                        <p class="text-muted"><?php echo htmlspecialchars($consultant['company_name']); ?></p>
-                        
-                        <?php if ($consultant['is_verified']): ?>
-                        <div class="mb-2">
-                            <span class="badge bg-success text-white p-2">
-                                <i class="fas fa-check-circle me-1"></i> Verified Consultant
-                            </span>
-                        </div>
-                        <small class="text-muted">
-                            Verified on <?php echo date('M d, Y', strtotime($consultant['verified_at'])); ?>
-                            <?php if (!empty($consultant['verified_by_name'])): ?>
-                            by <?php echo htmlspecialchars($consultant['verified_by_name']); ?>
-                            <?php endif; ?>
-                        </small>
-                        <?php endif; ?>
+                
+                <div>
+                    <h6 class="font-weight-bold">Account Information</h6>
+                    <div class="mb-2">
+                        <span class="text-muted">Member Since:</span>
+                        <span><?php echo date('M d, Y', strtotime($consultant['created_at'])); ?></span>
                     </div>
-                    
-                    <div class="mb-3">
-                        <h6 class="font-weight-bold">Contact Information</h6>
-                        <div class="mb-2">
-                            <i class="fas fa-envelope text-primary me-2"></i>
-                            <span><?php echo htmlspecialchars($consultant['email']); ?></span>
-                        </div>
-                        <div class="mb-2">
-                            <i class="fas fa-phone text-primary me-2"></i>
-                            <span><?php echo htmlspecialchars($consultant['phone']); ?></span>
-                        </div>
-                        <?php if (!empty($consultant['website'])): ?>
-                        <div class="mb-2">
-                            <i class="fas fa-globe text-primary me-2"></i>
-                            <a href="<?php echo htmlspecialchars($consultant['website']); ?>" target="_blank">
-                                <?php echo htmlspecialchars($consultant['website']); ?>
-                            </a>
-                        </div>
-                        <?php endif; ?>
+                    <div class="mb-2">
+                        <span class="text-muted">Status:</span>
+                        <span class="badge <?php echo $consultant['status'] === 'active' ? 'bg-success' : 'bg-danger'; ?> text-white">
+                            <?php echo ucfirst($consultant['status']); ?>
+                        </span>
                     </div>
-                    
-                    <div class="mb-3">
-                        <h6 class="font-weight-bold">Social Media</h6>
-                        <div class="d-flex">
-                            <?php if (!empty($consultant['social_linkedin'])): ?>
-                            <a href="<?php echo htmlspecialchars($consultant['social_linkedin']); ?>" target="_blank" class="btn btn-sm btn-outline-primary me-2">
-                                <i class="fab fa-linkedin"></i>
-                            </a>
-                            <?php endif; ?>
-                            
-                            <?php if (!empty($consultant['social_twitter'])): ?>
-                            <a href="<?php echo htmlspecialchars($consultant['social_twitter']); ?>" target="_blank" class="btn btn-sm btn-outline-info me-2">
-                                <i class="fab fa-twitter"></i>
-                            </a>
-                            <?php endif; ?>
-                            
-                            <?php if (!empty($consultant['social_facebook'])): ?>
-                            <a href="<?php echo htmlspecialchars($consultant['social_facebook']); ?>" target="_blank" class="btn btn-sm btn-outline-primary">
-                                <i class="fab fa-facebook"></i>
-                            </a>
-                            <?php endif; ?>
-                        </div>
+                    <div class="mb-2">
+                        <span class="text-muted">Email Verified:</span>
+                        <span class="badge <?php echo $consultant['email_verified'] ? 'bg-success' : 'bg-warning'; ?> text-white">
+                            <?php echo $consultant['email_verified'] ? 'Yes' : 'No'; ?>
+                        </span>
                     </div>
-                    
-                    <div>
-                        <h6 class="font-weight-bold">Account Information</h6>
-                        <div class="mb-2">
-                            <span class="text-muted">Member Since:</span>
-                            <span><?php echo date('M d, Y', strtotime($consultant['created_at'])); ?></span>
-                        </div>
-                        <div class="mb-2">
-                            <span class="text-muted">Status:</span>
-                            <span class="badge <?php echo $consultant['status'] === 'active' ? 'bg-success' : 'bg-danger'; ?> text-white">
-                                <?php echo ucfirst($consultant['status']); ?>
-                            </span>
-                        </div>
-                        <div class="mb-2">
-                            <span class="text-muted">Email Verified:</span>
-                            <span class="badge <?php echo $consultant['email_verified'] ? 'bg-success' : 'bg-warning'; ?> text-white">
-                                <?php echo $consultant['email_verified'] ? 'Yes' : 'No'; ?>
-                            </span>
-                        </div>
-                        <div class="mb-2">
-                            <span class="text-muted">Membership Plan:</span>
-                            <span><?php echo htmlspecialchars($consultant['membership_plan']); ?></span>
-                        </div>
+                    <div class="mb-2">
+                        <span class="text-muted">Membership Plan:</span>
+                        <span><?php echo htmlspecialchars($consultant['membership_plan']); ?></span>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <!-- Content Column -->
-        <div class="col-xl-8 col-lg-7">
-            <!-- Verification Documents Card -->
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Verification Documents</h6>
-                </div>
-                <div class="card-body">
-                    <?php if (empty($documents)): ?>
-                        <p class="text-center">No verification documents uploaded yet.</p>
-                    <?php else: ?>
-                        <div class="table-responsive">
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>Document Type</th>
-                                        <th>Uploaded</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($documents as $doc): ?>
-                                    <tr>
-                                        <td>
-                                            <?php 
-                                            $doc_type = str_replace('_', ' ', $doc['document_type']);
-                                            echo ucwords($doc_type);
-                                            ?>
-                                        </td>
-                                        <td><?php echo date('M d, Y', strtotime($doc['uploaded_at'])); ?></td>
-                                        <td>
-                                            <?php if ($doc['verified']): ?>
-                                            <span class="badge bg-success text-white">Verified</span>
-                                            <?php else: ?>
-                                            <span class="badge bg-warning text-dark">Pending</span>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td>
-                                            <a href="#" data-bs-toggle="modal" data-bs-target="#documentModal<?php echo $doc['id']; ?>" class="btn btn-primary btn-sm">
-                                                <i class="fas fa-eye"></i> View
-                                            </a>
-                                            
-                                            <!-- Document Modal -->
-                                            <div class="modal fade" id="documentModal<?php echo $doc['id']; ?>" tabindex="-1" aria-labelledby="documentModalLabel<?php echo $doc['id']; ?>" aria-hidden="true">
-                                                <div class="modal-dialog modal-lg">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title" id="documentModal<?php echo $doc['id']; ?>">
-                                                                <?php echo ucwords(str_replace('_', ' ', $doc['document_type'])); ?>
-                                                            </h5>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <?php
-                                                            $doc_path = '../../uploads/' . $doc['document_path'];
-                                                            $file_extension = pathinfo($doc_path, PATHINFO_EXTENSION);
-                                                            
-                                                            // Check if it's an image
-                                                            if (in_array(strtolower($file_extension), ['jpg', 'jpeg', 'png', 'gif'])) {
-                                                                echo '<img src="' . $doc_path . '" class="img-fluid" alt="Document">';
-                                                            } 
-                                                            // Check if it's a PDF
-                                                            else if (strtolower($file_extension) === 'pdf') {
-                                                                echo '<div class="ratio ratio-16x9">
-                                                                        <iframe src="' . $doc_path . '" allowfullscreen></iframe>
-                                                                      </div>';
-                                                            } 
-                                                            // For other file types
-                                                            else {
-                                                                echo '<div class="alert alert-info">
-                                                                        This document cannot be previewed. 
-                                                                        <a href="' . $doc_path . '" target="_blank" class="btn btn-sm btn-primary ms-2">
-                                                                            <i class="fas fa-download"></i> Download
-                                                                        </a>
-                                                                      </div>';
-                                                            }
-                                                            ?>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                                            <a href="<?php echo $doc_path; ?>" target="_blank" class="btn btn-primary">
-                                                                <i class="fas fa-external-link-alt"></i> Open in New Tab
-                                                            </a>
-                                                        </div>
-                                                    </div>
+
+        <!-- Documents Section -->
+        <div class="dashboard-section">
+            <div class="section-header">
+                <h2>Verification Documents</h2>
+            </div>
+            <div class="table-responsive">
+                <?php if (empty($documents)): ?>
+                    <p class="text-center">No verification documents uploaded yet.</p>
+                <?php else: ?>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Document Type</th>
+                                <th>Uploaded</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($documents as $doc): ?>
+                            <tr>
+                                <td>
+                                    <?php 
+                                    $doc_type = str_replace('_', ' ', $doc['document_type']);
+                                    echo ucwords($doc_type);
+                                    ?>
+                                </td>
+                                <td><?php echo date('M d, Y', strtotime($doc['uploaded_at'])); ?></td>
+                                <td>
+                                    <?php if ($doc['verified']): ?>
+                                    <span class="badge bg-success text-white">Verified</span>
+                                    <?php else: ?>
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#documentModal<?php echo $doc['id']; ?>" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                    
+                                    <!-- Document Modal -->
+                                    <div class="modal fade" id="documentModal<?php echo $doc['id']; ?>" tabindex="-1" aria-labelledby="documentModalLabel<?php echo $doc['id']; ?>" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="documentModal<?php echo $doc['id']; ?>">
+                                                        <?php echo ucwords(str_replace('_', ' ', $doc['document_type'])); ?>
+                                                    </h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <?php
+                                                    $doc_path = '../../uploads/' . $doc['document_path'];
+                                                    $file_extension = pathinfo($doc_path, PATHINFO_EXTENSION);
+                                                    
+                                                    // Check if it's an image
+                                                    if (in_array(strtolower($file_extension), ['jpg', 'jpeg', 'png', 'gif'])) {
+                                                        echo '<img src="' . $doc_path . '" class="img-fluid" alt="Document">';
+                                                    } 
+                                                    // Check if it's a PDF
+                                                    else if (strtolower($file_extension) === 'pdf') {
+                                                        echo '<div class="ratio ratio-16x9">
+                                                                <iframe src="' . $doc_path . '" allowfullscreen></iframe>
+                                                              </div>';
+                                                    } 
+                                                    // For other file types
+                                                    else {
+                                                        echo '<div class="alert alert-info">
+                                                                This document cannot be previewed. 
+                                                                <a href="' . $doc_path . '" target="_blank" class="btn btn-sm btn-primary ms-2">
+                                                                    <i class="fas fa-download"></i> Download
+                                                                </a>
+                                                              </div>';
+                                                    }
+                                                    ?>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                    <a href="<?php echo $doc_path; ?>" target="_blank" class="btn btn-primary">
+                                                        <i class="fas fa-external-link-alt"></i> Open in New Tab
+                                                    </a>
                                                 </div>
                                             </div>
-                                        </td>
-                                    </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    <?php endif; ?>
-                </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                <?php endif; ?>
             </div>
+        </div>
+    </div>
 
-            <!-- Bio Card -->
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Professional Information</h6>
-                </div>
-                <div class="card-body">
-                    <?php if (!empty($consultant['bio'])): ?>
-                    <div class="mb-4">
-                        <h6 class="font-weight-bold">Bio</h6>
-                        <p><?php echo nl2br(htmlspecialchars($consultant['bio'])); ?></p>
-                    </div>
-                    <?php endif; ?>
-                    
-                    <?php if (!empty($consultant['specializations'])): ?>
-                    <div class="mb-4">
-                        <h6 class="font-weight-bold">Specializations</h6>
-                        <p><?php echo nl2br(htmlspecialchars($consultant['specializations'])); ?></p>
-                    </div>
-                    <?php endif; ?>
-                    
-                    <?php if (!empty($consultant['years_experience'])): ?>
-                    <div class="mb-4">
-                        <h6 class="font-weight-bold">Years of Experience</h6>
-                        <p><?php echo $consultant['years_experience']; ?> years</p>
-                    </div>
-                    <?php endif; ?>
-                    
-                    <?php if (!empty($consultant['certifications'])): ?>
-                    <div class="mb-4">
-                        <h6 class="font-weight-bold">Certifications</h6>
-                        <p><?php echo nl2br(htmlspecialchars($consultant['certifications'])); ?></p>
-                    </div>
-                    <?php endif; ?>
-                    
-                    <?php if (!empty($consultant['languages'])): ?>
-                    <div>
-                        <h6 class="font-weight-bold">Languages</h6>
-                        <p><?php echo nl2br(htmlspecialchars($consultant['languages'])); ?></p>
-                    </div>
-                    <?php endif; ?>
-                </div>
+    <!-- Professional Info Section -->
+    <div class="dashboard-section">
+        <div class="section-header">
+            <h2>Professional Information</h2>
+        </div>
+        <div class="professional-info">
+            <?php if (!empty($consultant['bio'])): ?>
+            <div class="mb-4">
+                <h6 class="font-weight-bold">Bio</h6>
+                <p><?php echo nl2br(htmlspecialchars($consultant['bio'])); ?></p>
             </div>
+            <?php endif; ?>
             
-            <!-- Team Members Card -->
-            <!-- ... existing code ... -->
+            <?php if (!empty($consultant['specializations'])): ?>
+            <div class="mb-4">
+                <h6 class="font-weight-bold">Specializations</h6>
+                <p><?php echo nl2br(htmlspecialchars($consultant['specializations'])); ?></p>
+            </div>
+            <?php endif; ?>
             
-            <!-- Booking Statistics Card -->
-            <!-- ... existing code ... -->
+            <?php if (!empty($consultant['years_experience'])): ?>
+            <div class="mb-4">
+                <h6 class="font-weight-bold">Years of Experience</h6>
+                <p><?php echo $consultant['years_experience']; ?> years</p>
+            </div>
+            <?php endif; ?>
+            
+            <?php if (!empty($consultant['certifications'])): ?>
+            <div class="mb-4">
+                <h6 class="font-weight-bold">Certifications</h6>
+                <p><?php echo nl2br(htmlspecialchars($consultant['certifications'])); ?></p>
+            </div>
+            <?php endif; ?>
+            
+            <?php if (!empty($consultant['languages'])): ?>
+            <div>
+                <h6 class="font-weight-bold">Languages</h6>
+                <p><?php echo nl2br(htmlspecialchars($consultant['languages'])); ?></p>
+            </div>
+            <?php endif; ?>
         </div>
     </div>
 </div>
@@ -521,7 +526,7 @@ include('includes/footer.php');
 ?>
 
 <style>
-    :root {
+:root {
     --primary-color: #042167;
     --secondary-color: #858796;
     --success-color: #1cc88a;
@@ -534,167 +539,107 @@ include('includes/footer.php');
     --message-color: #4e73df;
     --notification-color: #f6c23e;
 }
-/* Profile Card Styles */
-.profile-card {
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    margin-bottom: 20px;
-}
 
-.profile-image {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-bottom: 15px;
-}
-
-.profile-info {
+/* Content Container */
+.content {
     padding: 20px;
+    margin: 0 auto;
 }
 
-.profile-header {
-    text-align: center;
+/* Dashboard Header */
+.dashboard-header {
     margin-bottom: 20px;
-}
-
-.profile-name {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--dark-color);
-    margin-bottom: 5px;
-}
-
-.profile-company {
-    color: var(--secondary-color);
-    font-size: 0.9rem;
-}
-
-/* Contact Info Styles */
-.contact-info {
-    margin-bottom: 20px;
-}
-
-.contact-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
-    font-size: 0.9rem;
-}
-
-.contact-icon {
-    color: var(--primary-color);
-    width: 20px;
-    text-align: center;
-}
-
-/* Social Media Links */
-.social-links {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    margin-bottom: 20px;
-}
-
-.social-link {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    text-decoration: none;
-    transition: transform 0.2s;
-}
-
-.social-link:hover {
-    transform: translateY(-2px);
-}
-
-/* Document List Styles */
-.document-list {
-    margin-top: 20px;
-}
-
-.document-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px;
-    border-bottom: 1px solid var(--border-color);
 }
 
-.document-info {
-    flex: 1;
+.dashboard-header h1 {
+    margin: 0;
+    color: var(--primary-color);
+    font-size: 1.8rem;
+    font-weight: 700;
 }
 
-.document-type {
-    font-weight: 500;
-    color: var(--dark-color);
+.header-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
 }
 
-.document-date {
-    font-size: 0.8rem;
-    color: var(--secondary-color);
+/* Stats Container */
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
 }
 
-/* Modal Styles */
-.modal-content {
+.stat-card {
+    background-color: white;
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    transition: transform 0.2s;
 }
 
-.modal-header {
-    background-color: var(--light-color);
-    border-bottom: 1px solid var(--border-color);
-    padding: 15px 20px;
+.stat-card:hover {
+    transform: translateY(-2px);
 }
 
-.modal-body {
+/* Dashboard Grid */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.dashboard-section {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     padding: 20px;
 }
 
-.modal-footer {
-    border-top: 1px solid var(--border-color);
-    padding: 15px 20px;
-}
-/* Responsive Design */
-@media (max-width: 992px) {
-    .container-fluid {
-        padding: 15px;
-    }
-    
-    .stats-container {
-        grid-template-columns: repeat(2, 1fr);
-    }
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
 }
 
-@media (max-width: 768px) {
-    .stats-container {
+/* Responsive Design */
+@media (max-width: 992px) {
+    .dashboard-grid {
         grid-template-columns: 1fr;
     }
     
-    .filter-controls {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    
-    .table-responsive {
-        overflow-x: auto;
+    .stats-container {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     }
 }
 
 @media (max-width: 576px) {
-    .profile-image {
-        width: 120px;
-        height: 120px;
+    .stat-card {
+        flex-direction: column;
+        text-align: center;
     }
     
-    .social-links {
-        flex-wrap: wrap;
+    .dashboard-header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .header-actions {
+        flex-direction: column;
+        width: 100%;
     }
 }
 </style>
