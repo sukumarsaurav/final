@@ -30,7 +30,9 @@ $query = "SELECT
     COALESCE(AVG(bf.rating), 0) AS average_rating,
     COUNT(DISTINCT bf.id) AS review_count,
     COUNT(DISTINCT vs.visa_service_id) AS services_count,
-    cp.is_verified
+    cp.is_verified,
+    GROUP_CONCAT(DISTINCT co.country_name) as countries,
+    GROUP_CONCAT(DISTINCT v.visa_type) as visa_types
 FROM 
     users u
 JOIN 
@@ -41,6 +43,10 @@ LEFT JOIN
     consultant_profiles cp ON u.id = cp.consultant_id
 LEFT JOIN 
     visa_services vs ON u.id = vs.consultant_id AND vs.is_active = 1
+LEFT JOIN 
+    visas v ON vs.visa_id = v.visa_id
+LEFT JOIN 
+    countries co ON v.country_id = co.country_id
 LEFT JOIN 
     bookings b ON u.id = b.consultant_id
 LEFT JOIN 
@@ -64,6 +70,35 @@ if ($result && $result->num_rows > 0) {
         $consultants[] = $row;
     }
 }
+
+// Add this after the main query
+$countries_query = "SELECT DISTINCT c.country_id, c.country_name 
+                   FROM countries c 
+                   JOIN visas v ON c.country_id = v.country_id 
+                   JOIN visa_services vs ON v.visa_id = vs.visa_id 
+                   WHERE c.is_active = 1 
+                   ORDER BY c.country_name";
+$countries_result = $conn->query($countries_query);
+$countries = [];
+if ($countries_result && $countries_result->num_rows > 0) {
+    while ($row = $countries_result->fetch_assoc()) {
+        $countries[] = $row;
+    }
+}
+
+$visas_query = "SELECT DISTINCT v.visa_id, v.visa_type, c.country_name 
+                FROM visas v 
+                JOIN countries c ON v.country_id = c.country_id 
+                JOIN visa_services vs ON v.visa_id = vs.visa_id 
+                WHERE v.is_active = 1 
+                ORDER BY c.country_name, v.visa_type";
+$visas_result = $conn->query($visas_query);
+$visas = [];
+if ($visas_result && $visas_result->num_rows > 0) {
+    while ($row = $visas_result->fetch_assoc()) {
+        $visas[] = $row;
+    }
+}
 ?>
 
 <!-- Hero Section -->
@@ -79,6 +114,26 @@ if ($result && $result->num_rows > 0) {
             <div class="filter-container">
                 <div class="filter-item">
                     <input type="text" id="search-consultant" class="form-control" placeholder="Search by name or specialization">
+                </div>
+                <div class="filter-item">
+                    <select id="filter-country" class="form-control">
+                        <option value="">All Countries</option>
+                        <?php foreach ($countries as $country): ?>
+                            <option value="<?php echo htmlspecialchars($country['country_name']); ?>">
+                                <?php echo htmlspecialchars($country['country_name']); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <select id="filter-visa" class="form-control">
+                        <option value="">All Visa Types</option>
+                        <?php foreach ($visas as $visa): ?>
+                            <option value="<?php echo htmlspecialchars($visa['visa_type']); ?>">
+                                <?php echo htmlspecialchars($visa['country_name'] . ' - ' . $visa['visa_type']); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
                 <div class="filter-item">
                     <select id="filter-rating" class="form-control">
@@ -120,6 +175,8 @@ if ($result && $result->num_rows > 0) {
                     <div class="consultant-card-wrapper" 
                          data-name="<?php echo strtolower(htmlspecialchars($consultant['consultant_name'])); ?>"
                          data-specializations="<?php echo strtolower(htmlspecialchars($consultant['specializations'] ?? '')); ?>"
+                         data-countries="<?php echo strtolower(htmlspecialchars($consultant['countries'] ?? '')); ?>"
+                         data-visa-types="<?php echo strtolower(htmlspecialchars($consultant['visa_types'] ?? '')); ?>"
                          data-rating="<?php echo htmlspecialchars($consultant['average_rating']); ?>"
                          data-has-rating="<?php echo $consultant['review_count'] > 0 ? '1' : '0'; ?>"
                          data-verified="<?php echo !empty($consultant['is_verified']) ? '1' : '0'; ?>">
@@ -264,21 +321,19 @@ if ($result && $result->num_rows > 0) {
 }
 
 .filter-container {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 15px;
     align-items: center;
-    justify-content: space-between;
 }
 
-.filter-item {
-    flex: 1;
-    min-width: 200px;
-}
-
-.filter-item:last-child {
-    flex: 0 0 auto;
-    min-width: 100px;
+.filter-item select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: 14px;
+    background-color: white;
 }
 
 .form-control {
@@ -576,6 +631,10 @@ if ($result && $result->num_rows > 0) {
     .consultant-card.horizontal .consultant-action {
         justify-content: stretch;
     }
+
+    .filter-container {
+        grid-template-columns: 1fr;
+    }
 }
 </style>
 
@@ -594,10 +653,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const searchTerm = searchInput.value.toLowerCase();
         const ratingValue = ratingFilter.value;
         const verifiedValue = verifiedFilter.value;
+        const countryValue = document.getElementById('filter-country').value.toLowerCase();
+        const visaValue = document.getElementById('filter-visa').value.toLowerCase();
         
         consultantCards.forEach(card => {
             const name = card.dataset.name;
             const specializations = card.dataset.specializations;
+            const countries = card.dataset.countries;
+            const visaTypes = card.dataset.visaTypes;
             const rating = parseFloat(card.dataset.rating);
             const hasRating = card.dataset.hasRating === '1';
             const verified = card.dataset.verified;
@@ -606,6 +669,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const matchesSearch = searchTerm === '' || 
                                  name.includes(searchTerm) || 
                                  specializations.includes(searchTerm);
+            
+            const matchesCountry = countryValue === '' || 
+                                  countries.includes(countryValue);
+            
+            const matchesVisa = visaValue === '' || 
+                               visaTypes.includes(visaValue);
             
             let matchesRating = true;
             if (ratingValue !== '') {
@@ -619,8 +688,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const matchesVerified = verifiedValue === '' || 
                                    (verifiedValue === '1' && verified === '1');
             
-            // Show or hide card based on filter results
-            if (matchesSearch && matchesRating && matchesVerified) {
+            // Show or hide card based on all filter results
+            if (matchesSearch && matchesRating && matchesVerified && 
+                matchesCountry && matchesVisa) {
                 card.style.display = 'block';
             } else {
                 card.style.display = 'none';
@@ -628,25 +698,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         // Check if any cards are visible
-        const visibleCards = document.querySelectorAll('.consultant-card-wrapper[style="display: block"]');
-        const emptyState = document.querySelector('.empty-state');
-        
-        if (visibleCards.length === 0 && !emptyState) {
-            const consultantsList = document.querySelector('.consultants-list .row');
-            if (consultantsList) {
-                consultantsList.innerHTML += `
-                    <div class="empty-state">
-                        <i class="fas fa-user-tie"></i>
-                        <p>No consultants found. Please try different search criteria.</p>
-                    </div>
-                `;
-            }
-        } else if (visibleCards.length > 0) {
-            const emptyState = document.querySelector('.empty-state');
-            if (emptyState) {
-                emptyState.remove();
-            }
-        }
+        updateEmptyState();
     }
     
     // Add event listeners
@@ -654,11 +706,17 @@ document.addEventListener('DOMContentLoaded', function() {
     ratingFilter.addEventListener('change', filterConsultants);
     verifiedFilter.addEventListener('change', filterConsultants);
     
-    // Reset filters
+    // Add event listeners for new filters
+    document.getElementById('filter-country').addEventListener('change', filterConsultants);
+    document.getElementById('filter-visa').addEventListener('change', filterConsultants);
+    
+    // Update reset functionality
     resetButton.addEventListener('click', function() {
         searchInput.value = '';
         ratingFilter.value = '';
         verifiedFilter.value = '';
+        document.getElementById('filter-country').value = '';
+        document.getElementById('filter-visa').value = '';
         
         consultantCards.forEach(card => {
             card.style.display = 'block';
