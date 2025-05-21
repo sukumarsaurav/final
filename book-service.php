@@ -106,22 +106,24 @@ if ($visas_result && $visas_result->num_rows > 0) {
     <div class="container">
         <div class="hero-content text-center">
             <h1 class="hero-title">Book a Professional Consultation</h1>
-            <p class="hero-subtitle">Connect with our network of experienced visa consultants to guide your immigration journey</p>
+            <p class="hero-subtitle">Connect with our network of experienced visa consultants to guide your immigration
+                journey</p>
         </div>
-        
+
         <!-- Search and Filter Controls (inline at bottom of hero) -->
         <div class="search-filters">
             <div class="filter-container">
                 <div class="filter-item">
-                    <input type="text" id="search-consultant" class="form-control" placeholder="Search by name or specialization">
+                    <input type="text" id="search-consultant" class="form-control"
+                        placeholder="Search by name or specialization">
                 </div>
                 <div class="filter-item">
                     <select id="filter-country" class="form-control">
                         <option value="">All Countries</option>
                         <?php foreach ($countries as $country): ?>
-                            <option value="<?php echo htmlspecialchars($country['country_name']); ?>">
-                                <?php echo htmlspecialchars($country['country_name']); ?>
-                            </option>
+                        <option value="<?php echo htmlspecialchars($country['country_name']); ?>">
+                            <?php echo htmlspecialchars($country['country_name']); ?>
+                        </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -129,9 +131,9 @@ if ($visas_result && $visas_result->num_rows > 0) {
                     <select id="filter-visa" class="form-control">
                         <option value="">All Visa Types</option>
                         <?php foreach ($visas as $visa): ?>
-                            <option value="<?php echo htmlspecialchars($visa['visa_type']); ?>">
-                                <?php echo htmlspecialchars($visa['country_name'] . ' - ' . $visa['visa_type']); ?>
-                            </option>
+                        <option value="<?php echo htmlspecialchars($visa['visa_type']); ?>">
+                            <?php echo htmlspecialchars($visa['country_name'] . ' - ' . $visa['visa_type']); ?>
+                        </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -160,37 +162,37 @@ if ($visas_result && $visas_result->num_rows > 0) {
 
 <div class="container">
     <!-- Search and Filter Controls -->
-    
+
 
     <!-- Consultants List -->
     <div class="consultants-list">
         <?php if (empty($consultants)): ?>
-            <div class="empty-state">
-                <i class="fas fa-user-tie"></i>
-                <p>No consultants found. Please try different search criteria.</p>
-            </div>
+        <div class="empty-state">
+            <i class="fas fa-user-tie"></i>
+            <p>No consultants found. Please try different search criteria.</p>
+        </div>
         <?php else: ?>
-            <div class="row">
-                <?php foreach ($consultants as $consultant): ?>
-                    <div class="consultant-card-wrapper" 
-                         data-name="<?php echo strtolower(htmlspecialchars($consultant['consultant_name'])); ?>"
-                         data-specializations="<?php echo strtolower(htmlspecialchars($consultant['specializations'] ?? '')); ?>"
-                         data-countries="<?php echo strtolower(htmlspecialchars($consultant['countries'] ?? '')); ?>"
-                         data-visa-types="<?php echo strtolower(htmlspecialchars($consultant['visa_types'] ?? '')); ?>"
-                         data-rating="<?php echo htmlspecialchars($consultant['average_rating']); ?>"
-                         data-has-rating="<?php echo $consultant['review_count'] > 0 ? '1' : '0'; ?>"
-                         data-verified="<?php echo !empty($consultant['is_verified']) ? '1' : '0'; ?>">
-                        
-                        <div class="consultant-card horizontal">
-                            <?php if (!empty($consultant['is_verified'])): ?>
-                                <div class="verified-badge">
-                                    <i class="fas fa-check-circle"></i> Verified by Visafy
-                                </div>
-                            <?php endif; ?>
-                            
-                            <div class="consultant-img">
-                                <?php if (!empty($consultant['profile_picture'])): ?>
-                                    <?php 
+        <div class="row">
+            <?php foreach ($consultants as $consultant): ?>
+            <div class="consultant-card-wrapper"
+                data-name="<?php echo strtolower(htmlspecialchars($consultant['consultant_name'])); ?>"
+                data-specializations="<?php echo strtolower(htmlspecialchars($consultant['specializations'] ?? '')); ?>"
+                data-countries="<?php echo strtolower(htmlspecialchars($consultant['countries'] ?? '')); ?>"
+                data-visa-types="<?php echo strtolower(htmlspecialchars($consultant['visa_types'] ?? '')); ?>"
+                data-rating="<?php echo htmlspecialchars($consultant['average_rating']); ?>"
+                data-has-rating="<?php echo $consultant['review_count'] > 0 ? '1' : '0'; ?>"
+                data-verified="<?php echo !empty($consultant['is_verified']) ? '1' : '0'; ?>">
+
+                <div class="consultant-card horizontal">
+                    <?php if (!empty($consultant['is_verified'])): ?>
+                    <div class="verified-badge">
+                        <i class="fas fa-check-circle"></i> Verified by Visafy
+                    </div>
+                    <?php endif; ?>
+
+                    <div class="consultant-img">
+                        <?php if (!empty($consultant['profile_picture'])): ?>
+                        <?php 
                                     // Fix profile picture path - add 'uploads/' if not present
                                     $profile_picture = $consultant['profile_picture'];
                                     if (strpos($profile_picture, 'users/') === 0) {
@@ -199,19 +201,20 @@ if ($visas_result && $visas_result->num_rows > 0) {
                                         }
                                     }
                                     ?>
-                                    <img src="<?php echo htmlspecialchars($profile_img); ?>" alt="<?php echo htmlspecialchars($consultant['consultant_name']); ?>">
-                                <?php else: ?>
-                                    <div class="default-avatar">
-                                        <?php echo strtoupper(substr($consultant['consultant_name'], 0, 1)); ?>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                            
-                            <div class="consultant-info">
-                                <h3><?php echo htmlspecialchars($consultant['consultant_name']); ?></h3>
-                                <p class="company-name"><?php echo htmlspecialchars($consultant['company_name']); ?></p>
-                                <div class="rating">
-                                    <?php
+                        <img src="<?php echo htmlspecialchars($profile_img); ?>"
+                            alt="<?php echo htmlspecialchars($consultant['consultant_name']); ?>">
+                        <?php else: ?>
+                        <div class="default-avatar">
+                            <?php echo strtoupper(substr($consultant['consultant_name'], 0, 1)); ?>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="consultant-info">
+                        <h3><?php echo htmlspecialchars($consultant['consultant_name']); ?></h3>
+                        <p class="company-name"><?php echo htmlspecialchars($consultant['company_name']); ?></p>
+                        <div class="rating">
+                            <?php
                                     $rating = round($consultant['average_rating'] * 2) / 2; // Round to nearest 0.5
                                     for ($i = 1; $i <= 5; $i++):
                                         if ($rating >= $i):
@@ -223,38 +226,53 @@ if ($visas_result && $visas_result->num_rows > 0) {
                                         endif;
                                     endfor;
                                     ?>
-                                    <span>(<?php echo $consultant['review_count']; ?> reviews)</span>
-                                </div>
-                                
-                                <div class="specializations">
-                                    <strong>Specializations:</strong>
-                                    <?php if (!empty($consultant['specializations'])): ?>
-                                        <span><?php echo htmlspecialchars($consultant['specializations']); ?></span>
-                                    <?php else: ?>
-                                        <span>General visa services</span>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-                            
-                            <div class="consultant-meta">
-                                <div class="meta-item">
-                                    <i class="fas fa-briefcase"></i>
-                                    <span><?php echo !empty($consultant['years_experience']) ? $consultant['years_experience'] . '+ years exp.' : 'Experience not specified'; ?></span>
-                                </div>
-                                <div class="meta-item">
-                                    <i class="fas fa-globe"></i>
-                                    <span><?php echo !empty($consultant['languages']) ? htmlspecialchars($consultant['languages']) : 'Languages not specified'; ?></span>
-                                </div>
-                            </div>
-                            
-                            <div class="consultant-action">
-                                <a href="consultant-profile.php?id=<?php echo $consultant['consultant_id']; ?>" class="btn btn-primary">Book Consultation</a>
-                            </div>
+                            <span>(<?php echo $consultant['review_count']; ?> reviews)</span>
+                        </div>
+
+                        <div class="specializations">
+                            <strong>Specializations:</strong>
+                            <?php if (!empty($consultant['specializations'])): ?>
+                            <div class="specialization-preview"></div>
+                            <a href="#" class="see-more-link"
+                                data-consultant-id="<?php echo $consultant['consultant_id']; ?>">See more</a>
+                            <?php else: ?>
+                            <span>General visa services</span>
+                            <?php endif; ?>
                         </div>
                     </div>
-                <?php endforeach; ?>
+
+                    <div class="consultant-meta">
+                        <div class="meta-item">
+                            <i class="fas fa-briefcase"></i>
+                            <span><?php echo !empty($consultant['years_experience']) ? $consultant['years_experience'] . '+ years exp.' : 'Experience not specified'; ?></span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-globe"></i>
+                            <span><?php echo !empty($consultant['languages']) ? htmlspecialchars($consultant['languages']) : 'Languages not specified'; ?></span>
+                        </div>
+                    </div>
+
+                    <div class="consultant-action">
+                        <a href="consultant-profile.php?id=<?php echo $consultant['consultant_id']; ?>"
+                            class="btn btn-primary">Book Consultation</a>
+                    </div>
+                </div>
             </div>
+            <?php endforeach; ?>
+        </div>
         <?php endif; ?>
+    </div>
+</div>
+
+<!-- Specializations Modal -->
+<div id="specializationsModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2 class="modal-title">Specializations</h2>
+        <div class="specialization-tabs">
+            <div class="tab-buttons"></div>
+            <div class="tab-content"></div>
+        </div>
     </div>
 </div>
 
@@ -400,7 +418,7 @@ if ($visas_result && $visas_result->num_rows > 0) {
     background-color: #fff;
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     height: 100%;
     display: flex;
@@ -410,7 +428,7 @@ if ($visas_result && $visas_result->num_rows > 0) {
 
 .consultant-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
 }
 
 .verified-badge {
@@ -500,10 +518,25 @@ if ($visas_result && $visas_result->num_rows > 0) {
 
 .specializations {
     margin-top: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.specializations strong {
-    color: #042167;
+.specialization-preview {
+    display: inline;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 300px;
+}
+
+.see-more-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9em;
+    white-space: nowrap;
 }
 
 .meta-info {
@@ -561,7 +594,7 @@ if ($visas_result && $visas_result->num_rows > 0) {
 .consultant-card.horizontal {
     display: grid;
     grid-template-columns: 80px 2fr 1fr 0.6fr;
-    grid-template-areas: 
+    grid-template-areas:
         "image info meta action";
     align-items: center;
     gap: 20px;
@@ -612,7 +645,7 @@ if ($visas_result && $visas_result->num_rows > 0) {
 @media (max-width: 991px) {
     .consultant-card.horizontal {
         grid-template-columns: 80px 1fr 1fr;
-        grid-template-areas: 
+        grid-template-areas:
             "image info info"
             "image meta action";
     }
@@ -621,13 +654,13 @@ if ($visas_result && $visas_result->num_rows > 0) {
 @media (max-width: 768px) {
     .consultant-card.horizontal {
         grid-template-columns: 80px 1fr;
-        grid-template-areas: 
+        grid-template-areas:
             "image info"
             "meta meta"
             "action action";
         gap: 15px;
     }
-    
+
     .consultant-card.horizontal .consultant-action {
         justify-content: stretch;
     }
@@ -635,6 +668,108 @@ if ($visas_result && $visas_result->num_rows > 0) {
     .filter-container {
         grid-template-columns: 1fr;
     }
+}
+
+/* Specializations styling */
+.specializations {
+    margin-top: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.specialization-preview {
+    display: inline;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 300px;
+}
+
+.see-more-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9em;
+    white-space: nowrap;
+}
+
+/* Modal styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    border-radius: var(--border-radius);
+    width: 80%;
+    max-width: 600px;
+    position: relative;
+}
+
+.close {
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #666;
+}
+
+.modal-title {
+    margin-top: 0;
+    color: var(--dark-blue);
+    margin-bottom: 20px;
+}
+
+/* Specialization tabs styling */
+.specialization-tabs {
+    margin-top: 20px;
+}
+
+.tab-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.tab-button {
+    padding: 8px 16px;
+    border: none;
+    background-color: var(--background-light);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.tab-button.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.tab-content {
+    background-color: var(--background-light);
+    padding: 20px;
+    border-radius: var(--border-radius);
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
 }
 </style>
 
@@ -647,7 +782,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const verifiedFilter = document.getElementById('filter-verified');
     const resetButton = document.getElementById('reset-filters');
     const consultantCards = document.querySelectorAll('.consultant-card-wrapper');
-    
+
     // Function to filter consultants
     function filterConsultants() {
         const searchTerm = searchInput.value.toLowerCase();
@@ -655,7 +790,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const verifiedValue = verifiedFilter.value;
         const countryValue = document.getElementById('filter-country').value.toLowerCase();
         const visaValue = document.getElementById('filter-visa').value.toLowerCase();
-        
+
         consultantCards.forEach(card => {
             const name = card.dataset.name;
             const specializations = card.dataset.specializations;
@@ -664,18 +799,18 @@ document.addEventListener('DOMContentLoaded', function() {
             const rating = parseFloat(card.dataset.rating);
             const hasRating = card.dataset.hasRating === '1';
             const verified = card.dataset.verified;
-            
+
             // Check if card matches all filters
-            const matchesSearch = searchTerm === '' || 
-                                 name.includes(searchTerm) || 
-                                 specializations.includes(searchTerm);
-            
-            const matchesCountry = countryValue === '' || 
-                                  countries.includes(countryValue);
-            
-            const matchesVisa = visaValue === '' || 
-                               visaTypes.includes(visaValue);
-            
+            const matchesSearch = searchTerm === '' ||
+                name.includes(searchTerm) ||
+                specializations.includes(searchTerm);
+
+            const matchesCountry = countryValue === '' ||
+                countries.includes(countryValue);
+
+            const matchesVisa = visaValue === '' ||
+                visaTypes.includes(visaValue);
+
             let matchesRating = true;
             if (ratingValue !== '') {
                 if (ratingValue === 'no-rating') {
@@ -684,32 +819,32 @@ document.addEventListener('DOMContentLoaded', function() {
                     matchesRating = hasRating && rating >= parseFloat(ratingValue);
                 }
             }
-            
-            const matchesVerified = verifiedValue === '' || 
-                                   (verifiedValue === '1' && verified === '1');
-            
+
+            const matchesVerified = verifiedValue === '' ||
+                (verifiedValue === '1' && verified === '1');
+
             // Show or hide card based on all filter results
-            if (matchesSearch && matchesRating && matchesVerified && 
+            if (matchesSearch && matchesRating && matchesVerified &&
                 matchesCountry && matchesVisa) {
                 card.style.display = 'block';
             } else {
                 card.style.display = 'none';
             }
         });
-        
+
         // Check if any cards are visible
         updateEmptyState();
     }
-    
+
     // Add event listeners
     searchInput.addEventListener('input', filterConsultants);
     ratingFilter.addEventListener('change', filterConsultants);
     verifiedFilter.addEventListener('change', filterConsultants);
-    
+
     // Add event listeners for new filters
     document.getElementById('filter-country').addEventListener('change', filterConsultants);
     document.getElementById('filter-visa').addEventListener('change', filterConsultants);
-    
+
     // Update reset functionality
     resetButton.addEventListener('click', function() {
         searchInput.value = '';
@@ -717,16 +852,140 @@ document.addEventListener('DOMContentLoaded', function() {
         verifiedFilter.value = '';
         document.getElementById('filter-country').value = '';
         document.getElementById('filter-visa').value = '';
-        
+
         consultantCards.forEach(card => {
             card.style.display = 'block';
         });
-        
+
         const emptyState = document.querySelector('.empty-state');
         if (emptyState) {
             emptyState.remove();
         }
     });
+
+    // Add this inside your DOMContentLoaded event listener
+    const modal = document.getElementById('specializationsModal');
+    const closeBtn = document.querySelector('.close');
+    const consultantCards = document.querySelectorAll('.consultant-card-wrapper');
+
+    // Function to create specialization preview
+    function createSpecializationPreview(specializations) {
+        const specializationArray = specializations.split(',').map(s => s.trim());
+        const preview = specializationArray[0];
+        return preview + (specializationArray.length > 1 ? '' : '');
+    }
+
+    // Initialize specialization previews
+    consultantCards.forEach(card => {
+        const specializationsDiv = card.querySelector('.specialization-preview');
+        if (specializationsDiv) {
+            const specializations = card.dataset.specializations;
+            specializationsDiv.textContent = createSpecializationPreview(specializations);
+        }
+    });
+
+    // Handle "See more" clicks
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('see-more-link')) {
+            e.preventDefault();
+            const consultantId = e.target.dataset.consultantId;
+            const card = e.target.closest('.consultant-card-wrapper');
+            const specializations = card.dataset.specializations;
+            
+            showSpecializationsModal(specializations);
+        }
+    });
+
+    // Modal functionality
+    function showSpecializationsModal(specializations) {
+        const specializationArray = specializations.split(',').map(s => s.trim());
+        const categories = groupSpecializations(specializationArray);
+        
+        // Clear existing content
+        const tabButtons = modal.querySelector('.tab-buttons');
+        const tabContent = modal.querySelector('.tab-content');
+        tabButtons.innerHTML = '';
+        tabContent.innerHTML = '';
+        
+        // Create tabs and content
+        Object.keys(categories).forEach((category, index) => {
+            // Create tab button
+            const button = document.createElement('button');
+            button.className = `tab-button ${index === 0 ? 'active' : ''}`;
+            button.textContent = category;
+            button.onclick = () => switchTab(category);
+            tabButtons.appendChild(button);
+            
+            // Create tab content
+            const pane = document.createElement('div');
+            pane.className = `tab-pane ${index === 0 ? 'active' : ''}`;
+            pane.id = `tab-${category.toLowerCase().replace(/\s+/g, '-')}`;
+            pane.innerHTML = `<ul>${categories[category].map(item => `<li>${item}</li>`).join('')}</ul>`;
+            tabContent.appendChild(pane);
+        });
+        
+        modal.style.display = 'block';
+    }
+
+    // Group specializations into categories
+    function groupSpecializations(specializations) {
+        const categories = {
+            'Visa Types': [],
+            'Countries': [],
+            'Services': []
+        };
+        
+        specializations.forEach(spec => {
+            if (spec.toLowerCase().includes('visa')) {
+                categories['Visa Types'].push(spec);
+            } else if (spec.toLowerCase().includes('immigration') || 
+                       spec.toLowerCase().includes('consultation')) {
+                categories['Services'].push(spec);
+            } else {
+                categories['Countries'].push(spec);
+            }
+        });
+        
+        // Remove empty categories
+        Object.keys(categories).forEach(key => {
+            if (categories[key].length === 0) {
+                delete categories[key];
+            }
+        });
+        
+        return categories;
+    }
+
+    // Switch between tabs
+    function switchTab(category) {
+        const buttons = document.querySelectorAll('.tab-button');
+        const panes = document.querySelectorAll('.tab-pane');
+        
+        buttons.forEach(button => {
+            button.classList.remove('active');
+            if (button.textContent === category) {
+                button.classList.add('active');
+            }
+        });
+        
+        panes.forEach(pane => {
+            pane.classList.remove('active');
+            if (pane.id === `tab-${category.toLowerCase().replace(/\s+/g, '-')}`) {
+                pane.classList.add('active');
+            }
+        });
+    }
+
+    // Close modal
+    closeBtn.onclick = function() {
+        modal.style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    }
 });
 </script>
 
