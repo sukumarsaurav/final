@@ -154,14 +154,36 @@ if ($is_logged_in) {
                                 <a href="/dashboard/applicant/index.php" class="dropdown-item">
                                     <i class="fas fa-tachometer-alt"></i> Dashboard
                                 </a>
+                                <?php elseif($_SESSION["user_type"] == 'admin'): ?>
+                                <a href="/dashboard/admin/index.php" class="dropdown-item">
+                                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                                </a>
                                 <?php else: ?>
                                 <a href="/dashboard.php" class="dropdown-item">
                                     <i class="fas fa-tachometer-alt"></i> Dashboard
                                 </a>
                                 <?php endif; ?>
+                                <?php if($_SESSION["user_type"] == 'consultant'): ?>
+                                <a href="/dashboard/consultant/profile.php" class="dropdown-item">
+                                    <i class="fas fa-user"></i> Profile
+                                </a>
+                                <?php elseif($_SESSION["user_type"] == 'member'): ?>
+                                <a href="/dashboard/consultant/profile.php" class="dropdown-item">
+                                    <i class="fas fa-user"></i> Profile
+                                </a>
+                                <?php elseif($_SESSION["user_type"] == 'applicant'): ?>
+                                <a href="/dashboard/applicant/profile.php" class="dropdown-item">
+                                    <i class="fas fa-user"></i> Profile
+                                </a>
+                                <?php elseif($_SESSION["user_type"] == 'admin'): ?>
+                                <a href="/dashboard/admin/profile.php" class="dropdown-item">
+                                    <i class="fas fa-user"></i> Profile
+                                </a>
+                                <?php else: ?>
                                 <a href="/profile.php" class="dropdown-item">
                                     <i class="fas fa-user"></i> Profile
                                 </a>
+                                <?php endif; ?>
                                 <a href="/notifications.php" class="dropdown-item">
                                     <i class="fas fa-bell"></i> Notifications
                                 </a>

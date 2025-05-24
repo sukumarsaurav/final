@@ -147,11 +147,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
                 // Start transaction
                 $conn->begin_transaction();
                 
+                // Check if promo code was applied
+                $final_price = $plan['price'];
+                $promo_code_id = null;
+                $discount_amount = 0;
+                
+                if (isset($_POST['applied_promo_code_id']) && !empty($_POST['applied_promo_code_id'])) {
+                    $promo_code_id = intval($_POST['applied_promo_code_id']);
+                    
+                    // Validate promo code again to prevent tampering
+                    $stmt = $conn->prepare("CALL validate_promo_code(
+                        (SELECT code FROM promo_codes WHERE id = ?), 
+                        ?, NULL, @is_valid, @discount_type, @discount_value, @error_message)");
+                    $stmt->bind_param("ii", $promo_code_id, $membership_plan_id);
+                    $stmt->execute();
+                    $stmt->close();
+                    
+                    $result = $conn->query("SELECT @is_valid as is_valid, @discount_type as discount_type, 
+                                                  @discount_value as discount_value, @error_message as error_message");
+                    $validation = $result->fetch_assoc();
+                    
+                    if ($validation['is_valid']) {
+                        if ($validation['discount_type'] === 'percentage') {
+                            $discount_amount = $plan['price'] * ($validation['discount_value'] / 100);
+                        } else {
+                            $discount_amount = $validation['discount_value'];
+                        }
+                        $discount_amount = min($discount_amount, $plan['price']);
+                        $final_price = $plan['price'] - $discount_amount;
+                    } else {
+                        $promo_code_id = null;
+                        $discount_amount = 0;
+                    }
+                }
+
                 // Stripe payment processing
                 try {
                     $payment_method = \Stripe\PaymentMethod::retrieve($payment_method_id);
                     
-                    // Create Stripe customer
+                    // Create Stripe customer with adjusted price if promo code applied
                     $stripe_customer = \Stripe\Customer::create([
                         'email' => $email,
                         'name' => $first_name . ' ' . $last_name,
@@ -168,6 +202,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
                         'metadata' => [
                             'membership_plan_id' => $membership_plan_id,
                             'company_name' => $company_name,
+                            'promo_code_id' => $promo_code_id,
+                            'original_price' => $plan['price'],
+                            'discount_amount' => $discount_amount,
+                            'final_price' => $final_price
                         ]
                     ]);
                     
@@ -231,6 +269,94 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
                         }
                     }
                     
+                    // Create organization
+                    $org_name = !empty($company_name) ? $company_name : $first_name . ' ' . $last_name . "'s Organization";
+                    $org_description = "Organization for " . $first_name . " " . $last_name;
+                    
+                    $insert_org_query = "INSERT INTO organizations (name, description) VALUES (?, ?)";
+                    $stmt = $conn->prepare($insert_org_query);
+                    $stmt->bind_param('ss', $org_name, $org_description);
+                    $stmt->execute();
+                    $organization_id = $conn->insert_id;
+                    
+                    // Hash password
+                    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+                    
+                    // Create user
+                    $insert_user_query = "INSERT INTO users (first_name, last_name, email, phone, password, user_type, email_verified, organization_id) 
+                                         VALUES (?, ?, ?, ?, ?, 'consultant', 0, ?)";
+                    $stmt = $conn->prepare($insert_user_query);
+                    $stmt->bind_param('sssssi', $first_name, $last_name, $email, $phone, $hashed_password, $organization_id);
+                    $stmt->execute();
+                    $user_id = $conn->insert_id;
+                    
+                    // Create consultant
+                    $insert_consultant_query = "INSERT INTO consultants (user_id, membership_plan_id, company_name) 
+                                               VALUES (?, ?, ?)";
+                    $stmt = $conn->prepare($insert_consultant_query);
+                    $stmt->bind_param('iis', $user_id, $membership_plan_id, $company_name);
+                    $stmt->execute();
+                    
+                    // Create consultant profile
+                    $insert_profile_query = "INSERT INTO consultant_profiles (consultant_id) VALUES (?)";
+                    $stmt = $conn->prepare($insert_profile_query);
+                    $stmt->bind_param('i', $user_id);
+                    $stmt->execute();
+                    
+                    // Create payment method record
+                    $insert_payment_query = "INSERT INTO payment_methods (user_id, method_type, provider, account_number, token, billing_address_line1, billing_address_line2, billing_city, billing_state, billing_postal_code, billing_country, is_default) 
+                                            VALUES (?, 'credit_card', 'stripe', ?, ?, ?, ?, ?, ?, ?, ?, 1)";
+                    $last_four = $payment_method->card->last4 ?? substr($payment_method_id, -4);
+                    $stmt = $conn->prepare($insert_payment_query);
+                    $stmt->bind_param('issssssss', $user_id, $last_four, $stripe_customer->id, $address_line1, $address_line2, $city, $state, $postal_code, $country);
+                    $stmt->execute();
+                    $payment_method_id_db = $conn->insert_id;
+                    
+                    // Create subscription
+                    $insert_subscription_query = "INSERT INTO subscriptions (user_id, membership_plan_id, payment_method_id, status, start_date, end_date, auto_renew) 
+                                                 VALUES (?, ?, ?, 'active', NOW(), DATE_ADD(NOW(), INTERVAL 1 MONTH), 1)";
+                    $stmt = $conn->prepare($insert_subscription_query);
+                    $stmt->bind_param('iii', $user_id, $membership_plan_id, $payment_method_id_db);
+                    $stmt->execute();
+                    $subscription_id = $conn->insert_id;
+                    
+                    // Generate verification token
+                    $token = bin2hex(random_bytes(32));
+                    $expires = date('Y-m-d H:i:s', strtotime('+24 hours'));
+                    
+                    $update_token_query = "UPDATE users SET email_verification_token = ?, email_verification_expires = ? WHERE id = ?";
+                    $stmt = $conn->prepare($update_token_query);
+                    $stmt->bind_param('ssi', $token, $expires, $user_id);
+                    $stmt->execute();
+                    
+                    // After successful subscription creation, record promo code usage if applicable
+                    if ($promo_code_id) {
+                        $insert_promo_usage_query = "INSERT INTO promo_code_usage 
+                            (promo_code_id, user_id, subscription_id, original_price, discount_amount, final_price)
+                            VALUES (?, ?, ?, ?, ?, ?)";
+                        $stmt = $conn->prepare($insert_promo_usage_query);
+                        $stmt->bind_param("iiiddd", $promo_code_id, $user_id, $subscription_id, 
+                                        $plan['price'], $discount_amount, $final_price);
+                        $stmt->execute();
+                    }
+                    
+                    // Commit transaction
+                    $conn->commit();
+                    
+                    // Send verification email
+                    $verification_link = "https://visafy.io/verify_email.php?token=" . $token;
+                    $email_subject = "Verify Your Email Address";
+                    $email_body = "Hi $first_name,\n\nPlease click the following link to verify your email address:\n$verification_link\n\nThis link will expire in 24 hours.\n\nThank you,\nThe Visafy Team";
+                    
+                    if (function_exists('send_email')) {
+                        send_email($email, $email_subject, $email_body);
+                    }
+                    
+                    $success_message = "Registration successful! Please check your email to verify your account.";
+                    
+                    // Clear form data
+                    $first_name = $last_name = $email = $phone = $company_name = $address_line1 = $address_line2 = $city = $state = $postal_code = $country = '';
+                    
                 } catch (\Stripe\Exception\CardException $e) {
                     throw $e;
                 } catch (\Stripe\Exception\RateLimitException $e) {
@@ -245,100 +371,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
                     throw $e;
                 }
                 
-                // Create organization
-                $org_name = !empty($company_name) ? $company_name : $first_name . ' ' . $last_name . "'s Organization";
-                $org_description = "Organization for " . $first_name . " " . $last_name;
-                
-                $insert_org_query = "INSERT INTO organizations (name, description) VALUES (?, ?)";
-                $stmt = $conn->prepare($insert_org_query);
-                $stmt->bind_param('ss', $org_name, $org_description);
-                $stmt->execute();
-                $organization_id = $conn->insert_id;
-                
-                // Hash password
-                $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-                
-                // Create user
-                $insert_user_query = "INSERT INTO users (first_name, last_name, email, phone, password, user_type, email_verified, organization_id) 
-                                     VALUES (?, ?, ?, ?, ?, 'consultant', 0, ?)";
-                $stmt = $conn->prepare($insert_user_query);
-                $stmt->bind_param('sssssi', $first_name, $last_name, $email, $phone, $hashed_password, $organization_id);
-                $stmt->execute();
-                $user_id = $conn->insert_id;
-                
-                // Create consultant
-                $insert_consultant_query = "INSERT INTO consultants (user_id, membership_plan_id, company_name) 
-                                           VALUES (?, ?, ?)";
-                $stmt = $conn->prepare($insert_consultant_query);
-                $stmt->bind_param('iis', $user_id, $membership_plan_id, $company_name);
-                $stmt->execute();
-                
-                // Create consultant profile
-                $insert_profile_query = "INSERT INTO consultant_profiles (consultant_id) VALUES (?)";
-                $stmt = $conn->prepare($insert_profile_query);
-                $stmt->bind_param('i', $user_id);
-                $stmt->execute();
-                
-                // Create payment method record
-                $insert_payment_query = "INSERT INTO payment_methods (user_id, method_type, provider, account_number, token, billing_address_line1, billing_address_line2, billing_city, billing_state, billing_postal_code, billing_country, is_default) 
-                                        VALUES (?, 'credit_card', 'stripe', ?, ?, ?, ?, ?, ?, ?, ?, 1)";
-                $last_four = $payment_method->card->last4 ?? substr($payment_method_id, -4);
-                $stmt = $conn->prepare($insert_payment_query);
-                $stmt->bind_param('issssssss', $user_id, $last_four, $stripe_customer->id, $address_line1, $address_line2, $city, $state, $postal_code, $country);
-                $stmt->execute();
-                $payment_method_id_db = $conn->insert_id;
-                
-                // Create subscription
-                $insert_subscription_query = "INSERT INTO subscriptions (user_id, membership_plan_id, payment_method_id, status, start_date, end_date, auto_renew) 
-                                             VALUES (?, ?, ?, 'active', NOW(), DATE_ADD(NOW(), INTERVAL 1 MONTH), 1)";
-                $stmt = $conn->prepare($insert_subscription_query);
-                $stmt->bind_param('iii', $user_id, $membership_plan_id, $payment_method_id_db);
-                $stmt->execute();
-                
-                // Generate verification token
-                $token = bin2hex(random_bytes(32));
-                $expires = date('Y-m-d H:i:s', strtotime('+24 hours'));
-                
-                $update_token_query = "UPDATE users SET email_verification_token = ?, email_verification_expires = ? WHERE id = ?";
-                $stmt = $conn->prepare($update_token_query);
-                $stmt->bind_param('ssi', $token, $expires, $user_id);
-                $stmt->execute();
-                
-                // Commit transaction
-                $conn->commit();
-                
-                // Send verification email
-                $verification_link = "https://visafy.io/verify_email.php?token=" . $token;
-                $email_subject = "Verify Your Email Address";
-                $email_body = "Hi $first_name,\n\nPlease click the following link to verify your email address:\n$verification_link\n\nThis link will expire in 24 hours.\n\nThank you,\nThe Visafy Team";
-                
-                if (function_exists('send_email')) {
-                    send_email($email, $email_subject, $email_body);
-                }
-                
-                $success_message = "Registration successful! Please check your email to verify your account.";
-                
-                // Clear form data
-                $first_name = $last_name = $email = $phone = $company_name = $address_line1 = $address_line2 = $city = $state = $postal_code = $country = '';
-                
-            } catch (\Stripe\Exception\CardException $e) {
-                $conn->rollback();
-                $error_message = "Payment error: " . $e->getMessage();
-            } catch (\Stripe\Exception\RateLimitException $e) {
-                $conn->rollback();
-                $error_message = "Too many requests to Stripe. Please try again later.";
-            } catch (\Stripe\Exception\InvalidRequestException $e) {
-                $conn->rollback();
-                $error_message = "Invalid payment information: " . $e->getMessage();
-            } catch (\Stripe\Exception\AuthenticationException $e) {
-                $conn->rollback();
-                $error_message = "Authentication with Stripe failed. Please contact support.";
-            } catch (\Stripe\Exception\ApiConnectionException $e) {
-                $conn->rollback();
-                $error_message = "Network error. Please try again later.";
-            } catch (\Stripe\Exception\ApiErrorException $e) {
-                $conn->rollback();
-                $error_message = "Payment error: " . $e->getMessage();
             } catch (Exception $e) {
                 $conn->rollback();
                 $error_message = "Registration failed: " . $e->getMessage();
@@ -597,8 +629,24 @@ if (session_status() === PHP_SESSION_NONE) {
                                 </div>
                             </div>
                             
+                            <div class="form-section">
+                                <h3>Promo Code</h3>
+                                <div class="promo-code-container">
+                                    <div class="form-group">
+                                        <label for="promo_code">Have a promo code?</label>
+                                        <div class="promo-input-group">
+                                            <input type="text" name="promo_code" id="promo_code" class="form-control" placeholder="Enter promo code">
+                                            <button type="button" id="apply_promo" class="btn btn-secondary">Apply</button>
+                                        </div>
+                                        <div id="promo_message" class="promo-message"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <input type="hidden" name="membership_plan_id" id="membership_plan_id" value="<?php echo $selected_plan ? $selected_plan['id'] : ''; ?>">
                             <input type="hidden" name="payment_method_id" id="payment_method_id" value="">
+                            <input type="hidden" name="applied_promo_code_id" id="applied_promo_code_id" value="">
+                            <input type="hidden" name="discounted_price" id="discounted_price" value="">
                             
                             <div class="terms-privacy">
                                 <div class="checkbox-group">
@@ -1156,6 +1204,49 @@ if (session_status() === PHP_SESSION_NONE) {
         gap: 0;
     }
 }
+
+.promo-code-container {
+    margin-bottom: 20px;
+}
+
+.promo-input-group {
+    display: flex;
+    gap: 10px;
+}
+
+.promo-message {
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.promo-message.success {
+    color: var(--success-color);
+}
+
+.promo-message.error {
+    color: var(--danger-color);
+}
+
+.price-breakdown {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid var(--border-color);
+}
+
+.price-breakdown .item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.price-breakdown .total {
+    font-weight: bold;
+    color: var(--dark-blue);
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border-color);
+}
 </style>
 
 <!-- Include Stripe.js -->
@@ -1404,13 +1495,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             hiddenInput.value = result.paymentMethod.id;
                             document.getElementById('payment_method_id').value = result.paymentMethod.id;
                             
-                            // Add a flag indicating this is a fallback method
-                            const fallbackField = document.createElement('input');
-                            fallbackField.type = 'hidden';
-                            fallbackField.name = 'is_fallback_method';
-                            fallbackField.value = 'true';
-                            registrationForm.appendChild(fallbackField);
-                            
                             submitFormWithExtras();
                         }).catch(function(error) {
                             if (errorElement) {
@@ -1518,6 +1602,100 @@ function updateSelectedPlan(planId) {
     // Redirect to same page with plan_id parameter to refresh the view
     window.location.href = 'consultant-registration.php?plan_id=' + planId;
 }
+
+// Promo code handling
+document.getElementById('apply_promo').addEventListener('click', function() {
+    const promoCode = document.getElementById('promo_code').value.trim();
+    const planId = document.getElementById('membership_plan_id').value;
+    const messageDiv = document.getElementById('promo_message');
+    
+    if (!promoCode) {
+        messageDiv.textContent = 'Please enter a promo code';
+        messageDiv.className = 'promo-message error';
+        return;
+    }
+    
+    // Clear previous messages
+    messageDiv.textContent = 'Validating...';
+    messageDiv.className = 'promo-message';
+    
+    // Make API call to validate promo code
+    fetch('/api/validate-promo.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            code: promoCode,
+            plan_id: planId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            messageDiv.textContent = 'Promo code applied successfully!';
+            messageDiv.className = 'promo-message success';
+            
+            // Update price display
+            const originalPrice = parseFloat(data.original_price);
+            const discountAmount = parseFloat(data.discount_amount);
+            const finalPrice = parseFloat(data.final_price);
+            
+            // Update hidden fields
+            document.getElementById('applied_promo_code_id').value = data.promo_code_id;
+            document.getElementById('discounted_price').value = finalPrice;
+            
+            // Update price display in the plan summary
+            const priceDisplay = document.querySelector('.plan-price');
+            if (priceDisplay) {
+                const priceBreakdown = document.createElement('div');
+                priceBreakdown.className = 'price-breakdown';
+                priceBreakdown.innerHTML = `
+                    <div class="item">
+                        <span>Original Price:</span>
+                        <span>$${originalPrice.toFixed(2)}</span>
+                    </div>
+                    <div class="item">
+                        <span>Discount:</span>
+                        <span>-$${discountAmount.toFixed(2)}</span>
+                    </div>
+                    <div class="item total">
+                        <span>Final Price:</span>
+                        <span>$${finalPrice.toFixed(2)}</span>
+                    </div>
+                `;
+                
+                // Replace existing price breakdown if any
+                const existingBreakdown = priceDisplay.nextElementSibling;
+                if (existingBreakdown && existingBreakdown.className === 'price-breakdown') {
+                    existingBreakdown.remove();
+                }
+                priceDisplay.insertAdjacentElement('afterend', priceBreakdown);
+            }
+        } else {
+            messageDiv.textContent = data.message || 'Invalid promo code';
+            messageDiv.className = 'promo-message error';
+            
+            // Clear any applied promo code
+            document.getElementById('applied_promo_code_id').value = '';
+            document.getElementById('discounted_price').value = '';
+            
+            // Remove price breakdown if exists
+            const priceDisplay = document.querySelector('.plan-price');
+            if (priceDisplay) {
+                const existingBreakdown = priceDisplay.nextElementSibling;
+                if (existingBreakdown && existingBreakdown.className === 'price-breakdown') {
+                    existingBreakdown.remove();
+                }
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        messageDiv.textContent = 'Error validating promo code. Please try again.';
+        messageDiv.className = 'promo-message error';
+    });
+});
 </script>
 
 <?php

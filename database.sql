@@ -491,3 +491,115 @@ GROUP BY
     cp.is_featured, cp.display_order
 ORDER BY 
     cp.is_featured DESC, cp.display_order ASC, average_rating DESC;
+
+-- Create promo codes table
+CREATE TABLE `promo_codes` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `code` varchar(50) NOT NULL,
+    `description` text DEFAULT NULL,
+    `discount_type` enum('percentage','fixed') NOT NULL,
+    `discount_value` decimal(10,2) NOT NULL,
+    `start_date` datetime NOT NULL,
+    `end_date` datetime DEFAULT NULL,
+    `max_uses` int(11) DEFAULT NULL,
+    `current_uses` int(11) DEFAULT 0,
+    `min_plan_price` decimal(10,2) DEFAULT NULL,
+    `applicable_plans` varchar(255) DEFAULT NULL COMMENT 'Comma-separated plan IDs, NULL for all plans',
+    `is_active` tinyint(1) NOT NULL DEFAULT 1,
+    `created_by` int(11) DEFAULT NULL,
+    `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+    `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `code` (`code`),
+    KEY `idx_promo_codes_active_dates` (`is_active`, `start_date`, `end_date`),
+    KEY `idx_promo_codes_created_by` (`created_by`),
+    CONSTRAINT `promo_codes_created_by_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Create promo code usage tracking table
+CREATE TABLE `promo_code_usage` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `promo_code_id` int(11) NOT NULL,
+    `user_id` int(11) NOT NULL,
+    `subscription_id` int(11) NOT NULL,
+    `original_price` decimal(10,2) NOT NULL,
+    `discount_amount` decimal(10,2) NOT NULL,
+    `final_price` decimal(10,2) NOT NULL,
+    `used_at` timestamp NOT NULL DEFAULT current_timestamp(),
+    PRIMARY KEY (`id`),
+    KEY `idx_promo_usage_code` (`promo_code_id`),
+    KEY `idx_promo_usage_user` (`user_id`),
+    KEY `idx_promo_usage_subscription` (`subscription_id`),
+    CONSTRAINT `promo_usage_code_id_fk` FOREIGN KEY (`promo_code_id`) REFERENCES `promo_codes` (`id`),
+    CONSTRAINT `promo_usage_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+    CONSTRAINT `promo_usage_subscription_id_fk` FOREIGN KEY (`subscription_id`) REFERENCES `subscriptions` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Create stored procedure to validate and apply promo code
+DELIMITER //
+CREATE PROCEDURE validate_promo_code(
+    IN p_code VARCHAR(50),
+    IN p_plan_id INT,
+    IN p_user_id INT,
+    OUT p_is_valid BOOLEAN,
+    OUT p_discount_type VARCHAR(10),
+    OUT p_discount_value DECIMAL(10,2),
+    OUT p_error_message VARCHAR(255)
+)
+BEGIN
+    DECLARE v_promo_id INT;
+    DECLARE v_plan_price DECIMAL(10,2);
+    DECLARE v_max_uses INT;
+    DECLARE v_current_uses INT;
+    DECLARE v_applicable_plans VARCHAR(255);
+    
+    -- Get promo code details
+    SELECT id, discount_type, discount_value, max_uses, current_uses, applicable_plans
+    INTO v_promo_id, p_discount_type, p_discount_value, v_max_uses, v_current_uses, v_applicable_plans
+    FROM promo_codes
+    WHERE code = p_code
+    AND is_active = 1
+    AND (end_date IS NULL OR end_date > NOW())
+    AND start_date <= NOW()
+    LIMIT 1;
+    
+    -- Get plan price
+    SELECT price INTO v_plan_price
+    FROM membership_plans
+    WHERE id = p_plan_id;
+    
+    -- Initialize result
+    SET p_is_valid = FALSE;
+    SET p_error_message = NULL;
+    
+    -- Validate promo code
+    IF v_promo_id IS NULL THEN
+        SET p_error_message = 'Invalid or expired promo code';
+    ELSEIF v_max_uses IS NOT NULL AND v_current_uses >= v_max_uses THEN
+        SET p_error_message = 'Promo code usage limit reached';
+    ELSEIF v_applicable_plans IS NOT NULL AND FIND_IN_SET(p_plan_id, v_applicable_plans) = 0 THEN
+        SET p_error_message = 'Promo code not applicable for selected plan';
+    ELSE
+        SET p_is_valid = TRUE;
+    END IF;
+END //
+DELIMITER ;
+
+-- Create trigger to update promo code usage count
+DELIMITER //
+CREATE TRIGGER after_promo_usage_insert
+AFTER INSERT ON promo_code_usage
+FOR EACH ROW
+BEGIN
+    UPDATE promo_codes
+    SET current_uses = current_uses + 1
+    WHERE id = NEW.promo_code_id;
+END //
+DELIMITER ;
+
+-- Insert some sample promo codes
+INSERT INTO promo_codes (code, description, discount_type, discount_value, start_date, end_date, max_uses)
+VALUES 
+('WELCOME2024', 'New year special offer', 'percentage', 20, '2024-01-01', '2024-12-31', 100),
+('FIRSTMONTH', 'First month discount', 'percentage', 30, '2024-01-01', '2024-12-31', 50),
+('SAVE50', 'Fixed amount discount', 'fixed', 50, '2024-01-01', '2024-12-31', 25);
