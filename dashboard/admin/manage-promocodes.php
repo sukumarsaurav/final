@@ -128,9 +128,11 @@ $promo_codes_result = $conn->query($promo_codes_query);
 ?>
 
 <div class="content">
-    <div class="dashboard-header">
-        <h1><?php echo $edit_id ? 'Edit Promo Code' : 'Manage Promo Codes'; ?></h1>
-        <p>Create and manage promotional codes for membership plans</p>
+    <div class="header-container">
+        <div>
+            <h1><i class="fas fa-tags"></i> Manage Promo Codes</h1>
+            <p>Create and manage promotional codes for membership plans</p>
+        </div>
     </div>
     
     <?php if (!empty($success_message)): ?>
@@ -142,183 +144,285 @@ $promo_codes_result = $conn->query($promo_codes_query);
     <?php endif; ?>
     
     <!-- Promo Code Form -->
-    <div class="dashboard-section">
-        <form action="manage-promocodes.php<?php echo $edit_id ? "?edit=$edit_id" : ''; ?>" method="POST" class="promo-form">
-            <?php if ($edit_id): ?>
-                <input type="hidden" name="promo_id" value="<?php echo $edit_id; ?>">
-            <?php endif; ?>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="code">Promo Code*</label>
-                    <input type="text" id="code" name="code" class="form-control" required 
-                           value="<?php echo $edit_promo ? htmlspecialchars($edit_promo['code']) : ''; ?>"
-                           <?php echo $edit_id ? 'readonly' : ''; ?>>
-                </div>
-                <div class="form-group">
-                    <label for="description">Description*</label>
-                    <input type="text" id="description" name="description" class="form-control" required
-                           value="<?php echo $edit_promo ? htmlspecialchars($edit_promo['description']) : ''; ?>">
-                </div>
+    <div class="card-container">
+        <div class="action-card full-width">
+            <div class="action-card-header">
+                <h5><?php echo $edit_id ? 'Edit Promo Code' : 'Add New Promo Code'; ?></h5>
             </div>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="discount_type">Discount Type*</label>
-                    <select id="discount_type" name="discount_type" class="form-control" required>
-                        <option value="percentage" <?php echo ($edit_promo && $edit_promo['discount_type'] === 'percentage') ? 'selected' : ''; ?>>Percentage</option>
-                        <option value="fixed" <?php echo ($edit_promo && $edit_promo['discount_type'] === 'fixed') ? 'selected' : ''; ?>>Fixed Amount</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="discount_value">Discount Value*</label>
-                    <input type="number" id="discount_value" name="discount_value" class="form-control" required step="0.01" min="0"
-                           value="<?php echo $edit_promo ? htmlspecialchars($edit_promo['discount_value']) : ''; ?>">
-                </div>
-            </div>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="start_date">Start Date*</label>
-                    <input type="datetime-local" id="start_date" name="start_date" class="form-control" required
-                           value="<?php echo $edit_promo ? date('Y-m-d\TH:i', strtotime($edit_promo['start_date'])) : ''; ?>">
-                </div>
-                <div class="form-group">
-                    <label for="end_date">End Date (Optional)</label>
-                    <input type="datetime-local" id="end_date" name="end_date" class="form-control"
-                           value="<?php echo ($edit_promo && $edit_promo['end_date']) ? date('Y-m-d\TH:i', strtotime($edit_promo['end_date'])) : ''; ?>">
-                </div>
-            </div>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="max_uses">Maximum Uses (Optional)</label>
-                    <input type="number" id="max_uses" name="max_uses" class="form-control" min="1"
-                           value="<?php echo $edit_promo ? htmlspecialchars($edit_promo['max_uses']) : ''; ?>">
-                </div>
-                <div class="form-group">
-                    <label for="min_plan_price">Minimum Plan Price (Optional)</label>
-                    <input type="number" id="min_plan_price" name="min_plan_price" class="form-control" step="0.01" min="0"
-                           value="<?php echo $edit_promo ? htmlspecialchars($edit_promo['min_plan_price']) : ''; ?>">
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label>Applicable Plans (Optional)</label>
-                <div class="checkbox-group">
-                    <?php foreach ($membership_plans as $plan): ?>
+            <div class="action-card-body">
+                <form action="manage-promocodes.php<?php echo $edit_id ? "?edit=$edit_id" : ''; ?>" method="POST" class="promo-form">
+                    <?php if ($edit_id): ?>
+                        <input type="hidden" name="promo_id" value="<?php echo $edit_id; ?>">
+                    <?php endif; ?>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="code">Promo Code*</label>
+                            <input type="text" id="code" name="code" class="form-control" required 
+                                   value="<?php echo $edit_promo ? htmlspecialchars($edit_promo['code']) : ''; ?>"
+                                   <?php echo $edit_id ? 'readonly' : ''; ?>>
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Description*</label>
+                            <input type="text" id="description" name="description" class="form-control" required
+                                   value="<?php echo $edit_promo ? htmlspecialchars($edit_promo['description']) : ''; ?>">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="discount_type">Discount Type*</label>
+                            <select id="discount_type" name="discount_type" class="form-control" required>
+                                <option value="percentage" <?php echo ($edit_promo && $edit_promo['discount_type'] === 'percentage') ? 'selected' : ''; ?>>Percentage</option>
+                                <option value="fixed" <?php echo ($edit_promo && $edit_promo['discount_type'] === 'fixed') ? 'selected' : ''; ?>>Fixed Amount</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="discount_value">Discount Value*</label>
+                            <input type="number" id="discount_value" name="discount_value" class="form-control" required step="0.01" min="0"
+                                   value="<?php echo $edit_promo ? htmlspecialchars($edit_promo['discount_value']) : ''; ?>">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="start_date">Start Date*</label>
+                            <input type="datetime-local" id="start_date" name="start_date" class="form-control" required
+                                   value="<?php echo $edit_promo ? date('Y-m-d\TH:i', strtotime($edit_promo['start_date'])) : ''; ?>">
+                        </div>
+                        <div class="form-group">
+                            <label for="end_date">End Date (Optional)</label>
+                            <input type="datetime-local" id="end_date" name="end_date" class="form-control"
+                                   value="<?php echo ($edit_promo && $edit_promo['end_date']) ? date('Y-m-d\TH:i', strtotime($edit_promo['end_date'])) : ''; ?>">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="max_uses">Maximum Uses (Optional)</label>
+                            <input type="number" id="max_uses" name="max_uses" class="form-control" min="1"
+                                   value="<?php echo $edit_promo ? htmlspecialchars($edit_promo['max_uses']) : ''; ?>">
+                        </div>
+                        <div class="form-group">
+                            <label for="min_plan_price">Minimum Plan Price (Optional)</label>
+                            <input type="number" id="min_plan_price" name="min_plan_price" class="form-control" step="0.01" min="0"
+                                   value="<?php echo $edit_promo ? htmlspecialchars($edit_promo['min_plan_price']) : ''; ?>">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Applicable Plans (Optional)</label>
+                        <div class="checkbox-group">
+                            <?php foreach ($membership_plans as $plan): ?>
+                                <label class="checkbox-inline">
+                                    <input type="checkbox" name="applicable_plans[]" value="<?php echo $plan['id']; ?>"
+                                           <?php echo ($edit_promo && strpos($edit_promo['applicable_plans'], $plan['id']) !== false) ? 'checked' : ''; ?>>
+                                    <?php echo htmlspecialchars($plan['name']); ?> ($<?php echo number_format($plan['price'], 2); ?>)
+                                </label>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
                         <label class="checkbox-inline">
-                            <input type="checkbox" name="applicable_plans[]" value="<?php echo $plan['id']; ?>"
-                                   <?php echo ($edit_promo && strpos($edit_promo['applicable_plans'], $plan['id']) !== false) ? 'checked' : ''; ?>>
-                            <?php echo htmlspecialchars($plan['name']); ?> ($<?php echo number_format($plan['price'], 2); ?>)
+                            <input type="checkbox" name="is_active" value="1" 
+                                   <?php echo (!$edit_promo || $edit_promo['is_active']) ? 'checked' : ''; ?>>
+                            Active
                         </label>
-                    <?php endforeach; ?>
-                </div>
+                    </div>
+                    
+                    <div class="form-buttons">
+                        <?php if ($edit_id): ?>
+                            <a href="manage-promocodes.php" class="btn secondary-btn">Cancel</a>
+                            <button type="submit" name="update_promo" class="btn primary-btn">Update Promo Code</button>
+                        <?php else: ?>
+                            <button type="submit" name="add_promo" class="btn primary-btn">Add Promo Code</button>
+                        <?php endif; ?>
+                    </div>
+                </form>
             </div>
-            
-            <div class="form-group">
-                <label class="checkbox-inline">
-                    <input type="checkbox" name="is_active" value="1" 
-                           <?php echo (!$edit_promo || $edit_promo['is_active']) ? 'checked' : ''; ?>>
-                    Active
-                </label>
-            </div>
-            
-            <div class="form-buttons">
-                <?php if ($edit_id): ?>
-                    <a href="manage-promocodes.php" class="btn cancel-btn">Cancel</a>
-                    <button type="submit" name="update_promo" class="btn primary-btn">Update Promo Code</button>
-                <?php else: ?>
-                    <button type="submit" name="add_promo" class="btn primary-btn">Add Promo Code</button>
-                <?php endif; ?>
-            </div>
-        </form>
+        </div>
     </div>
     
     <!-- Promo Codes List -->
-    <div class="dashboard-section">
-        <div class="section-header">
-            <h3>All Promo Codes</h3>
-            <p>View and manage existing promotional codes</p>
-        </div>
-        
-        <div class="table-responsive">
-            <table class="table" id="promoCodesTable">
-                <thead>
-                    <tr>
-                        <th>Code</th>
-                        <th>Description</th>
-                        <th>Discount</th>
-                        <th>Validity</th>
-                        <th>Usage</th>
-                        <th>Status</th>
-                        <th>Created By</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php while ($promo = $promo_codes_result->fetch_assoc()): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($promo['code']); ?></td>
-                            <td><?php echo htmlspecialchars($promo['description']); ?></td>
-                            <td>
-                                <?php if ($promo['discount_type'] === 'percentage'): ?>
-                                    <?php echo number_format($promo['discount_value'], 0); ?>%
-                                <?php else: ?>
-                                    $<?php echo number_format($promo['discount_value'], 2); ?>
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <?php
-                                echo date('M j, Y', strtotime($promo['start_date']));
-                                if ($promo['end_date']) {
-                                    echo ' - ' . date('M j, Y', strtotime($promo['end_date']));
-                                }
-                                ?>
-                            </td>
-                            <td>
-                                <?php
-                                echo number_format($promo['total_uses']);
-                                if ($promo['max_uses']) {
-                                    echo ' / ' . number_format($promo['max_uses']);
-                                }
-                                if ($promo['total_discount_amount']) {
-                                    echo '<br><small>Total savings: $' . number_format($promo['total_discount_amount'], 2) . '</small>';
-                                }
-                                ?>
-                            </td>
-                            <td>
-                                <span class="status-badge <?php echo $promo['is_active'] ? 'active' : 'inactive'; ?>">
-                                    <?php echo $promo['is_active'] ? 'Active' : 'Inactive'; ?>
-                                </span>
-                            </td>
-                            <td><?php echo htmlspecialchars($promo['created_by_name']); ?></td>
-                            <td>
-                                <div class="action-buttons">
-                                    <a href="manage-promocodes.php?edit=<?php echo $promo['id']; ?>" class="btn btn-sm btn-edit">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <form action="manage-promocodes.php" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this promo code?');">
-                                        <input type="hidden" name="promo_id" value="<?php echo $promo['id']; ?>">
-                                        <button type="submit" name="delete_promo" class="btn btn-sm btn-delete">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                    <?php endwhile; ?>
-                </tbody>
-            </table>
+    <div class="card-container">
+        <div class="action-card full-width">
+            <div class="action-card-header">
+                <h5>All Promo Codes</h5>
+                <p>View and manage existing promotional codes</p>
+            </div>
+            <div class="action-card-body">
+                <div class="table-responsive">
+                    <table class="table" id="promoCodesTable">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Description</th>
+                                <th>Discount</th>
+                                <th>Validity</th>
+                                <th>Usage</th>
+                                <th>Status</th>
+                                <th>Created By</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php while ($promo = $promo_codes_result->fetch_assoc()): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($promo['code']); ?></td>
+                                    <td><?php echo htmlspecialchars($promo['description']); ?></td>
+                                    <td>
+                                        <?php if ($promo['discount_type'] === 'percentage'): ?>
+                                            <?php echo number_format($promo['discount_value'], 0); ?>%
+                                        <?php else: ?>
+                                            $<?php echo number_format($promo['discount_value'], 2); ?>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <?php
+                                        echo date('M j, Y', strtotime($promo['start_date']));
+                                        if ($promo['end_date']) {
+                                            echo ' - ' . date('M j, Y', strtotime($promo['end_date']));
+                                        }
+                                        ?>
+                                    </td>
+                                    <td>
+                                        <?php
+                                        echo number_format($promo['total_uses']);
+                                        if ($promo['max_uses']) {
+                                            echo ' / ' . number_format($promo['max_uses']);
+                                        }
+                                        if ($promo['total_discount_amount']) {
+                                            echo '<br><small>Total savings: $' . number_format($promo['total_discount_amount'], 2) . '</small>';
+                                        }
+                                        ?>
+                                    </td>
+                                    <td>
+                                        <span class="status-badge <?php echo $promo['is_active'] ? 'active' : 'inactive'; ?>">
+                                            <?php echo $promo['is_active'] ? 'Active' : 'Inactive'; ?>
+                                        </span>
+                                    </td>
+                                    <td><?php echo htmlspecialchars($promo['created_by_name']); ?></td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <a href="manage-promocodes.php?edit=<?php echo $promo['id']; ?>" class="btn btn-sm btn-edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form action="manage-promocodes.php" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this promo code?');">
+                                                <input type="hidden" name="promo_id" value="<?php echo $promo['id']; ?>">
+                                                <button type="submit" name="delete_promo" class="btn btn-sm btn-delete">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endwhile; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <style>
-/* Promo Code Management Styles */
-.promo-form {
-    max-width: 800px;
-    margin: 0 auto;
+:root {
+    --primary-color: #042167;
+    --secondary-color: #858796;
+    --success-color: #1cc88a;
+    --danger-color: #e74a3b;
+    --info-color: #36b9cc;
+    --light-color: #f8f9fc;
+    --dark-color: #5a5c69;
+    --border-color: #e3e6f0;
+    --warning-color: #f6c23e;
+}
+
+.content {
+    padding: 20px;
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.header-container h1 {
+    margin: 0;
+    color: var(--primary-color);
+    font-size: 1.8rem;
+}
+
+.header-container p {
+    margin: 5px 0 0;
+    color: var(--secondary-color);
+}
+
+.card-container {
+    margin-bottom: 20px;
+}
+
+.action-card {
+    background-color: white;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.action-card-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--light-color);
+}
+
+.action-card-header h5 {
+    margin: 0;
+    color: var(--primary-color);
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.action-card-body {
+    padding: 20px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--dark-color);
+    font-weight: 500;
+}
+
+.form-control {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    outline: none;
 }
 
 .checkbox-group {
@@ -332,6 +436,67 @@ $promo_codes_result = $conn->query($promo_codes_query);
     display: flex;
     align-items: center;
     gap: 5px;
+    color: var(--dark-color);
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 15px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.primary-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+}
+
+.secondary-btn {
+    background-color: var(--secondary-color);
+    color: white;
+    border: none;
+}
+
+.primary-btn:hover {
+    background-color: #031c56;
+}
+
+.secondary-btn:hover {
+    background-color: #717484;
+}
+
+.form-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th {
+    background-color: var(--light-color);
+    color: var(--primary-color);
+    font-weight: 600;
+    text-align: left;
+    padding: 12px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.table td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--dark-color);
 }
 
 .status-badge {
@@ -343,12 +508,12 @@ $promo_codes_result = $conn->query($promo_codes_query);
 
 .status-badge.active {
     background-color: rgba(28, 200, 138, 0.1);
-    color: #1cc88a;
+    color: var(--success-color);
 }
 
 .status-badge.inactive {
     background-color: rgba(231, 74, 59, 0.1);
-    color: #e74a3b;
+    color: var(--danger-color);
 }
 
 .action-buttons {
@@ -362,13 +527,13 @@ $promo_codes_result = $conn->query($promo_codes_query);
 }
 
 .btn-edit {
-    color: #4e73df;
+    color: var(--primary-color);
     background: rgba(78, 115, 223, 0.1);
     border: none;
 }
 
 .btn-delete {
-    color: #e74a3b;
+    color: var(--danger-color);
     background: rgba(231, 74, 59, 0.1);
     border: none;
 }
@@ -381,17 +546,45 @@ $promo_codes_result = $conn->query($promo_codes_query);
     background: rgba(231, 74, 59, 0.2);
 }
 
+.alert {
+    padding: 12px 20px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.alert-success {
+    background-color: rgba(28, 200, 138, 0.1);
+    color: var(--success-color);
+    border: 1px solid rgba(28, 200, 138, 0.2);
+}
+
+.alert-danger {
+    background-color: rgba(231, 74, 59, 0.1);
+    color: var(--danger-color);
+    border: 1px solid rgba(231, 74, 59, 0.2);
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+    }
+}
+
 /* DataTables customization */
 .dataTables_wrapper .dataTables_length select {
     padding: 5px;
     border-radius: 4px;
-    border: 1px solid #e3e6f0;
+    border: 1px solid var(--border-color);
 }
 
 .dataTables_wrapper .dataTables_filter input {
     padding: 5px 10px;
     border-radius: 4px;
-    border: 1px solid #e3e6f0;
+    border: 1px solid var(--border-color);
 }
 
 .dataTables_wrapper .dataTables_paginate .paginate_button {
@@ -401,7 +594,7 @@ $promo_codes_result = $conn->query($promo_codes_query);
 }
 
 .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-    background: #4e73df;
+    background: var(--primary-color);
     color: white !important;
     border: none;
 }
