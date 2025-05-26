@@ -119,8 +119,11 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
                     <span class="nav-item-text">All Consultants</span>
                 </a>
                 
+                <a href="manage-promocodes.php" class="nav-item <?php echo $current_page == 'manage-promocodes' ? 'active' : ''; ?>">
+                    <i class="fas fa-tags"></i>
+                    <span class="nav-item-text">Manage Promo Codes</span>
+                </a>
               
-           
                 <a href="../../logout.php" class="nav-item">
                     <i class="fas fa-sign-out-alt"></i>
                     <span class="nav-item-text">Logout</span>
