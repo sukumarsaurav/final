@@ -234,15 +234,15 @@ $docs_stmt->close();
     <div class="dashboard-header">
         <h1>Consultant Profile</h1>
         <div class="header-actions">
-            <a href="consultants.php" class="btn-link">
-                <i class="fas fa-arrow-left"></i> Back to List
-            </a>
-            
             <?php if (!$consultant['is_verified']): ?>
-            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#verifyModal">
+            <button type="button" class="btn btn-success" onclick="verifyConsultant(<?php echo $consultant_id; ?>, <?php echo count($documents); ?>)">
                 <i class="fas fa-check-circle"></i> Verify Consultant
             </button>
             <?php endif; ?>
+            
+            <a href="consultants.php" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
         </div>
     </div>
 
@@ -946,6 +946,68 @@ include('includes/footer.php');
     from { opacity: 0; }
     to { opacity: 1; }
 }
+
+/* Header Actions Style */
+.header-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.header-actions .btn {
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* SweetAlert Custom Styles */
+.custom-swal-container {
+    z-index: 9999;
+}
+
+.custom-swal-popup {
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.custom-swal-header {
+    border-bottom: none;
+}
+
+.custom-swal-title {
+    color: var(--primary-color);
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.custom-swal-content {
+    color: var(--dark-color);
+    font-size: 1rem;
+    padding: 10px 0;
+}
+
+.custom-swal-actions {
+    justify-content: center;
+    gap: 10px;
+    padding-top: 20px;
+}
+
+.custom-swal-confirm {
+    background-color: var(--primary-color) !important;
+    padding: 8px 25px !important;
+    font-size: 14px !important;
+}
+
+.custom-swal-cancel {
+    background-color: var(--secondary-color) !important;
+    padding: 8px 25px !important;
+    font-size: 14px !important;
+}
 </style>
 
 <script>
@@ -1003,4 +1065,42 @@ document.addEventListener('DOMContentLoaded', function() {
     // Fallback: Show content if loading takes too long
     setTimeout(showContent, 3000);
 });
+
+function verifyConsultant(consultantId, documentCount) {
+    if (documentCount === 0) {
+        Swal.fire({
+            title: 'No Documents Uploaded',
+            text: 'This consultant has not uploaded any verification documents. Do you still want to verify?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#042167',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, Verify',
+            cancelButtonText: 'Cancel',
+            customClass: {
+                container: 'custom-swal-container',
+                popup: 'custom-swal-popup',
+                header: 'custom-swal-header',
+                title: 'custom-swal-title',
+                closeButton: 'custom-swal-close',
+                content: 'custom-swal-content',
+                actions: 'custom-swal-actions',
+                confirmButton: 'custom-swal-confirm',
+                cancelButton: 'custom-swal-cancel'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('verifyForm').submit();
+            }
+        });
+    } else {
+        document.getElementById('verifyForm').submit();
+    }
+}
 </script>
+
+<!-- Add hidden form for verification -->
+<form id="verifyForm" action="" method="POST" style="display: none;">
+    <input type="hidden" name="verify_consultant" value="1">
+    <input type="hidden" name="consultant_id" value="<?php echo $consultant_id; ?>">
+</form>

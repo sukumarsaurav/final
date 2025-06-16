@@ -53,6 +53,9 @@ $query = "SELECT
     c.company_name,
     COALESCE(cp.is_verified, 0) AS is_verified,
     cp.verified_at,
+    mp.name AS membership_plan,
+    mp.billing_cycle,
+    s.end_date AS renewal_date,
     CONCAT(a.first_name, ' ', a.last_name) AS verified_by_name
 FROM 
     users u
@@ -62,6 +65,10 @@ LEFT JOIN
     consultant_profiles cp ON u.id = cp.consultant_id
 LEFT JOIN 
     users a ON cp.verified_by = a.id
+LEFT JOIN 
+    membership_plans mp ON c.membership_plan_id = mp.id
+LEFT JOIN 
+    subscriptions s ON u.id = s.user_id AND s.status = 'active'
 WHERE 
     u.user_type = 'consultant' 
     AND u.deleted_at IS NULL";
@@ -203,6 +210,8 @@ foreach ($consultants as $consultant) {
                         <th>Contact</th>
                         <th>Status</th>
                         <th>Verification</th>
+                        <th>Membership</th>
+                        <th>Renewal Date</th>
                         <th>Joined</th>
                         <th>Actions</th>
                     </tr>
@@ -210,7 +219,7 @@ foreach ($consultants as $consultant) {
                 <tbody>
                     <?php if (empty($consultants)): ?>
                         <tr>
-                            <td colspan="7" class="text-center">No consultants found.</td>
+                            <td colspan="9" class="text-center">No consultants found.</td>
                         </tr>
                     <?php else: ?>
                         <?php foreach ($consultants as $consultant): ?>
@@ -237,6 +246,40 @@ foreach ($consultants as $consultant) {
                                         <small><?php echo date('M d, Y', strtotime($consultant['verified_at'])); ?></small>
                                     <?php else: ?>
                                         <span class="badge bg-warning">Unverified</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <?php if (!empty($consultant['membership_plan'])): ?>
+                                        <span class="badge bg-primary">
+                                            <?php echo htmlspecialchars($consultant['membership_plan']); ?>
+                                        </span>
+                                        <br>
+                                        <small class="text-muted">
+                                            <?php echo ucfirst($consultant['billing_cycle']); ?> Plan
+                                        </small>
+                                    <?php else: ?>
+                                        <span class="badge bg-secondary">No Plan</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <?php if (!empty($consultant['renewal_date'])): ?>
+                                        <?php 
+                                            $renewal_date = strtotime($consultant['renewal_date']);
+                                            $today = time();
+                                            $days_until_renewal = ceil(($renewal_date - $today) / (60 * 60 * 24));
+                                            $badge_class = $days_until_renewal <= 7 ? 'bg-warning' : 'bg-info';
+                                        ?>
+                                        <span class="badge <?php echo $badge_class; ?>">
+                                            <?php echo date('M d, Y', $renewal_date); ?>
+                                        </span>
+                                        <?php if ($days_until_renewal > 0): ?>
+                                            <br>
+                                            <small class="text-muted">
+                                                <?php echo $days_until_renewal; ?> days left
+                                            </small>
+                                        <?php endif; ?>
+                                    <?php else: ?>
+                                        <span class="badge bg-secondary">Not Available</span>
                                     <?php endif; ?>
                                 </td>
                                 <td><?php echo date('M d, Y', strtotime($consultant['created_at'])); ?></td>
@@ -396,6 +439,7 @@ foreach ($consultants as $consultant) {
 }
 
 .form-select {
+    width: 150px;
     padding: 6px 12px;
     border: 1px solid var(--border-color);
     border-radius: 4px;
