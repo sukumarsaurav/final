@@ -159,13 +159,13 @@ $promo_codes_result = $conn->query($promo_codes_query);
                         <div class="form-group">
                             <label for="code">Promo Code*</label>
                             <input type="text" id="code" name="code" class="form-control" required 
-                                   value="<?php echo $edit_promo ? htmlspecialchars($edit_promo['code']) : ''; ?>"
+                                   value="<?php echo $edit_promo ? htmlspecialchars((string)($edit_promo['code'] ?? '')) : ''; ?>"
                                    <?php echo $edit_id ? 'readonly' : ''; ?>>
                         </div>
                         <div class="form-group">
                             <label for="description">Description*</label>
                             <input type="text" id="description" name="description" class="form-control" required
-                                   value="<?php echo $edit_promo ? htmlspecialchars($edit_promo['description']) : ''; ?>">
+                                   value="<?php echo $edit_promo ? htmlspecialchars((string)($edit_promo['description'] ?? '')) : ''; ?>">
                         </div>
                     </div>
                     
@@ -180,7 +180,7 @@ $promo_codes_result = $conn->query($promo_codes_query);
                         <div class="form-group">
                             <label for="discount_value">Discount Value*</label>
                             <input type="number" id="discount_value" name="discount_value" class="form-control" required step="0.01" min="0"
-                                   value="<?php echo $edit_promo ? htmlspecialchars($edit_promo['discount_value']) : ''; ?>">
+                                   value="<?php echo $edit_promo ? htmlspecialchars((string)($edit_promo['discount_value'] ?? '')) : ''; ?>">
                         </div>
                     </div>
                     
@@ -188,12 +188,12 @@ $promo_codes_result = $conn->query($promo_codes_query);
                         <div class="form-group">
                             <label for="start_date">Start Date*</label>
                             <input type="datetime-local" id="start_date" name="start_date" class="form-control" required
-                                   value="<?php echo $edit_promo ? date('Y-m-d\TH:i', strtotime($edit_promo['start_date'])) : ''; ?>">
+                                   value="<?php echo $edit_promo && !empty($edit_promo['start_date']) ? date('Y-m-d\TH:i', strtotime($edit_promo['start_date'])) : ''; ?>">
                         </div>
                         <div class="form-group">
                             <label for="end_date">End Date (Optional)</label>
                             <input type="datetime-local" id="end_date" name="end_date" class="form-control"
-                                   value="<?php echo ($edit_promo && $edit_promo['end_date']) ? date('Y-m-d\TH:i', strtotime($edit_promo['end_date'])) : ''; ?>">
+                                   value="<?php echo ($edit_promo && !empty($edit_promo['end_date'])) ? date('Y-m-d\TH:i', strtotime($edit_promo['end_date'])) : ''; ?>">
                         </div>
                     </div>
                     
@@ -201,12 +201,12 @@ $promo_codes_result = $conn->query($promo_codes_query);
                         <div class="form-group">
                             <label for="max_uses">Maximum Uses (Optional)</label>
                             <input type="number" id="max_uses" name="max_uses" class="form-control" min="1"
-                                   value="<?php echo $edit_promo ? htmlspecialchars($edit_promo['max_uses']) : ''; ?>">
+                                   value="<?php echo $edit_promo && !empty($edit_promo['max_uses']) ? htmlspecialchars((string)$edit_promo['max_uses']) : ''; ?>">
                         </div>
                         <div class="form-group">
                             <label for="min_plan_price">Minimum Plan Price (Optional)</label>
                             <input type="number" id="min_plan_price" name="min_plan_price" class="form-control" step="0.01" min="0"
-                                   value="<?php echo $edit_promo ? htmlspecialchars($edit_promo['min_plan_price']) : ''; ?>">
+                                   value="<?php echo $edit_promo && !empty($edit_promo['min_plan_price']) ? htmlspecialchars((string)$edit_promo['min_plan_price']) : ''; ?>">
                         </div>
                     </div>
                     
@@ -216,7 +216,7 @@ $promo_codes_result = $conn->query($promo_codes_query);
                             <?php foreach ($membership_plans as $plan): ?>
                                 <label class="checkbox-inline">
                                     <input type="checkbox" name="applicable_plans[]" value="<?php echo $plan['id']; ?>"
-                                           <?php echo ($edit_promo && strpos($edit_promo['applicable_plans'], $plan['id']) !== false) ? 'checked' : ''; ?>>
+                                           <?php echo ($edit_promo && !empty($edit_promo['applicable_plans']) && strpos($edit_promo['applicable_plans'], (string)$plan['id']) !== false) ? 'checked' : ''; ?>>
                                     <?php echo htmlspecialchars($plan['name']); ?> ($<?php echo number_format($plan['price'], 2); ?>)
                                 </label>
                             <?php endforeach; ?>
@@ -269,31 +269,33 @@ $promo_codes_result = $conn->query($promo_codes_query);
                         <tbody>
                             <?php while ($promo = $promo_codes_result->fetch_assoc()): ?>
                                 <tr>
-                                    <td><?php echo htmlspecialchars($promo['code']); ?></td>
-                                    <td><?php echo htmlspecialchars($promo['description']); ?></td>
+                                    <td><?php echo htmlspecialchars($promo['code'] ?? ''); ?></td>
+                                    <td><?php echo htmlspecialchars($promo['description'] ?? ''); ?></td>
                                     <td>
                                         <?php if ($promo['discount_type'] === 'percentage'): ?>
-                                            <?php echo number_format($promo['discount_value'], 0); ?>%
+                                            <?php echo isset($promo['discount_value']) ? number_format((float)$promo['discount_value'], 0) : '0'; ?>%
                                         <?php else: ?>
-                                            $<?php echo number_format($promo['discount_value'], 2); ?>
+                                            $<?php echo isset($promo['discount_value']) ? number_format((float)$promo['discount_value'], 2) : '0.00'; ?>
                                         <?php endif; ?>
                                     </td>
                                     <td>
                                         <?php
-                                        echo date('M j, Y', strtotime($promo['start_date']));
-                                        if ($promo['end_date']) {
-                                            echo ' - ' . date('M j, Y', strtotime($promo['end_date']));
+                                        if (!empty($promo['start_date'])) {
+                                            echo date('M j, Y', strtotime($promo['start_date']));
+                                            if (!empty($promo['end_date'])) {
+                                                echo ' - ' . date('M j, Y', strtotime($promo['end_date']));
+                                            }
                                         }
                                         ?>
                                     </td>
                                     <td>
                                         <?php
-                                        echo number_format($promo['total_uses']);
-                                        if ($promo['max_uses']) {
-                                            echo ' / ' . number_format($promo['max_uses']);
+                                        echo isset($promo['total_uses']) ? number_format((int)$promo['total_uses']) : '0';
+                                        if (!empty($promo['max_uses'])) {
+                                            echo ' / ' . number_format((int)$promo['max_uses']);
                                         }
-                                        if ($promo['total_discount_amount']) {
-                                            echo '<br><small>Total savings: $' . number_format($promo['total_discount_amount'], 2) . '</small>';
+                                        if (isset($promo['total_discount_amount']) && $promo['total_discount_amount'] !== null) {
+                                            echo '<br><small>Total savings: $' . number_format((float)$promo['total_discount_amount'], 2) . '</small>';
                                         }
                                         ?>
                                     </td>
@@ -302,7 +304,7 @@ $promo_codes_result = $conn->query($promo_codes_query);
                                             <?php echo $promo['is_active'] ? 'Active' : 'Inactive'; ?>
                                         </span>
                                     </td>
-                                    <td><?php echo htmlspecialchars($promo['created_by_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($promo['created_by_name'] ?? 'Unknown'); ?></td>
                                     <td>
                                         <div class="action-buttons">
                                             <a href="manage-promocodes.php?edit=<?php echo $promo['id']; ?>" class="btn btn-sm btn-edit">

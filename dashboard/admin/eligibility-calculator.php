@@ -18,7 +18,14 @@ $completed_count = $stmt->get_result()->fetch_assoc()['count'];
 $stmt->close();
 ?>
 
-<div class="content">
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner">
+        <div class="spinner"></div>
+     
+    </div>
+</div>
+
+<div class="content" id="pageContent" style="display: none;">
     <div class="header-container">
         <div>
             <h1><i class="fas fa-sitemap"></i> Eligibility Checker Management</h1>
@@ -291,127 +298,111 @@ $stmt->close();
     }
 }
 
-/* Add a loading indicator */
+/* Loading Animation Styles */
 .loading-overlay {
-    display: none;
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.8);
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.9);
+    display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
+    z-index: 9999;
 }
 
 .loading-spinner {
-    border: 4px solid #f3f3f3;
+    text-align: center;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid var(--light-color);
     border-top: 4px solid var(--primary-color);
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
     animation: spin 1s linear infinite;
+    margin: 0 auto 15px;
+}
+
+.loading-spinner p {
+    color: var(--primary-color);
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0;
 }
 
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+/* Fade In Animation */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const container = document.getElementById('decision-tree-container');
+    // Show loading overlay
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const pageContent = document.getElementById('pageContent');
     
-    // Add loading overlay
-    const loadingOverlay = document.createElement('div');
-    loadingOverlay.className = 'loading-overlay';
-    loadingOverlay.innerHTML = '<div class="loading-spinner"></div>';
-    container.parentNode.appendChild(loadingOverlay);
-    
-    // Show loading
-    loadingOverlay.style.display = 'flex';
-    
-    // Network visualization options
-    const options = {
-        layout: {
-            hierarchical: {
-                direction: 'UD',
-                sortMethod: 'directed',
-                levelSeparation: 150,
-                nodeSpacing: 200,
-                treeSpacing: 200
+    // Function to check if all images are loaded
+    function areImagesLoaded() {
+        const images = document.getElementsByTagName('img');
+        for (let img of images) {
+            if (!img.complete) {
+                return false;
             }
-        },
-        nodes: {
-            shape: 'box',
-            font: {
-                size: 14,
-                face: 'Arial'
-            },
-            margin: 10,
-            shadow: true,
-            borderWidth: 2
-        },
-        edges: {
-            smooth: {
-                type: 'cubicBezier',
-                forceDirection: 'vertical'
-            },
-            width: 2
-        },
-        physics: {
-            enabled: false
-        },
-        interaction: {
-            dragNodes: true,
-            dragView: true,
-            zoomView: true,
-            hover: true
+        }
+        return true;
+    }
+    
+    // Function to show the page content
+    function showContent() {
+        loadingOverlay.style.display = 'none';
+        pageContent.style.display = 'block';
+        pageContent.classList.add('fade-in');
+    }
+    
+    // Check if all assets are loaded
+    window.onload = function() {
+        if (areImagesLoaded()) {
+            // Add a small delay for smoother transition
+            setTimeout(showContent, 500);
+        } else {
+            // If images are not loaded, wait for them
+            const images = document.getElementsByTagName('img');
+            let loadedImages = 0;
+            
+            function imageLoaded() {
+                loadedImages++;
+                if (loadedImages === images.length) {
+                    setTimeout(showContent, 500);
+                }
+            }
+            
+            for (let img of images) {
+                if (img.complete) {
+                    imageLoaded();
+                } else {
+                    img.addEventListener('load', imageLoaded);
+                    img.addEventListener('error', imageLoaded); // Handle error cases
+                }
+            }
         }
     };
-
-    // Fetch tree data
-    fetch('ajax/get_decision_tree.php')
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                throw new Error(data.message || 'Error loading decision tree data');
-            }
-            
-            // Create the network with proper data structure
-            const network = new vis.Network(container, {
-                nodes: new vis.DataSet(data.nodes),
-                edges: new vis.DataSet(data.edges)
-            }, options);
-            
-            // Add event listeners
-            network.on('click', function(params) {
-                if (params.nodes.length > 0) {
-                    const nodeId = params.nodes[0];
-                    console.log('Clicked node:', nodeId);
-                }
-            });
-            
-            // Center the network once it's stabilized
-            network.once('stabilized', function() {
-                network.fit();
-            });
-            
-            // Hide loading overlay when done
-            loadingOverlay.style.display = 'none';
-        })
-        .catch(error => {
-            console.error('Error fetching tree data:', error);
-            container.innerHTML = `
-                <div style="text-align: center; padding: 20px; color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px;">
-                    <h4>Error Loading Decision Tree</h4>
-                    <p>${error.message || 'Failed to load the decision tree visualization. Please try again later.'}</p>
-                </div>
-            `;
-            loadingOverlay.style.display = 'none';
-        });
+    
+    // Fallback: Show content if loading takes too long
+    setTimeout(showContent, 3000);
 });
 </script>
 

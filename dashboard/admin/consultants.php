@@ -102,7 +102,13 @@ foreach ($consultants as $consultant) {
 }
 ?>
 
-<div class="content">
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner">
+        <div class="spinner"></div>
+    </div>
+</div>
+
+<div class="content" id="pageContent" style="display: none;">
     <?php if (!empty($action_message)): ?>
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         <?php echo $action_message; ?>
@@ -481,24 +487,127 @@ foreach ($consultants as $consultant) {
         gap: 5px;
     }
 }
+
+/* Loading Animation Styles */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.loading-spinner {
+    text-align: center;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid var(--light-color);
+    border-top: 4px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px;
+}
+
+.loading-spinner p {
+    color: var(--primary-color);
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Fade In Animation */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize DataTable with consistent styling
-    if ($.fn.DataTable) {
-        $('.dashboard-table').DataTable({
-            "order": [[5, "desc"]], // Sort by joined date by default
-            "pageLength": 25,
-            "language": {
-                "emptyTable": "No consultants found"
-            },
-            "dom": '<"table-responsive"t>p',
-            "drawCallback": function() {
-                // Add any custom styling after table draw
+    // Show loading overlay
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const pageContent = document.getElementById('pageContent');
+    
+    // Function to check if all images are loaded
+    function areImagesLoaded() {
+        const images = document.getElementsByTagName('img');
+        for (let img of images) {
+            if (!img.complete) {
+                return false;
             }
-        });
+        }
+        return true;
     }
+    
+    // Function to show the page content
+    function showContent() {
+        loadingOverlay.style.display = 'none';
+        pageContent.style.display = 'block';
+        pageContent.classList.add('fade-in');
+        
+        // Initialize DataTable after content is shown
+        if ($.fn.DataTable) {
+            $('.dashboard-table').DataTable({
+                "order": [[5, "desc"]], // Sort by joined date by default
+                "pageLength": 25,
+                "language": {
+                    "emptyTable": "No consultants found"
+                },
+                "dom": '<"table-responsive"t>p',
+                "drawCallback": function() {
+                    // Add any custom styling after table draw
+                }
+            });
+        }
+    }
+    
+    // Check if all assets are loaded
+    window.onload = function() {
+        if (areImagesLoaded()) {
+            // Add a small delay for smoother transition
+            setTimeout(showContent, 500);
+        } else {
+            // If images are not loaded, wait for them
+            const images = document.getElementsByTagName('img');
+            let loadedImages = 0;
+            
+            function imageLoaded() {
+                loadedImages++;
+                if (loadedImages === images.length) {
+                    setTimeout(showContent, 500);
+                }
+            }
+            
+            for (let img of images) {
+                if (img.complete) {
+                    imageLoaded();
+                } else {
+                    img.addEventListener('load', imageLoaded);
+                    img.addEventListener('error', imageLoaded); // Handle error cases
+                }
+            }
+        }
+    };
+    
+    // Fallback: Show content if loading takes too long
+    setTimeout(showContent, 3000);
 });
 </script>
 

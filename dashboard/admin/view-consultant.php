@@ -171,7 +171,9 @@ $booking_stats = $bookings_result->fetch_assoc();
 $bookings_stmt->close();
 
 // Format the average rating
-$average_rating = $booking_stats['average_rating'] ? number_format($booking_stats['average_rating'], 1) : 'N/A';
+$average_rating = isset($booking_stats['average_rating']) && $booking_stats['average_rating'] !== null 
+    ? number_format((float)$booking_stats['average_rating'], 1) 
+    : 'N/A';
 
 // Get profile image
 $profile_img = '../../assets/images/default-profile.jpg';
@@ -206,7 +208,14 @@ if ($docs_result->num_rows > 0) {
 $docs_stmt->close();
 ?>
 
-<div class="content">
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner">
+        <div class="spinner"></div>
+        
+    </div>
+</div>
+
+<div class="content" id="pageContent" style="display: none;">
     <?php if (!empty($action_message)): ?>
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         <?php echo $action_message; ?>
@@ -245,7 +254,7 @@ $docs_stmt->close();
             </div>
             <div class="stat-info">
                 <h3>Total Bookings</h3>
-                <div class="stat-number"><?php echo number_format($booking_stats['total_bookings']); ?></div>
+                <div class="stat-number"><?php echo isset($booking_stats['total_bookings']) ? number_format((int)$booking_stats['total_bookings']) : '0'; ?></div>
             </div>
         </div>
 
@@ -255,7 +264,7 @@ $docs_stmt->close();
             </div>
             <div class="stat-info">
                 <h3>Completed Sessions</h3>
-                <div class="stat-number"><?php echo number_format($booking_stats['completed_bookings']); ?></div>
+                <div class="stat-number"><?php echo isset($booking_stats['completed_bookings']) ? number_format((int)$booking_stats['completed_bookings']) : '0'; ?></div>
             </div>
         </div>
 
@@ -275,7 +284,7 @@ $docs_stmt->close();
             </div>
             <div class="stat-info">
                 <h3>Total Reviews</h3>
-                <div class="stat-number"><?php echo number_format($booking_stats['total_reviews']); ?></div>
+                <div class="stat-number"><?php echo isset($booking_stats['total_reviews']) ? number_format((int)$booking_stats['total_reviews']) : '0'; ?></div>
             </div>
         </div>
     </div>
@@ -296,8 +305,14 @@ $docs_stmt->close();
             </div>
             <div class="profile-content">
                 <div class="text-center mb-4">
-                    <img class="img-fluid rounded-circle mb-2" style="width: 150px; height: 150px; object-fit: cover;" 
-                         src="<?php echo $profile_img; ?>" alt="Profile Image">
+                    <?php if ($profile_img !== '../../assets/images/default-profile.jpg'): ?>
+                        <img class="img-fluid rounded-circle mb-2" style="width: 150px; height: 150px; object-fit: cover;" 
+                             src="<?php echo $profile_img; ?>" alt="Profile Image">
+                    <?php else: ?>
+                        <div class="default-profile-icon mb-2">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                    <?php endif; ?>
                     <h5 class="mb-0"><?php echo htmlspecialchars($consultant['first_name'] . ' ' . $consultant['last_name']); ?></h5>
                     <p class="text-muted"><?php echo htmlspecialchars($consultant['company_name']); ?></p>
                     
@@ -664,42 +679,60 @@ include('includes/footer.php');
     line-height: 1.5;
 }
 
-/* Badge Styles */
-.badge {
-    display: inline-block;
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 500;
+/* Profile Image */
+.profile-content .img-fluid {
+    border: 3px solid var(--light-color);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Button Styles */
-.btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 8px 16px;
-    border-radius: 4px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
-    transition: background-color 0.2s;
+.profile-content .text-muted {
+    color: var(--secondary-color) !important;
 }
 
-.btn-sm {
-    padding: 4px 8px;
+/* Contact Information */
+.profile-content .mb-3 {
+    background-color: var(--light-color);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px !important;
+}
+
+.profile-content .mb-3 i {
+    width: 24px;
+    text-align: center;
+}
+
+/* Social Media Links */
+.profile-content .btn-outline-primary,
+.profile-content .btn-outline-info {
+    border-width: 2px;
+    transition: all 0.3s ease;
+}
+
+.profile-content .btn-outline-primary:hover,
+.profile-content .btn-outline-info:hover {
+    transform: translateY(-2px);
+}
+
+/* Account Information */
+.profile-content .badge {
     font-size: 0.8rem;
+    padding: 5px 10px;
 }
 
-/* Table Styles */
-.table {
-    width: 100%;
-    border-collapse: collapse;
+/* Verification Documents */
+.table-responsive {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 20px;
 }
 
-.table th {
+.table-responsive .table {
+    margin-bottom: 0;
+}
+
+.table-responsive .table th {
     background-color: var(--light-color);
     color: var(--primary-color);
     font-weight: 600;
@@ -708,50 +741,266 @@ include('includes/footer.php');
     text-align: left;
 }
 
-.table td {
+.table-responsive .table td {
     padding: 12px;
     border-top: 1px solid var(--border-color);
     font-size: 0.9rem;
     color: var(--dark-color);
+    vertical-align: middle;
 }
 
-/* Responsive Design */
-@media (max-width: 992px) {
-    .stats-container {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .dashboard-grid {
-        grid-template-columns: 1fr;
-    }
+/* Document Modal */
+.modal-content {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
+.modal-header {
+    background-color: var(--light-color);
+    border-bottom: 1px solid var(--border-color);
+    padding: 15px 20px;
+}
+
+.modal-title {
+    color: var(--primary-color);
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-footer {
+    border-top: 1px solid var(--border-color);
+    padding: 15px 20px;
+}
+
+/* Professional Information */
+.professional-info {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+}
+
+.professional-info .mb-4 {
+    margin-bottom: 25px !important;
+}
+
+.professional-info h6 {
+    color: var(--primary-color);
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--light-color);
+}
+
+.professional-info p {
+    color: var(--dark-color);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 0;
+}
+
+/* Document Preview */
+.ratio-16x9 {
+    background-color: var(--light-color);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.ratio-16x9 iframe {
+    border: none;
+}
+
+/* Alert Messages */
+.alert {
+    border: none;
+    border-radius: 8px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.alert-success {
+    background-color: rgba(28, 200, 138, 0.1);
+    color: var(--success-color);
+}
+
+.alert-danger {
+    background-color: rgba(231, 74, 59, 0.1);
+    color: var(--danger-color);
+}
+
+/* Action Buttons */
+.btn-group {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-group .btn {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+}
+
+.btn-group .btn i {
+    font-size: 0.9rem;
+}
+
+/* Responsive Adjustments */
 @media (max-width: 768px) {
-    .stats-container {
-        grid-template-columns: 1fr;
+    .profile-content .mb-3 {
+        padding: 12px;
     }
     
-    .section-header {
-        flex-direction: column;
-        gap: 15px;
+    .professional-info {
+        padding: 15px;
+    }
+    
+    .table-responsive {
+        padding: 15px;
+    }
+    
+    .modal-dialog {
+        margin: 10px;
     }
 }
 
 @media (max-width: 576px) {
-    .stat-card {
+    .btn-group {
         flex-direction: column;
-        text-align: center;
     }
     
-    .dashboard-header {
-        flex-direction: column;
-        gap: 10px;
-        text-align: center;
-    }
-    
-    .header-actions {
-        flex-direction: column;
+    .btn-group .btn {
         width: 100%;
+        justify-content: center;
     }
 }
+
+/* Default Profile Icon */
+.default-profile-icon {
+    width: 150px;
+    height: 150px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--light-color);
+    border-radius: 50%;
+    color: var(--primary-color);
+}
+
+.default-profile-icon i {
+    font-size: 100px;
+}
+
+/* Loading Animation Styles */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.loading-spinner {
+    text-align: center;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid var(--light-color);
+    border-top: 4px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px;
+}
+
+.loading-spinner p {
+    color: var(--primary-color);
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Fade In Animation */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Show loading overlay
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const pageContent = document.getElementById('pageContent');
+    
+    // Function to check if all images are loaded
+    function areImagesLoaded() {
+        const images = document.getElementsByTagName('img');
+        for (let img of images) {
+            if (!img.complete) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    // Function to show the page content
+    function showContent() {
+        loadingOverlay.style.display = 'none';
+        pageContent.style.display = 'block';
+        pageContent.classList.add('fade-in');
+    }
+    
+    // Check if all assets are loaded
+    window.onload = function() {
+        if (areImagesLoaded()) {
+            // Add a small delay for smoother transition
+            setTimeout(showContent, 500);
+        } else {
+            // If images are not loaded, wait for them
+            const images = document.getElementsByTagName('img');
+            let loadedImages = 0;
+            
+            function imageLoaded() {
+                loadedImages++;
+                if (loadedImages === images.length) {
+                    setTimeout(showContent, 500);
+                }
+            }
+            
+            for (let img of images) {
+                if (img.complete) {
+                    imageLoaded();
+                } else {
+                    img.addEventListener('load', imageLoaded);
+                    img.addEventListener('error', imageLoaded); // Handle error cases
+                }
+            }
+        }
+    };
+    
+    // Fallback: Show content if loading takes too long
+    setTimeout(showContent, 3000);
+});
+</script>
