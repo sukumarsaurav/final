@@ -85,7 +85,7 @@ $stmt->close();
             </div>
             <div class="action-card-body">
                 <p>View and analyze user assessment results.</p>
-                <a href="assessment_results.php" class="btn primary-btn">View Results</a>
+                <a href="assessment-results.php" class="btn primary-btn">View Results</a>
             </div>
         </div>
     </div>
