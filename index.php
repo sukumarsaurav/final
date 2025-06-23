@@ -10,10 +10,10 @@ include('includes/header.php');
 <section class="hero">
     <div class="container">
         <div class="hero-content text-center">
-            <h1 class="hero-title">Immigration Simplified For
-                <div class="animated-text-wrapper"></div>
+            <h1 class="hero-title">Visafy, Your AI-fied Immigration Partner 
+               
             </h1>
-            <p class="hero-subtitle">Your trusted partner for immigration services</p>
+            <p class="hero-subtitle">An Immigration Marketplace serving both Immigration Professionals & Visa seekers across the globe</p>
             <div class="hero-buttons">
                 <a href="eligibility-test.php" class="btn btn-primary">Check Eligibility</a>
                 <a href="book-service.php" class="btn btn-secondary">Get Consultation</a>
@@ -26,8 +26,7 @@ include('includes/header.php');
 <section class="section services">
     <div class="container">
         <h2 class="section-title" data-aos="fade-up">Our Platform</h2>
-        <p class="section-subtitle" data-aos="fade-up" data-aos-delay="100">A comprehensive immigration platform
-            connecting applicants with trusted consultants</p>
+        <p class="section-subtitle" data-aos="fade-up" data-aos-delay="100">Visafy is world's first Immigration Marketplace connecting Immigration Professionals and Applicants in one unified platform. For Immigration Professionals, it is a AI powered CRM Platform. For Applicants, it helps you at every stage of your Visa & Immigration journey with access to free Eligibility Checks, DIY tools & access to Professional assistance.</p>
 
         <div class="services-grid">
             <!-- For Applicants -->
@@ -548,7 +547,7 @@ include('includes/header.php');
     font-size: 1rem;
     color: var(--text-muted);
     text-align: center;
-    max-width: 600px;
+    max-width: 900px;
     margin: 0 auto 3rem;
 }
 
@@ -821,91 +820,8 @@ include('includes/header.php');
         font-size: 1.25rem;
     }
 }
-
-
-
-
-
-
 </style>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const visaTypes = [
-        'Study Permits',
-        'Work Permits',
-        'Express Entry',
-        'Provincial Nominee',
-        'Family Sponsorship',
-        'Super Visa',
-        'Visitor Visa'
-    ];
 
-    const wrapper = document.querySelector('.animated-text-wrapper');
-    let currentIndex = 0;
-    let nextIndex = 1;
-
-    // Create text elements
-    const currentText = document.createElement('div');
-    const nextText = document.createElement('div');
-    currentText.className = 'animated-text current';
-    nextText.className = 'animated-text next';
-    wrapper.appendChild(currentText);
-    wrapper.appendChild(nextText);
-
-    function updateText() {
-        // Set text content
-        currentText.textContent = visaTypes[currentIndex];
-        nextText.textContent = visaTypes[nextIndex];
-
-        // Start animation
-        currentText.classList.add('exiting');
-        currentText.classList.remove('current');
-
-        nextText.classList.add('current');
-        nextText.classList.remove('next');
-
-        // After animation completes
-        setTimeout(() => {
-            // Reset the exiting text for next animation
-            currentText.classList.remove('exiting');
-            currentText.classList.add('next');
-
-            // Update indices
-            currentIndex = nextIndex;
-            nextIndex = (nextIndex + 1) % visaTypes.length;
-
-            // Prepare elements for next animation
-            currentText.style.transition = 'none';
-            currentText.style.transform = 'translateY(100%)';
-
-            // Force reflow
-            currentText.offsetHeight;
-
-            // Re-enable transitions
-            currentText.style.transition = '';
-
-            // Swap elements
-            [currentText, nextText] = [nextText, currentText];
-        }, 500);
-    }
-
-    // Initial text setup
-    currentText.textContent = visaTypes[0];
-    nextText.textContent = visaTypes[1];
-
-    // Start the animation loop
-    setInterval(updateText, 3000);
-
-    // Add AOS animation initialization if you're using AOS library
-    if (typeof AOS !== 'undefined') {
-        AOS.init({
-            duration: 800,
-            easing: 'ease-in-out',
-            once: true
-        });
-    }
-});
-</script>
 
 <?php include('includes/footer.php'); ?>
