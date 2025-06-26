@@ -34,23 +34,23 @@ include('includes/header.php');
                 <div class="service-icon">
                     <i class="fas fa-user-check"></i>
                 </div>
-                <h3>For Applicants</h3>
+                <h3>Applicants</h3>
                 <div class="service-features">
                     <div class="feature-item">
                         <i class="fas fa-search"></i>
-                        <span>Find & Compare Consultants</span>
+                        <span>Check Eligibility</span>
                     </div>
                     <div class="feature-item">
                         <i class="fas fa-star"></i>
-                        <span>Read Reviews & Ratings</span>
+                        <span>Get Professional Assistance</span>
                     </div>
                     <div class="feature-item">
                         <i class="fas fa-calendar-check"></i>
-                        <span>Book Consultations</span>
+                        <span>Engage with Immigration Professionals</span>
                     </div>
                     <div class="feature-item">
                         <i class="fas fa-tasks"></i>
-                        <span>Track Application Progress</span>
+                        <span>Browse thru reviews & ratings</span>
                     </div>
                 </div>
                 <a href="register.php?type=applicant" class="btn btn-primary">Get Started</a>
@@ -61,23 +61,27 @@ include('includes/header.php');
                 <div class="service-icon">
                     <i class="fas fa-building"></i>
                 </div>
-                <h3>For Consultants</h3>
+                <h3>Immigration Professionals</h3>
                 <div class="service-features">
                     <div class="feature-item">
                         <i class="fas fa-users"></i>
-                        <span>Manage Team & Tasks</span>
+                        <span>Full-fledged Practice Management system</span>
                     </div>
                     <div class="feature-item">
                         <i class="fas fa-calendar-alt"></i>
-                        <span>Handle Bookings</span>
+                        <span>Grow your reputation with verified reviews</span>
                     </div>
                     <div class="feature-item">
                         <i class="fas fa-file-alt"></i>
-                        <span>Track Applications</span>
+                        <span>Manage Clients, Cases, Staff in one place</span>
                     </div>
                     <div class="feature-item">
                         <i class="fas fa-robot"></i>
-                        <span>AI-Powered Assistance</span>
+                        <span>AI Powered Case Law & Compliance</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Stay Regulator Compliant & reduce Practice risks</span>
                     </div>
                 </div>
                 <a href="become-member.php" class="btn btn-primary">Join as Consultant</a>
