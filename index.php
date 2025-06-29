@@ -569,7 +569,7 @@ include('includes/header.php');
 
 @media (min-width: 1024px) {
     .services-grid {
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(3, 1fr);
     }
 }
 
