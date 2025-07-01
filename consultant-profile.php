@@ -66,7 +66,19 @@ include('includes/header.php');
     <div class="profile-banner-flex">
         <div class="profile-header-flex">
             <div class="header-profile-image-overlap">
-                <img src="<?php echo !empty($consultant['profile_image']) ? '/uploads/' . $consultant['profile_image'] : '/assets/images/default-profile.svg'; ?>"
+                <?php 
+                // Fix profile picture path - add 'uploads/' if not present
+                $profile_img = '/assets/images/default-profile.svg';
+                if (!empty($consultant['profile_picture'])) {
+                    $profile_picture = $consultant['profile_picture'];
+                    if (strpos($profile_picture, 'users/') === 0) {
+                        if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/uploads/' . $profile_picture)) {
+                            $profile_img = '/uploads/' . $profile_picture;
+                        }
+                    }
+                }
+                ?>
+                <img src="<?php echo htmlspecialchars($profile_img); ?>"
                     alt="<?php echo htmlspecialchars($consultant['first_name'] . ' ' . $consultant['last_name']); ?>">
                 <?php if ($consultant['is_verified']): ?>
                 <div class="verified-badge" title="Verified Consultant">
@@ -308,8 +320,7 @@ include('includes/header.php');
                     <form id="bookingForm" action="process-booking.php" method="POST">
                         <input type="hidden" name="consultant_id" value="<?php echo $consultant_id; ?>">
                         <?php if (!empty($consultant['organization_id'])): ?>
-                        <input type="hidden" name="organization_id"
-                            value="<?php echo $consultant['organization_id']; ?>">
+                        <input type="hidden" name="organization_id" value="<?php echo $consultant['organization_id']; ?>">
                         <?php endif; ?>
 
                         <!-- Service Selection -->

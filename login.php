@@ -99,6 +99,18 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
                                 $_SESSION["first_name"] = $first_name;
                                 $_SESSION["last_name"] = $last_name;
                                 $_SESSION["user_type"] = $user_type;
+                                
+                                // Fetch and set profile picture in session
+                                $profile_query = "SELECT profile_picture FROM users WHERE id = ?";
+                                $stmt_profile = mysqli_prepare($conn, $profile_query);
+                                mysqli_stmt_bind_param($stmt_profile, "i", $id);
+                                mysqli_stmt_execute($stmt_profile);
+                                mysqli_stmt_bind_result($stmt_profile, $profile_picture);
+                                if(mysqli_stmt_fetch($stmt_profile)) {
+                                    $_SESSION["profile_picture"] = $profile_picture;
+                                }
+                                mysqli_stmt_close($stmt_profile);
+                                
                                 $_SESSION["last_activity"] = time();
                                 $_SESSION["created_at"] = time();
                                 

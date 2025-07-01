@@ -18,12 +18,23 @@ if ($is_logged_in) {
     $profile_image = !empty($_SESSION['profile_picture']) ? $_SESSION['profile_picture'] : '';
     $user_id = $_SESSION['id'];
 
+    // Debug: Output session values
+    error_log('Session user_id: ' . print_r($user_id, true));
+    error_log('Session profile_picture: ' . print_r($profile_image, true));
+    echo '<!-- Session user_id: ' . htmlspecialchars(print_r($user_id, true)) . ' -->';
+    echo '<!-- Session profile_picture: ' . htmlspecialchars(print_r($profile_image, true)) . ' -->';
+
+    $found_profile_img = false;
+    $checked_paths = [];
+
     if (!empty($profile_image)) {
         // Check for new structure first (users/{user_id}/profile/...)
         if (strpos($profile_image, 'users/') === 0) {
             $profile_path = $_SERVER['DOCUMENT_ROOT'] . '/uploads/' . $profile_image;
+            $checked_paths[] = $profile_path;
             if (file_exists($profile_path)) {
                 $profile_img = '/uploads/' . $profile_image;
+                $found_profile_img = $profile_img;
             }
         } else {
             // Legacy structure
@@ -32,16 +43,37 @@ if ($is_logged_in) {
                 '/uploads/profile/' . $profile_image,
                 '/uploads/users/' . $user_id . '/profile/' . $profile_image
             ];
-            
             foreach ($legacy_paths as $path) {
-                if (file_exists($_SERVER['DOCUMENT_ROOT'] . $path)) {
+                $full_path = $_SERVER['DOCUMENT_ROOT'] . $path;
+                $checked_paths[] = $full_path;
+                if (file_exists($full_path)) {
                     $profile_img = $path;
+                    $found_profile_img = $profile_img;
                     break;
                 }
             }
         }
     }
+
+    // Debug: Output all checked paths and which one (if any) was found
+    error_log('Checked profile image paths: ' . print_r($checked_paths, true));
+    echo '<!-- Checked profile image paths: ' . htmlspecialchars(print_r($checked_paths, true)) . ' -->';
+    if ($found_profile_img) {
+        error_log('Profile image found at: ' . $found_profile_img);
+        echo '<!-- Profile image found at: ' . htmlspecialchars($found_profile_img) . ' -->';
+    } else {
+        error_log('No profile image found, using default.');
+        echo '<!-- No profile image found, using default. -->';
+    }
 }
+
+// Change this line
+error_log('Profile picture in session: ' . print_r($_SESSION['profile_picture'] ?? 'not set', true));
+
+// Remove or comment out these debug lines
+// echo '<!-- Profile picture in session: ' . htmlspecialchars(print_r($_SESSION['profile_picture'], true)) . ' -->';
+// echo '<!-- Checking file: ' . htmlspecialchars($_SERVER['DOCUMENT_ROOT'] . '/uploads/' . $_SESSION['profile_picture']) . ' -->';
+// echo '<!-- File exists: ' . (file_exists($_SERVER['DOCUMENT_ROOT'] . '/uploads/' . $_SESSION['profile_picture']) ? 'yes' : 'no') . ' -->';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -128,10 +160,12 @@ if ($is_logged_in) {
                 
                 <!-- Header Actions: Book Service Button or User Profile -->
                 <div class="header-actions">
-                    <!-- Book Service button - always visible -->
+                    <!-- Book Service button - only visible for non-logged in users -->
+                    <?php if(!$is_logged_in): ?>
                     <div class="consultation-btn">
                         <a href="/book-service.php" class="btn btn-primary">Book Service</a>
                     </div>
+                    <?php endif; ?>
                     
                     <?php if($is_logged_in): ?>
                     <!-- User is logged in - show profile dropdown -->
@@ -174,6 +208,10 @@ if ($is_logged_in) {
                                 <?php elseif($_SESSION["user_type"] == 'applicant'): ?>
                                 <a href="/dashboard/applicant/profile.php" class="dropdown-item">
                                     <i class="fas fa-user"></i> Profile
+                                </a>
+                                <!-- Add Book Service button only for applicant users -->
+                                <a href="/book-service.php" class="dropdown-item">
+                                    <i class="fas fa-calendar-check"></i> Book Service
                                 </a>
                                 <?php elseif($_SESSION["user_type"] == 'admin'): ?>
                                 <a href="/dashboard/admin/profile.php" class="dropdown-item">
