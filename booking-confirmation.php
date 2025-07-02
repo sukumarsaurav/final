@@ -5,8 +5,8 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // Include database connection
-require_once 'includes/config.php';
-require_once 'includes/db.php';
+require_once 'config/db_connect.php';
+
 
 // Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
@@ -50,33 +50,33 @@ $query = "SELECT
 FROM 
     bookings b
 JOIN 
-    booking_statuses bs ON b.status_id = bs.id
+    booking_statuses bs ON b.status_id = bs.id COLLATE utf8mb4_general_ci
 JOIN 
-    users client ON b.user_id = client.id
+    users client ON b.user_id = client.id COLLATE utf8mb4_general_ci
 JOIN 
-    users cons ON b.consultant_id = cons.id
+    users cons ON b.consultant_id = cons.id COLLATE utf8mb4_general_ci
 JOIN 
-    consultants c ON cons.id = c.user_id
+    consultants c ON cons.id = c.user_id COLLATE utf8mb4_general_ci
 JOIN 
-    visa_services vs ON b.visa_service_id = vs.visa_service_id
+    visa_services vs ON b.visa_service_id = vs.visa_service_id COLLATE utf8mb4_general_ci
 JOIN 
-    service_consultation_modes scm ON b.service_consultation_id = scm.service_consultation_id
+    service_consultation_modes scm ON b.service_consultation_id = scm.service_consultation_id COLLATE utf8mb4_general_ci
 JOIN 
-    consultation_modes cm ON scm.consultation_mode_id = cm.consultation_mode_id
+    consultation_modes cm ON scm.consultation_mode_id = cm.consultation_mode_id COLLATE utf8mb4_general_ci
 JOIN 
-    visas v ON vs.visa_id = v.visa_id
+    visas v ON vs.visa_id = v.visa_id COLLATE utf8mb4_general_ci
 JOIN 
-    countries co ON v.country_id = co.country_id
+    countries co ON v.country_id = co.country_id COLLATE utf8mb4_general_ci
 JOIN 
-    service_types st ON vs.service_type_id = st.service_type_id
+    service_types st ON vs.service_type_id = st.service_type_id COLLATE utf8mb4_general_ci
 JOIN 
-    organizations o ON b.organization_id = o.id
+    organizations o ON b.organization_id = o.id COLLATE utf8mb4_general_ci
 LEFT JOIN 
-    booking_payments bp ON b.id = bp.booking_id
+    booking_payments bp ON b.id = bp.booking_id COLLATE utf8mb4_general_ci
 WHERE 
     b.id = ? AND (b.user_id = ? OR b.consultant_id = ? OR ? IN (
         SELECT member_user_id FROM team_members 
-        WHERE consultant_id = b.consultant_id AND invitation_status = 'accepted'
+        WHERE consultant_id = b.consultant_id COLLATE utf8mb4_general_ci AND invitation_status = 'accepted'
     ))";
 
 $stmt = $conn->prepare($query);
@@ -596,4 +596,4 @@ $payment_stmt->close();
 }
 </style>
 
-<?php require_once 'includes/footer.php'; ?> 
+<?php require_once 'includes/footer.php'; ?>

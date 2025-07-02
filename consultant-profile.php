@@ -402,6 +402,12 @@ include('includes/header.php');
                             <textarea name="client_notes" id="notes" rows="4"
                                 placeholder="Any specific questions or topics you'd like to discuss?"></textarea>
                         </div>
+                        
+                        <!-- Terms and Conditions -->
+                        <div class="form-group terms-checkbox">
+                            <input type="checkbox" id="terms" name="terms" required>
+                            <label for="terms">I agree to the <a href="terms.php" target="_blank">terms and conditions</a></label>
+                        </div>
 
                         <!-- Submit Button -->
                         <button type="submit" class="btn btn-primary">Book Consultation</button>
