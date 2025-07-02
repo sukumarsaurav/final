@@ -1091,14 +1091,64 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Submit form
+        // Add missing fields to form data
         const formData = new FormData(this);
+        
+        // Ensure user_id is set
+        if (!formData.has('user_id')) {
+            formData.append('user_id', <?php echo $_SESSION['id'] ?? 0; ?>);
+        }
+        
+        // Fix consultation_mode_id - we need to get the actual ID, not the name
+        if (formData.has('consultation_mode')) {
+            // Remove the incorrect consultation_mode_id if it exists
+            if (formData.has('consultation_mode_id')) {
+                formData.delete('consultation_mode_id');
+            }
+            
+            // Get the mode name
+            const modeName = formData.get('consultation_mode');
+            
+            // Here we should map the mode name to its ID
+            // This is a simplified example - you should replace with actual IDs from your database
+            const modeMap = {
+                'In-Person': 1,
+                'Video': 2,
+                'Phone': 3,
+                'Chat': 4
+            };
+            
+            const modeId = modeMap[modeName] || 1; // Default to 1 if not found
+            formData.append('consultation_mode_id', modeId);
+        }
+        
+        // Add organization_id if missing
+        if (!formData.has('organization_id')) {
+            formData.append('organization_id', <?php echo $consultant['organization_id'] ?? 1; ?>);
+        }
+        
+        // Debug: Log all form data after modifications
+        console.log('Form data after modifications:');
+        for (let pair of formData.entries()) {
+            console.log(pair[0] + ': ' + pair[1]);
+        }
+        
+        // Submit form
         fetch('process-booking.php', {
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
+            .then(response => {
+                // Check if response is OK before trying to parse JSON
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        throw new Error('Server error: ' + text);
+                    });
+                }
+                return response.json();
+            })
             .then(data => {
+                console.log('Response data:', data);
                 if (data.success) {
                     window.location.href = `booking-confirmation.php?reference=${data.reference}`;
                 } else {
@@ -1107,7 +1157,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('An error occurred while processing your booking.');
+                alert('An error occurred while processing your booking: ' + error.message);
             });
     });
 

@@ -1,0 +1,102 @@
+2025-07-01 21:58:23 - POST Data: Array
+(
+    [consultant_id] => 15
+    [organization_id] => 6
+    [visa_service_id] => 2
+    [consultation_mode] => Chat
+    [booking_date] => 2025-07-10
+    [booking_time] => 09:00
+    [duration_minutes] => 90
+    [client_notes] => no
+    [consultation_mode_id] => Chat
+)
+
+2025-07-01 22:08:15 - POST Data: Array
+(
+    [consultant_id] => 15
+    [organization_id] => 6
+    [visa_service_id] => 2
+    [consultation_mode] => Chat
+    [booking_date] => 2025-07-17
+    [booking_time] => 09:00
+    [duration_minutes] => 60
+    [client_notes] => no
+    [user_id] => 0
+    [consultation_mode_id] => 4
+)
+
+2025-07-01 22:08:15 - Error: User not logged in
+2025-07-01 22:09:35 - POST Data: Array
+(
+    [consultant_id] => 15
+    [organization_id] => 6
+    [visa_service_id] => 2
+    [consultation_mode] => Email
+    [booking_date] => 2025-07-17
+    [booking_time] => 09:30
+    [duration_minutes] => 60
+    [client_notes] => 
+    [user_id] => 0
+    [consultation_mode_id] => 1
+)
+
+2025-07-01 22:09:35 - Error: User not logged in
+2025-07-01 22:10:25 - POST Data: Array
+(
+    [consultant_id] => 15
+    [organization_id] => 6
+    [visa_service_id] => 2
+    [consultation_mode] => Email
+    [booking_date] => 2025-07-17
+    [booking_time] => 09:30
+    [duration_minutes] => 60
+    [client_notes] => 
+    [user_id] => 0
+    [consultation_mode_id] => 1
+)
+
+2025-07-01 22:10:26 - Error: User not logged in
+2025-07-02 06:27:31 - POST Data: Array
+(
+    [consultant_id] => 15
+    [organization_id] => 6
+    [visa_service_id] => 2
+    [consultation_mode] => Chat
+    [booking_date] => 2025-07-17
+    [booking_time] => 09:00
+    [duration_minutes] => 60
+    [client_notes] => 
+    [user_id] => 0
+    [consultation_mode_id] => 4
+)
+
+2025-07-02 06:27:31 - Error: Missing required fields: user_id
+2025-07-02 06:56:51 - POST Data: Array
+(
+    [consultant_id] => 15
+    [organization_id] => 6
+    [visa_service_id] => 2
+    [consultation_mode] => Chat
+    [booking_date] => 2025-07-11
+    [booking_time] => 10:00
+    [duration_minutes] => 60
+    [client_notes] => 
+    [user_id] => 22
+    [consultation_mode_id] => 4
+)
+
+2025-07-02 07:41:36 - POST Data: Array
+(
+    [consultant_id] => 15
+    [organization_id] => 6
+    [visa_service_id] => 2
+    [consultation_mode] => Chat
+    [booking_date] => 2025-07-11
+    [booking_time] => 09:00
+    [duration_minutes] => 60
+    [client_notes] => 
+    [user_id] => 22
+    [consultation_mode_id] => 4
+)
+
+2025-07-02 07:41:36 - Error: Terms not agreed
