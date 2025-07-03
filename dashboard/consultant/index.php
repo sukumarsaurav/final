@@ -373,7 +373,7 @@ $stmt->close();
                 <div class="stat-number"><?php echo number_format($unread_messages); ?></div>
                 <div class="stat-detail">
                     <span class="unread">Unread Messages</span>
-                    <a href="messaging.php" class="stat-link">View All</a>
+                    <a href="messages.php" class="stat-link">View All</a>
                 </div>
             </div>
         </div>

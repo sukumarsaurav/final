@@ -404,6 +404,106 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <style>
+:root {
+    --primary-color: #042167;
+    --secondary-color: #858796;
+    --success-color: #1cc88a;
+    --danger-color: #e74a3b;
+    --warning-color: #f6c23e;
+    --light-color: #f8f9fc;
+    --dark-color: #5a5c69;
+    --border-color: #e3e6f0;
+}
+
+.content {
+    padding: 20px;
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.header-container h1 {
+    margin: 0;
+    color: var(--primary-color);
+    font-size: 1.8rem;
+}
+
+.header-container p {
+    margin: 5px 0 0;
+    color: var(--secondary-color);
+}
+
+.primary-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.primary-btn:hover {
+    background-color: #031c56;
+    color: white;
+    text-decoration: none;
+}
+
+.secondary-btn {
+    background-color: white;
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.secondary-btn:hover {
+    background-color: var(--light-color);
+    text-decoration: none;
+    color: var(--primary-color);
+}
+
+.danger-btn {
+    background-color: var(--danger-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.danger-btn:hover {
+    background-color: #d44235;
+    color: white;
+}
+
+.btn {
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    border-radius: 4px;
+}
+
 .edit-form {
     background-color: white;
     border-radius: 5px;
@@ -435,7 +535,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 .form-group label {
     display: block;
-    color: var(--secondary-color);
+    color: var(--dark-color);
+    font-weight: 500;
     margin-bottom: 5px;
 }
 
@@ -447,6 +548,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     border: 1px solid var(--border-color);
     border-radius: 4px;
     font-size: 1rem;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="number"]:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(4, 33, 103, 0.1);
 }
 
 .form-group textarea {
@@ -468,6 +577,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 .checkbox-label input[type="checkbox"] {
     width: 18px;
     height: 18px;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.info-item {
+    margin-bottom: 15px;
+}
+
+.info-item label {
+    display: block;
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 5px;
+}
+
+.info-item span {
+    color: var(--secondary-color);
 }
 
 .modes-grid {
@@ -518,6 +649,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     background: none;
     border: none;
     cursor: pointer;
+    font-size: 16px;
+}
+
+.remove-document:hover {
+    color: #d44235;
 }
 
 .form-actions {
@@ -531,7 +667,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 .alert {
-    padding: 15px;
+    padding: 12px 15px;
     border-radius: 4px;
     margin-bottom: 20px;
 }
@@ -539,7 +675,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 .alert-danger {
     background-color: rgba(231, 74, 59, 0.1);
     color: var(--danger-color);
-    border: 1px solid var(--danger-color);
+    border: 1px solid rgba(231, 74, 59, 0.2);
+}
+
+.alert-success {
+    background-color: rgba(28, 200, 138, 0.1);
+    color: var(--success-color);
+    border: 1px solid rgba(28, 200, 138, 0.2);
+}
+
+@media (max-width: 768px) {
+    .modes-grid,
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mode-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .document-header {
+        flex-direction: column;
+    }
 }
 </style>
 

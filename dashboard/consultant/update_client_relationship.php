@@ -1,7 +1,7 @@
 <?php
 // Include database connection
-require_once 'includes/db.php';
-require_once 'includes/auth_check.php';
+ob_start();
+require_once 'includes/header.php';
 
 // Check if the form was submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_relationship'])) {

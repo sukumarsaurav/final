@@ -6,13 +6,6 @@ $page_title = "Service Details";
 $page_specific_css = "assets/css/services.css";
 require_once 'includes/header.php';
 
-// Get service ID from URL
-$service_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-
-if (!$service_id) {
-    die("Service ID not provided");
-}
-
 // Get consultant ID and organization ID from session
 $consultant_id = isset($_SESSION['id']) ? $_SESSION['id'] : (isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0);
 $organization_id = isset($user['organization_id']) ? $user['organization_id'] : null;
@@ -22,44 +15,61 @@ if (!$organization_id) {
     die("Organization ID not set. Please log in again.");
 }
 
-// Get service details with related information
-$query = "SELECT vs.*, v.visa_type, c.country_name, st.service_name, 
-          GROUP_CONCAT(DISTINCT cm.mode_name SEPARATOR ', ') as available_modes,
-          GROUP_CONCAT(DISTINCT CONCAT(cm.mode_name, ' ($', scm.additional_fee, ', ', scm.duration_minutes, ' min)') SEPARATOR '|') as mode_details
+// Get the visa service ID from URL parameter
+if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+    echo "<div class='alert alert-danger'>Invalid service ID.</div>";
+    require_once 'includes/footer.php';
+    exit;
+}
+$visa_service_id = $_GET['id'];
+
+// Get detailed information about the visa service
+$query = "SELECT vs.*, v.visa_type, c.country_name, st.service_name, vs.is_bookable
           FROM visa_services vs
           JOIN visas v ON vs.visa_id = v.visa_id
           JOIN countries c ON v.country_id = c.country_id
           JOIN service_types st ON vs.service_type_id = st.service_type_id
-          LEFT JOIN service_consultation_modes scm ON vs.visa_service_id = scm.visa_service_id
-          LEFT JOIN consultation_modes cm ON scm.consultation_mode_id = cm.consultation_mode_id
-          WHERE vs.visa_service_id = ? AND vs.organization_id = ?
-          GROUP BY vs.visa_service_id";
-
+          WHERE vs.visa_service_id = ? AND vs.organization_id = ?";
 $stmt = $conn->prepare($query);
-$stmt->bind_param('ii', $service_id, $organization_id);
+$stmt->bind_param('ii', $visa_service_id, $organization_id);
 $stmt->execute();
-$service = $stmt->get_result()->fetch_assoc();
+$service_result = $stmt->get_result();
+
+if ($service_result->num_rows == 0) {
+    echo "<div class='alert alert-danger'>Service not found or you don't have permission to view it.</div>";
+    require_once 'includes/footer.php';
+    exit;
+}
+
+$service = $service_result->fetch_assoc();
 $stmt->close();
 
-if (!$service) {
-    die("Service not found or you don't have permission to view it");
-}
-
-// Get booking settings if service is bookable
-$booking_settings = null;
-if ($service['is_bookable']) {
-    $query = "SELECT * FROM service_booking_settings WHERE visa_service_id = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param('i', $service_id);
-    $stmt->execute();
-    $booking_settings = $stmt->get_result()->fetch_assoc();
-    $stmt->close();
-}
-
-// Get required documents
-$query = "SELECT * FROM service_documents WHERE visa_service_id = ? ORDER BY document_name";
+// Get consultation modes for this service
+$query = "SELECT scm.*, cm.mode_name, cm.description as mode_description, cm.is_custom
+          FROM service_consultation_modes scm
+          JOIN consultation_modes cm ON scm.consultation_mode_id = cm.consultation_mode_id
+          WHERE scm.visa_service_id = ? AND scm.organization_id = ?
+          ORDER BY cm.mode_name";
 $stmt = $conn->prepare($query);
-$stmt->bind_param('i', $service_id);
+$stmt->bind_param('ii', $visa_service_id, $organization_id);
+$stmt->execute();
+$consultation_modes_result = $stmt->get_result();
+$consultation_modes = [];
+
+if ($consultation_modes_result && $consultation_modes_result->num_rows > 0) {
+    while ($row = $consultation_modes_result->fetch_assoc()) {
+        $consultation_modes[] = $row;
+    }
+}
+$stmt->close();
+
+// Get required documents for this service
+$query = "SELECT sd.*
+          FROM service_documents sd
+          WHERE sd.visa_service_id = ? AND sd.organization_id = ?
+          ORDER BY sd.is_required DESC, sd.document_name";
+$stmt = $conn->prepare($query);
+$stmt->bind_param('ii', $visa_service_id, $organization_id);
 $stmt->execute();
 $documents_result = $stmt->get_result();
 $documents = [];
@@ -71,520 +81,813 @@ if ($documents_result && $documents_result->num_rows > 0) {
 }
 $stmt->close();
 
-// Get recent bookings
-$query = "SELECT b.*, u.first_name, u.last_name, bs.name as status_name, bs.color as status_color
+// Get booking settings if this service is bookable
+$booking_settings = null;
+if ($service['is_bookable']) {
+    $query = "SELECT * FROM service_booking_settings
+              WHERE visa_service_id = ? AND organization_id = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param('ii', $visa_service_id, $organization_id);
+    $stmt->execute();
+    $booking_settings_result = $stmt->get_result();
+    
+    if ($booking_settings_result && $booking_settings_result->num_rows > 0) {
+        $booking_settings = $booking_settings_result->fetch_assoc();
+    }
+    $stmt->close();
+}
+
+// Get booking statistics
+$bookings_stats = [
+    'total' => 0,
+    'completed' => 0,
+    'pending' => 0,
+    'cancelled' => 0,
+    'upcoming' => 0
+];
+
+$query = "SELECT b.id, bs.name as status_name, 
+          COUNT(*) as total,
+          SUM(CASE WHEN bs.name = 'completed' THEN 1 ELSE 0 END) as completed,
+          SUM(CASE WHEN bs.name = 'pending' THEN 1 ELSE 0 END) as pending,
+          SUM(CASE WHEN bs.name IN ('cancelled_by_user', 'cancelled_by_admin', 'cancelled_by_consultant') THEN 1 ELSE 0 END) as cancelled,
+          SUM(CASE WHEN bs.name = 'confirmed' AND b.booking_datetime > NOW() THEN 1 ELSE 0 END) as upcoming
+          FROM bookings b
+          JOIN booking_statuses bs ON b.status_id = bs.id
+          WHERE b.visa_service_id = ? AND b.consultant_id = ? AND b.deleted_at IS NULL";
+$stmt = $conn->prepare($query);
+$stmt->bind_param('ii', $visa_service_id, $consultant_id);
+$stmt->execute();
+$bookings_result = $stmt->get_result();
+
+if ($bookings_result && $bookings_result->num_rows > 0) {
+    $bookings_stats = $bookings_result->fetch_assoc();
+}
+$stmt->close();
+
+// Get recent bookings for this service
+$query = "SELECT b.id, b.booking_datetime, b.end_datetime, u.first_name, u.last_name, bs.name as status_name
           FROM bookings b
           JOIN users u ON b.user_id = u.id
           JOIN booking_statuses bs ON b.status_id = bs.id
-          WHERE b.visa_service_id = ? AND b.deleted_at IS NULL
+          WHERE b.visa_service_id = ? AND b.consultant_id = ? AND b.deleted_at IS NULL
           ORDER BY b.booking_datetime DESC
           LIMIT 5";
 $stmt = $conn->prepare($query);
-$stmt->bind_param('i', $service_id);
+$stmt->bind_param('ii', $visa_service_id, $consultant_id);
 $stmt->execute();
-$bookings_result = $stmt->get_result();
+$recent_bookings_result = $stmt->get_result();
 $recent_bookings = [];
 
-if ($bookings_result && $bookings_result->num_rows > 0) {
-    while ($row = $bookings_result->fetch_assoc()) {
+if ($recent_bookings_result && $recent_bookings_result->num_rows > 0) {
+    while ($row = $recent_bookings_result->fetch_assoc()) {
         $recent_bookings[] = $row;
     }
 }
 $stmt->close();
 
-// Get service reviews
-$query = "SELECT sr.*, u.first_name, u.last_name
-          FROM service_reviews sr
-          JOIN users u ON sr.user_id = u.id
-          WHERE sr.visa_service_id = ? AND sr.is_public = 1
-          ORDER BY sr.created_at DESC
-          LIMIT 5";
-$stmt = $conn->prepare($query);
-$stmt->bind_param('i', $service_id);
-$stmt->execute();
-$reviews_result = $stmt->get_result();
-$reviews = [];
-
-if ($reviews_result && $reviews_result->num_rows > 0) {
-    while ($row = $reviews_result->fetch_assoc()) {
-        $reviews[] = $row;
-    }
-}
-$stmt->close();
+// Get service availability slots
+$slots_query = "SELECT COUNT(*) as total_slots,
+               SUM(CASE WHEN is_available = 1 AND current_bookings < max_bookings THEN 1 ELSE 0 END) as available_slots,
+               MIN(slot_date) as first_available_date,
+               MAX(slot_date) as last_available_date
+               FROM service_availability_slots
+               WHERE visa_service_id = ? AND consultant_id = ? AND slot_date >= CURDATE()";
+$slots_stmt = $conn->prepare($slots_query);
+$slots_stmt->bind_param('ii', $visa_service_id, $consultant_id);
+$slots_stmt->execute();
+$slots_result = $slots_stmt->get_result();
+$slots_stats = $slots_result->fetch_assoc();
+$slots_stmt->close();
 ?>
 
 <div class="content">
     <div class="header-container">
         <div>
             <h1>Service Details</h1>
-            <p>View and manage service information</p>
+            <p>View detailed information about this service</p>
         </div>
-        <div class="header-actions">
-            <a href="edit_service.php?id=<?php echo $service_id; ?>" class="btn primary-btn">
+        <div>
+            <a href="services.php" class="btn secondary-btn">
+                <i class="fas fa-arrow-left"></i> Back to Services
+            </a>
+            <a href="edit_service.php?id=<?php echo $visa_service_id; ?>" class="btn primary-btn">
                 <i class="fas fa-edit"></i> Edit Service
             </a>
-            <?php if ($service['is_bookable']): ?>
-            <a href="service_availability.php?id=<?php echo $service_id; ?>" class="btn secondary-btn">
-                <i class="fas fa-calendar-alt"></i> Manage Availability
-            </a>
-            <?php endif; ?>
         </div>
     </div>
 
     <div class="service-details-container">
-        <!-- Basic Information -->
-        <div class="info-section">
-            <h2>Basic Information</h2>
-            <div class="info-grid">
-                <div class="info-item">
-                    <label>Country</label>
-                    <span><?php echo htmlspecialchars($service['country_name']); ?></span>
+        <!-- Basic Service Information -->
+        <div class="service-card">
+            <div class="service-header">
+                <h2><?php echo htmlspecialchars($service['service_name']); ?> - <?php echo htmlspecialchars($service['visa_type']); ?></h2>
+                <div class="service-status">
+                    <?php if ($service['is_active']): ?>
+                    <span class="status-badge active"><i class="fas fa-circle"></i> Active</span>
+                    <?php else: ?>
+                    <span class="status-badge inactive"><i class="fas fa-circle"></i> Inactive</span>
+                    <?php endif; ?>
+                    <?php if ($service['is_bookable']): ?>
+                    <span class="status-badge bookable"><i class="fas fa-check-circle"></i> Bookable</span>
+                    <?php else: ?>
+                    <span class="status-badge not-bookable"><i class="fas fa-times-circle"></i> Not Bookable</span>
+                    <?php endif; ?>
                 </div>
-                <div class="info-item">
-                    <label>Visa Type</label>
-                    <span><?php echo htmlspecialchars($service['visa_type']); ?></span>
+            </div>
+            
+            <div class="service-content">
+                <div class="info-row">
+                    <div class="info-label">Country:</div>
+                    <div class="info-value"><?php echo htmlspecialchars($service['country_name']); ?></div>
                 </div>
-                <div class="info-item">
-                    <label>Service Type</label>
-                    <span><?php echo htmlspecialchars($service['service_name']); ?></span>
+                <div class="info-row">
+                    <div class="info-label">Base Price:</div>
+                    <div class="info-value">$<?php echo number_format($service['base_price'], 2); ?></div>
                 </div>
-                <div class="info-item">
-                    <label>Base Price</label>
-                    <span>$<?php echo number_format($service['base_price'], 2); ?></span>
+                <?php if (!empty($service['description'])): ?>
+                <div class="info-row">
+                    <div class="info-label">Description:</div>
+                    <div class="info-value"><?php echo nl2br(htmlspecialchars($service['description'])); ?></div>
                 </div>
-                <div class="info-item">
-                    <label>Status</label>
-                    <span class="status-badge <?php echo $service['is_active'] ? 'active' : 'inactive'; ?>">
-                        <i class="fas fa-circle"></i>
-                        <?php echo $service['is_active'] ? 'Active' : 'Inactive'; ?>
-                    </span>
+                <?php endif; ?>
+                <?php if ($service['is_bookable'] && !empty($service['booking_instructions'])): ?>
+                <div class="info-row">
+                    <div class="info-label">Booking Instructions:</div>
+                    <div class="info-value"><?php echo nl2br(htmlspecialchars($service['booking_instructions'])); ?></div>
                 </div>
-                <div class="info-item">
-                    <label>Bookable</label>
-                    <span class="status-badge <?php echo $service['is_bookable'] ? 'bookable' : 'not-bookable'; ?>">
-                        <i class="fas fa-<?php echo $service['is_bookable'] ? 'check' : 'times'; ?>-circle"></i>
-                        <?php echo $service['is_bookable'] ? 'Yes' : 'No'; ?>
-                    </span>
-                </div>
+                <?php endif; ?>
             </div>
         </div>
 
-        <!-- Description -->
-        <div class="info-section">
-            <h2>Description</h2>
-            <div class="description-box">
-                <?php echo nl2br(htmlspecialchars($service['description'])); ?>
+        <div class="details-grid">
+            <!-- Consultation Modes -->
+            <div class="service-card">
+                <div class="service-header">
+                    <h3>Consultation Modes</h3>
+                    <a href="edit_service.php?id=<?php echo $visa_service_id; ?>#consultation-modes" class="btn-sm secondary-btn">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                </div>
+                <div class="service-content">
+                    <?php if (empty($consultation_modes)): ?>
+                    <p class="empty-message">No consultation modes configured for this service.</p>
+                    <?php else: ?>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Mode</th>
+                                <th>Additional Fee</th>
+                                <th>Duration</th>
+                                <th>Availability</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($consultation_modes as $mode): ?>
+                            <tr>
+                                <td>
+                                    <?php echo htmlspecialchars($mode['mode_name']); ?>
+                                    <?php if ($mode['is_custom']): ?><span class="badge custom-badge">Custom</span><?php endif; ?>
+                                </td>
+                                <td>$<?php echo number_format($mode['additional_fee'], 2); ?></td>
+                                <td><?php echo $mode['duration_minutes']; ?> minutes</td>
+                                <td>
+                                    <?php if ($mode['is_available']): ?>
+                                    <span class="status-badge active"><i class="fas fa-check"></i> Available</span>
+                                    <?php else: ?>
+                                    <span class="status-badge inactive"><i class="fas fa-times"></i> Unavailable</span>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                    <?php endif; ?>
+                </div>
             </div>
-        </div>
 
-        <!-- Consultation Modes -->
-        <div class="info-section">
-            <h2>Consultation Modes</h2>
-            <?php if (!empty($service['mode_details'])): ?>
-            <div class="modes-grid">
-                <?php foreach (explode('|', $service['mode_details']) as $mode): ?>
-                <div class="mode-card">
-                    <i class="fas fa-comments"></i>
-                    <div class="mode-info">
-                        <h4><?php echo htmlspecialchars(explode(' ($', $mode)[0]); ?></h4>
-                        <p><?php echo htmlspecialchars(substr($mode, strpos($mode, '$'))); ?></p>
-                    </div>
+            <!-- Required Documents -->
+            <div class="service-card">
+                <div class="service-header">
+                    <h3>Required Documents</h3>
+                    <a href="documents.php?service_id=<?php echo $visa_service_id; ?>" class="btn-sm secondary-btn">
+                        <i class="fas fa-edit"></i> Manage
+                    </a>
                 </div>
-                <?php endforeach; ?>
+                <div class="service-content">
+                    <?php if (empty($documents)): ?>
+                    <p class="empty-message">No required documents configured for this service.</p>
+                    <?php else: ?>
+                    <ul class="document-list">
+                        <?php foreach ($documents as $doc): ?>
+                        <li class="document-item">
+                            <div class="document-name">
+                                <?php echo htmlspecialchars($doc['document_name']); ?>
+                                <?php if ($doc['is_required']): ?>
+                                <span class="badge required-badge">Required</span>
+                                <?php else: ?>
+                                <span class="badge optional-badge">Optional</span>
+                                <?php endif; ?>
+                            </div>
+                            <?php if (!empty($doc['description'])): ?>
+                            <div class="document-description"><?php echo htmlspecialchars($doc['description']); ?></div>
+                            <?php endif; ?>
+                        </li>
+                        <?php endforeach; ?>
+                    </ul>
+                    <?php endif; ?>
+                </div>
             </div>
-            <?php else: ?>
-            <p class="text-muted">No consultation modes configured</p>
-            <?php endif; ?>
-        </div>
 
-        <?php if ($service['is_bookable'] && $booking_settings): ?>
-        <!-- Booking Settings -->
-        <div class="info-section">
-            <h2>Booking Settings</h2>
-            <div class="info-grid">
-                <div class="info-item">
-                    <label>Minimum Notice</label>
-                    <span><?php echo $booking_settings['min_notice_hours']; ?> hours</span>
+            <?php if ($service['is_bookable'] && $booking_settings): ?>
+            <!-- Booking Settings -->
+            <div class="service-card">
+                <div class="service-header">
+                    <h3>Booking Settings</h3>
+                    <a href="booking_settings.php?id=<?php echo $visa_service_id; ?>" class="btn-sm secondary-btn">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
                 </div>
-                <div class="info-item">
-                    <label>Maximum Advance Booking</label>
-                    <span><?php echo $booking_settings['max_advance_days']; ?> days</span>
-                </div>
-                <div class="info-item">
-                    <label>Buffer Before</label>
-                    <span><?php echo $booking_settings['buffer_before_minutes']; ?> minutes</span>
-                </div>
-                <div class="info-item">
-                    <label>Buffer After</label>
-                    <span><?php echo $booking_settings['buffer_after_minutes']; ?> minutes</span>
-                </div>
-                <div class="info-item">
-                    <label>Payment Required</label>
-                    <span class="status-badge <?php echo $booking_settings['payment_required'] ? 'active' : 'inactive'; ?>">
-                        <i class="fas fa-circle"></i>
-                        <?php echo $booking_settings['payment_required'] ? 'Yes' : 'No'; ?>
-                    </span>
+                <div class="service-content">
+                    <div class="info-row">
+                        <div class="info-label">Minimum Notice:</div>
+                        <div class="info-value"><?php echo $booking_settings['min_notice_hours']; ?> hours</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Maximum Advance Booking:</div>
+                        <div class="info-value"><?php echo $booking_settings['max_advance_days']; ?> days</div>
+                    </div>
+                    <?php if (isset($booking_settings['buffer_before_minutes']) && $booking_settings['buffer_before_minutes'] > 0): ?>
+                    <div class="info-row">
+                        <div class="info-label">Buffer Before:</div>
+                        <div class="info-value"><?php echo $booking_settings['buffer_before_minutes']; ?> minutes</div>
+                    </div>
+                    <?php endif; ?>
+                    <?php if (isset($booking_settings['buffer_after_minutes']) && $booking_settings['buffer_after_minutes'] > 0): ?>
+                    <div class="info-row">
+                        <div class="info-label">Buffer After:</div>
+                        <div class="info-value"><?php echo $booking_settings['buffer_after_minutes']; ?> minutes</div>
+                    </div>
+                    <?php endif; ?>
+                    <?php if (isset($booking_settings['payment_required']) && $booking_settings['payment_required']): ?>
+                    <div class="info-row">
+                        <div class="info-label">Payment Required:</div>
+                        <div class="info-value">Yes</div>
+                    </div>
+                    <?php if ($booking_settings['deposit_amount'] > 0): ?>
+                    <div class="info-row">
+                        <div class="info-label">Deposit Amount:</div>
+                        <div class="info-value">$<?php echo number_format($booking_settings['deposit_amount'], 2); ?></div>
+                    </div>
+                    <?php elseif ($booking_settings['deposit_percentage'] > 0): ?>
+                    <div class="info-row">
+                        <div class="info-label">Deposit Percentage:</div>
+                        <div class="info-value"><?php echo $booking_settings['deposit_percentage']; ?>%</div>
+                    </div>
+                    <?php endif; ?>
+                    <?php endif; ?>
                 </div>
             </div>
-            <?php if ($booking_settings['payment_required']): ?>
-            <div class="payment-info">
-                <h4>Payment Details</h4>
-                <div class="info-grid">
-                    <div class="info-item">
-                        <label>Deposit Amount</label>
-                        <span>$<?php echo number_format($booking_settings['deposit_amount'], 2); ?></span>
-                    </div>
-                    <div class="info-item">
-                        <label>Deposit Percentage</label>
-                        <span><?php echo $booking_settings['deposit_percentage']; ?>%</span>
-                    </div>
-                </div>
-            </div>
-            <?php endif; ?>
-        </div>
-        <?php endif; ?>
 
-        <!-- Required Documents -->
-        <div class="info-section">
-            <h2>Required Documents</h2>
-            <?php if (!empty($documents)): ?>
-            <div class="documents-list">
-                <?php foreach ($documents as $doc): ?>
-                <div class="document-item">
-                    <i class="fas fa-file-alt"></i>
-                    <div class="document-info">
-                        <h4><?php echo htmlspecialchars($doc['document_name']); ?></h4>
-                        <?php if ($doc['description']): ?>
-                        <p><?php echo htmlspecialchars($doc['description']); ?></p>
-                        <?php endif; ?>
-                        <span class="required-badge <?php echo $doc['is_required'] ? 'required' : 'optional'; ?>">
-                            <?php echo $doc['is_required'] ? 'Required' : 'Optional'; ?>
-                        </span>
-                    </div>
+            <!-- Availability Stats -->
+            <div class="service-card">
+                <div class="service-header">
+                    <h3>Availability</h3>
+                    <a href="service_availability.php?id=<?php echo $visa_service_id; ?>" class="btn-sm secondary-btn">
+                        <i class="fas fa-calendar-alt"></i> Manage
+                    </a>
                 </div>
-                <?php endforeach; ?>
-            </div>
-            <?php else: ?>
-            <p class="text-muted">No documents required</p>
-            <?php endif; ?>
-        </div>
-
-        <!-- Recent Bookings -->
-        <div class="info-section">
-            <h2>Recent Bookings</h2>
-            <?php if (!empty($recent_bookings)): ?>
-            <div class="bookings-list">
-                <?php foreach ($recent_bookings as $booking): ?>
-                <div class="booking-item">
-                    <div class="booking-header">
-                        <span class="booking-ref">#<?php echo htmlspecialchars($booking['reference_number']); ?></span>
-                        <span class="status-badge" style="background-color: <?php echo $booking['status_color']; ?>">
-                            <?php echo htmlspecialchars($booking['status_name']); ?>
-                        </span>
-                    </div>
-                    <div class="booking-details">
-                        <p><strong>Client:</strong> <?php echo htmlspecialchars($booking['first_name'] . ' ' . $booking['last_name']); ?></p>
-                        <p><strong>Date:</strong> <?php echo date('M d, Y', strtotime($booking['booking_datetime'])); ?></p>
-                        <p><strong>Time:</strong> <?php echo date('h:i A', strtotime($booking['booking_datetime'])); ?></p>
-                    </div>
-                </div>
-                <?php endforeach; ?>
-            </div>
-            <?php else: ?>
-            <p class="text-muted">No recent bookings</p>
-            <?php endif; ?>
-        </div>
-
-        <!-- Reviews -->
-        <div class="info-section">
-            <h2>Recent Reviews</h2>
-            <?php if (!empty($reviews)): ?>
-            <div class="reviews-list">
-                <?php foreach ($reviews as $review): ?>
-                <div class="review-item">
-                    <div class="review-header">
-                        <div class="reviewer-info">
-                            <i class="fas fa-user-circle"></i>
-                            <span><?php echo htmlspecialchars($review['first_name'] . ' ' . $review['last_name']); ?></span>
+                <div class="service-content">
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-value"><?php echo $slots_stats['total_slots'] ?? 0; ?></div>
+                            <div class="stat-label">Total Slots</div>
                         </div>
-                        <div class="rating">
-                            <?php for ($i = 1; $i <= 5; $i++): ?>
-                            <i class="fas fa-star <?php echo $i <= $review['rating'] ? 'active' : ''; ?>"></i>
-                            <?php endfor; ?>
+                        <div class="stat-box">
+                            <div class="stat-value"><?php echo $slots_stats['available_slots'] ?? 0; ?></div>
+                            <div class="stat-label">Available Slots</div>
                         </div>
                     </div>
-                    <div class="review-content">
-                        <p><?php echo nl2br(htmlspecialchars($review['review_text'])); ?></p>
+                    
+                    <?php if (isset($slots_stats['first_available_date']) && $slots_stats['first_available_date']): ?>
+                    <div class="availability-dates">
+                        <div class="date-range">
+                            <div class="date-label">First Available:</div>
+                            <div class="date-value"><?php echo date('M j, Y', strtotime($slots_stats['first_available_date'])); ?></div>
+                        </div>
+                        <div class="date-range">
+                            <div class="date-label">Last Available:</div>
+                            <div class="date-value"><?php echo date('M j, Y', strtotime($slots_stats['last_available_date'])); ?></div>
+                        </div>
                     </div>
-                    <?php if ($review['consultant_response']): ?>
-                    <div class="consultant-response">
-                        <h5>Consultant Response:</h5>
-                        <p><?php echo nl2br(htmlspecialchars($review['consultant_response'])); ?></p>
-                        <small>Responded on <?php echo date('M d, Y', strtotime($review['responded_at'])); ?></small>
+                    <?php else: ?>
+                    <p class="empty-message">No availability slots configured.</p>
+                    <div class="text-center mt-3">
+                        <a href="generate_slots.php?id=<?php echo $visa_service_id; ?>" class="btn secondary-btn">
+                            <i class="fas fa-magic"></i> Generate Slots
+                        </a>
                     </div>
                     <?php endif; ?>
                 </div>
-                <?php endforeach; ?>
             </div>
-            <?php else: ?>
-            <p class="text-muted">No reviews yet</p>
             <?php endif; ?>
+
+            <!-- Booking Statistics -->
+            <div class="service-card">
+                <div class="service-header">
+                    <h3>Booking Statistics</h3>
+                </div>
+                <div class="service-content">
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-value"><?php echo $bookings_stats['total'] ?? 0; ?></div>
+                            <div class="stat-label">Total Bookings</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value"><?php echo $bookings_stats['completed'] ?? 0; ?></div>
+                            <div class="stat-label">Completed</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value"><?php echo $bookings_stats['upcoming'] ?? 0; ?></div>
+                            <div class="stat-label">Upcoming</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value"><?php echo $bookings_stats['cancelled'] ?? 0; ?></div>
+                            <div class="stat-label">Cancelled</div>
+                        </div>
+                    </div>
+                    
+                    <?php if (!empty($recent_bookings)): ?>
+                    <h4 class="section-title">Recent Bookings</h4>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Client</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($recent_bookings as $booking): ?>
+                            <tr>
+                                <td>
+                                    <?php echo date('M j, Y', strtotime($booking['booking_datetime'])); ?><br>
+                                    <span class="time-range">
+                                        <?php echo date('g:i A', strtotime($booking['booking_datetime'])); ?> - 
+                                        <?php echo date('g:i A', strtotime($booking['end_datetime'])); ?>
+                                    </span>
+                                </td>
+                                <td><?php echo htmlspecialchars($booking['first_name'] . ' ' . $booking['last_name']); ?></td>
+                                <td>
+                                    <?php 
+                                    $status_class = '';
+                                    switch ($booking['status_name']) {
+                                        case 'completed':
+                                            $status_class = 'active';
+                                            break;
+                                        case 'confirmed':
+                                            $status_class = 'bookable';
+                                            break;
+                                        case 'pending':
+                                            $status_class = 'pending';
+                                            break;
+                                        default:
+                                            $status_class = 'inactive';
+                                    }
+                                    ?>
+                                    <span class="status-badge <?php echo $status_class; ?>">
+                                        <?php echo ucfirst($booking['status_name']); ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="view_booking.php?id=<?php echo $booking['id']; ?>" class="btn-action btn-view">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                    
+                    <?php if ($bookings_stats['total'] > 5): ?>
+                    <div class="text-center mt-3">
+                        <a href="bookings.php?service_id=<?php echo $visa_service_id; ?>" class="btn secondary-btn">
+                            View All Bookings
+                        </a>
+                    </div>
+                    <?php endif; ?>
+                    
+                    <?php else: ?>
+                    <p class="empty-message">No bookings for this service yet.</p>
+                    <?php endif; ?>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <style>
-.service-details-container {
-    background-color: white;
-    border-radius: 5px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+:root {
+    --primary-color: #042167;
+    --secondary-color: #858796;
+    --success-color: #1cc88a;
+    --danger-color: #e74a3b;
+    --warning-color: #f6c23e;
+    --light-color: #f8f9fc;
+    --dark-color: #5a5c69;
+    --border-color: #e3e6f0;
+}
+
+.content {
     padding: 20px;
 }
 
-.info-section {
-    margin-bottom: 30px;
-    padding-bottom: 30px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.info-section:last-child {
-    margin-bottom: 0;
-    padding-bottom: 0;
-    border-bottom: none;
-}
-
-.info-section h2 {
-    color: var(--primary-color);
-    font-size: 1.4rem;
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 20px;
 }
 
-.info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-}
-
-.info-item {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.info-item label {
-    color: var(--secondary-color);
-    font-size: 0.9rem;
-}
-
-.info-item span {
-    color: var(--dark-color);
-    font-weight: 500;
-}
-
-.description-box {
-    background-color: var(--light-color);
-    padding: 15px;
-    border-radius: 4px;
-    color: var(--dark-color);
-    line-height: 1.6;
-}
-
-.modes-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-}
-
-.mode-card {
-    background-color: var(--light-color);
-    padding: 15px;
-    border-radius: 4px;
-    display: flex;
-    align-items: flex-start;
-    gap: 15px;
-}
-
-.mode-card i {
-    color: var(--primary-color);
-    font-size: 24px;
-}
-
-.mode-info h4 {
-    margin: 0 0 5px;
-    color: var(--primary-color);
-}
-
-.mode-info p {
+.header-container h1 {
     margin: 0;
-    color: var(--secondary-color);
-    font-size: 0.9rem;
-}
-
-.payment-info {
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid var(--border-color);
-}
-
-.payment-info h4 {
     color: var(--primary-color);
-    margin-bottom: 15px;
+    font-size: 1.8rem;
 }
 
-.documents-list {
-    display: grid;
-    gap: 15px;
+.header-container p {
+    margin: 5px 0 0;
+    color: var(--secondary-color);
 }
 
-.document-item {
-    background-color: var(--light-color);
-    padding: 15px;
+.primary-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 10px 20px;
     border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
     display: flex;
-    align-items: flex-start;
-    gap: 15px;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
 }
 
-.document-item i {
+.primary-btn:hover {
+    background-color: #031c56;
+    color: white;
+    text-decoration: none;
+}
+
+.secondary-btn {
+    background-color: white;
     color: var(--primary-color);
-    font-size: 24px;
+    border: 1px solid var(--primary-color);
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.2s;
 }
 
-.document-info h4 {
-    margin: 0 0 5px;
+.secondary-btn:hover {
+    background-color: var(--light-color);
+    text-decoration: none;
     color: var(--primary-color);
 }
 
-.document-info p {
-    margin: 0 0 10px;
-    color: var(--secondary-color);
-    font-size: 0.9rem;
+.btn {
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    border-radius: 4px;
 }
 
-.required-badge {
-    display: inline-block;
-    padding: 2px 8px;
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 8px;
     border-radius: 12px;
-    font-size: 0.8rem;
+    font-size: 12px;
     font-weight: 500;
 }
 
-.required-badge.required {
+.status-badge.active {
+    background-color: rgba(28, 200, 138, 0.1);
+    color: var(--success-color);
+}
+
+.status-badge.inactive {
     background-color: rgba(231, 74, 59, 0.1);
     color: var(--danger-color);
 }
 
-.required-badge.optional {
+.status-badge.bookable {
+    background-color: rgba(28, 200, 138, 0.1);
+    color: var(--success-color);
+}
+
+.status-badge.not-bookable {
     background-color: rgba(133, 135, 150, 0.1);
     color: var(--secondary-color);
 }
 
-.bookings-list {
+.status-badge.pending {
+    background-color: rgba(246, 194, 62, 0.1);
+    color: var(--warning-color);
+}
+
+.status-badge i {
+    font-size: 8px;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th {
+    background-color: var(--light-color);
+    color: var(--primary-color);
+    font-weight: 600;
+    text-align: left;
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.data-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--dark-color);
+}
+
+.data-table tbody tr:hover {
+    background-color: rgba(4, 33, 103, 0.03);
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    color: white;
+    transition: background-color 0.2s;
+}
+
+.btn-view {
+    background-color: var(--primary-color);
+}
+
+.btn-view:hover {
+    background-color: #031c56;
+}
+
+.btn-edit {
+    background-color: var(--warning-color);
+}
+
+.btn-edit:hover {
+    background-color: #e0b137;
+}
+
+.btn-calendar {
+    background-color: #4e73df;
+}
+
+.btn-calendar:hover {
+    background-color: #375ad3;
+}
+
+/* Service details specific styles */
+.service-details-container {
+    margin-top: 20px;
+}
+
+.service-card {
+    background-color: white;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.service-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.service-header h2, .service-header h3 {
+    margin: 0;
+    color: var(--primary-color);
+}
+
+.service-header h3 {
+    font-size: 1.2rem;
+}
+
+.service-status {
+    display: flex;
+    gap: 10px;
+}
+
+.service-content {
+    padding: 20px;
+}
+
+.info-row {
+    display: flex;
+    margin-bottom: 12px;
+}
+
+.info-label {
+    font-weight: 600;
+    width: 160px;
+    color: var(--dark-color);
+}
+
+.info-value {
+    flex: 1;
+}
+
+.details-grid {
     display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.document-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.document-item {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.document-item:last-child {
+    border-bottom: none;
+}
+
+.document-name {
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.document-description {
+    font-size: 0.9rem;
+    color: var(--secondary-color);
+    margin-top: 5px;
+}
+
+.badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.required-badge {
+    background-color: rgba(231, 74, 59, 0.1);
+    color: var(--danger-color);
+}
+
+.optional-badge {
+    background-color: rgba(133, 135, 150, 0.1);
+    color: var(--secondary-color);
+}
+
+.custom-badge {
+    background-color: rgba(78, 115, 223, 0.1);
+    color: #4e73df;
+    margin-left: 5px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.stat-box {
+    padding: 15px;
+    background-color: #f8f9fc;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: var(--secondary-color);
+    margin-top: 5px;
+}
+
+.empty-message {
+    color: var(--secondary-color);
+    font-style: italic;
+    text-align: center;
+    padding: 20px 0;
+}
+
+.section-title {
+    font-size: 1.1rem;
+    color: var(--primary-color);
+    margin: 20px 0 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.time-range {
+    font-size: 0.85rem;
+    color: var(--secondary-color);
+}
+
+.availability-dates {
+    margin-top: 15px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 15px;
 }
 
-.booking-item {
-    background-color: var(--light-color);
-    padding: 15px;
-    border-radius: 4px;
+.date-range {
+    background-color: #f8f9fc;
+    padding: 10px;
+    border-radius: 5px;
 }
 
-.booking-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
+.date-label {
+    font-size: 0.85rem;
+    color: var(--secondary-color);
 }
 
-.booking-ref {
-    font-weight: 500;
+.date-value {
+    font-weight: 600;
     color: var(--primary-color);
+    margin-top: 5px;
 }
 
-.booking-details p {
-    margin: 5px 0;
-    color: var(--dark-color);
-}
-
-.reviews-list {
-    display: grid;
-    gap: 20px;
-}
-
-.review-item {
-    background-color: var(--light-color);
-    padding: 20px;
-    border-radius: 4px;
-}
-
-.review-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.reviewer-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: var(--primary-color);
-}
-
-.reviewer-info i {
-    font-size: 24px;
-}
-
-.rating {
-    display: flex;
-    gap: 2px;
-}
-
-.rating i {
-    color: #ddd;
-}
-
-.rating i.active {
-    color: #ffc107;
-}
-
-.review-content {
-    color: var(--dark-color);
-    line-height: 1.6;
-    margin-bottom: 15px;
-}
-
-.consultant-response {
-    background-color: white;
-    padding: 15px;
-    border-radius: 4px;
+.mt-3 {
     margin-top: 15px;
 }
 
-.consultant-response h5 {
-    color: var(--primary-color);
-    margin: 0 0 10px;
+.text-center {
+    text-align: center;
 }
 
-.consultant-response p {
-    color: var(--dark-color);
-    margin: 0 0 10px;
+.alert {
+    padding: 12px 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
 }
 
-.consultant-response small {
-    color: var(--secondary-color);
-    font-size: 0.8rem;
+.alert-danger {
+    background-color: rgba(231, 74, 59, 0.1);
+    color: var(--danger-color);
+    border: 1px solid rgba(231, 74, 59, 0.2);
 }
 
-.text-muted {
-    color: var(--secondary-color);
-    font-style: italic;
-}
-
-.header-actions {
-    display: flex;
-    gap: 10px;
+.alert-success {
+    background-color: rgba(28, 200, 138, 0.1);
+    color: var(--success-color);
+    border: 1px solid rgba(28, 200, 138, 0.2);
 }
 </style>
 

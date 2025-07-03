@@ -134,28 +134,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
     $new_status_id = $_POST['status_id'];
     $admin_notes = isset($_POST['admin_notes']) ? trim($_POST['admin_notes']) : '';
     
-    // Start transaction
-    $conn->begin_transaction();
-    
     try {
-        // Update booking status
-        $update_query = "UPDATE bookings SET status_id = ?, admin_notes = ? WHERE id = ?";
-        $stmt = $conn->prepare($update_query);
-        $stmt->bind_param('isi', $new_status_id, $admin_notes, $booking_id);
+        // Get current status for logging
+        $stmt = $conn->prepare("SELECT status_id FROM bookings WHERE id = ?");
+        $stmt->bind_param('i', $booking_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $old_status_id = $row['status_id'];
+        $stmt->close();
+        
+        // Get status names for logging
+        $stmt = $conn->prepare("SELECT name FROM booking_statuses WHERE id = ?");
+        $stmt->bind_param('i', $old_status_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $old_status_name = $row['name'];
+        $stmt->close();
+        
+        $stmt = $conn->prepare("SELECT name FROM booking_statuses WHERE id = ?");
+        $stmt->bind_param('i', $new_status_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $new_status_name = $row['name'];
+        $stmt->close();
+        
+        // Start transaction
+        $conn->begin_transaction();
+        
+        // Get current booking data
+        $stmt = $conn->prepare("SELECT booking_datetime, duration_minutes FROM bookings WHERE id = ?");
+        $stmt->bind_param('i', $booking_id);
+        $stmt->execute();
+        $booking = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        
+        // Update the record with ALL fields to avoid trigger issues
+        $stmt = $conn->prepare("UPDATE bookings SET 
+                                status_id = ?,
+                                booking_datetime = ?,
+                                duration_minutes = ?,
+                                admin_notes = CONCAT(IFNULL(admin_notes, ''), ?)
+                                WHERE id = ?");
+        $notes_update = "\n[" . date('Y-m-d H:i:s') . "] Status updated: " . $admin_notes;
+        $stmt->bind_param('isisi', $new_status_id, $booking['booking_datetime'], $booking['duration_minutes'], $notes_update, $booking_id);
         $stmt->execute();
         $stmt->close();
         
-        // Add activity log
-        $status_name = $booking_statuses[$new_status_id]['name'];
-        $log_query = "INSERT INTO booking_activity_logs 
-                     (booking_id, user_id, activity_type, description) 
-                     VALUES (?, ?, 'status_changed', ?)";
-        $description = "Status changed to '{$status_name}'";
+        // Create activity log entry
+        $description = 'Status changed from ' . str_replace('_', ' ', $old_status_name) . ' to ' . 
+                      str_replace('_', ' ', $new_status_name);
         if (!empty($admin_notes)) {
-            $description .= " with notes: {$admin_notes}";
+            $description .= '. Notes: ' . $admin_notes;
         }
         
-        $stmt = $conn->prepare($log_query);
+        $stmt = $conn->prepare("INSERT INTO booking_activity_logs (booking_id, user_id, activity_type, description) VALUES (?, ?, 'status_changed', ?)");
         $stmt->bind_param('iis', $booking_id, $_SESSION['id'], $description);
         $stmt->execute();
         $stmt->close();
@@ -167,7 +202,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
         header("Location: bookings.php?success=1");
         exit;
     } catch (Exception $e) {
-        // Rollback on error
+        // Rollback transaction on error
         $conn->rollback();
         $error_message = "Error updating booking status: " . $e->getMessage();
     }
@@ -178,10 +213,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['assign_consultant']))
     $booking_id = $_POST['booking_id'];
     $consultant_id = $_POST['consultant_id'];
     
-    // Start transaction
-        $conn->begin_transaction();
-        
-        try {
+    try {
         // Update booking
         $update_query = "UPDATE bookings SET team_member_id = ? WHERE id = ?";
         $stmt = $conn->prepare($update_query);
@@ -198,18 +230,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['assign_consultant']))
         
         $stmt = $conn->prepare($log_query);
         $stmt->bind_param('iis', $booking_id, $_SESSION['id'], $description);
-            $stmt->execute();
-            $stmt->close();
-            
-        // Commit transaction
-        $conn->commit();
+        $stmt->execute();
+        $stmt->close();
         
         $success_message = "Booking assigned successfully";
         header("Location: bookings.php?success=2");
         exit;
     } catch (Exception $e) {
-        // Rollback on error
-        $conn->rollback();
         $error_message = "Error assigning booking: " . $e->getMessage();
     }
 }
@@ -222,42 +249,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_booking'])) {
     // Get the cancellation status ID
     $cancel_status_query = "SELECT id FROM booking_statuses WHERE name = 'cancelled_by_admin'";
     $stmt = $conn->prepare($cancel_status_query);
-            $stmt->execute();
+    $stmt->execute();
     $cancel_status = $stmt->get_result()->fetch_assoc();
     $cancel_status_id = $cancel_status['id'];
     $stmt->close();
     
-    // Start transaction
-    $conn->begin_transaction();
-    
     try {
-        // Update booking
-        $update_query = "UPDATE bookings SET status_id = ?, cancelled_by = ?, cancellation_reason = ?, cancelled_at = NOW() WHERE id = ?";
+        // Update booking status
+        $update_query = "UPDATE bookings SET 
+                        status_id = ?,
+                        cancelled_by = ?, 
+                        cancellation_reason = ?, 
+                        cancelled_at = NOW(),
+                        admin_notes = CONCAT(IFNULL(admin_notes, ''), '\n[', NOW(), '] Cancelled: ', ?)
+                        WHERE id = ?";
         $stmt = $conn->prepare($update_query);
-        $stmt->bind_param('iisi', $cancel_status_id, $_SESSION['id'], $cancellation_reason, $booking_id);
+        $stmt->bind_param('iissi', $cancel_status_id, $_SESSION['id'], $cancellation_reason, $cancellation_reason, $booking_id);
         $stmt->execute();
-            $stmt->close();
-            
-            // Add activity log
-        $log_query = "INSERT INTO booking_activity_logs 
-                     (booking_id, user_id, activity_type, description) 
-                     VALUES (?, ?, 'cancelled', ?)";
-        $description = "Booking cancelled by admin with reason: {$cancellation_reason}";
+        $stmt->close();
         
-            $stmt = $conn->prepare($log_query);
-        $stmt->bind_param('iis', $booking_id, $_SESSION['id'], $description);
-            $stmt->execute();
-            $stmt->close();
-            
-        // Commit transaction
-        $conn->commit();
+        // Create activity log entry
+        $log_description = "Booking cancelled by admin. Reason: " . $cancellation_reason;
+        $log_query = "INSERT INTO booking_activity_logs (booking_id, user_id, activity_type, description) VALUES (?, ?, 'cancelled', ?)";
+        $stmt = $conn->prepare($log_query);
+        $stmt->bind_param('iis', $booking_id, $_SESSION['id'], $log_description);
+        $stmt->execute();
+        $stmt->close();
         
         $success_message = "Booking cancelled successfully";
         header("Location: bookings.php?success=3");
         exit;
     } catch (Exception $e) {
-        // Rollback on error
-        $conn->rollback();
         $error_message = "Error cancelling booking: " . $e->getMessage();
     }
 }
@@ -272,49 +294,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reschedule_booking'])
     // Get the rescheduled status ID
     $status_query = "SELECT id FROM booking_statuses WHERE name = 'rescheduled'";
     $stmt = $conn->prepare($status_query);
-                $stmt->execute();
+    $stmt->execute();
     $status = $stmt->get_result()->fetch_assoc();
     $status_id = $status['id'];
-                $stmt->close();
-                
-    // Start transaction
-    $conn->begin_transaction();
+    $stmt->close();
     
     try {
-        // Update booking
-        $update_query = "UPDATE bookings SET 
+        // Update booking status
+        $update_status_query = "UPDATE bookings SET 
                         status_id = ?,
-                        booking_datetime = ?,
-                        duration_minutes = ?,
-                        end_datetime = DATE_ADD(?, INTERVAL ? MINUTE),
-                        reschedule_count = reschedule_count + 1,
                         admin_notes = CONCAT(IFNULL(admin_notes, ''), '\n[', NOW(), '] Rescheduled: ', ?)
                         WHERE id = ?";
-        $stmt = $conn->prepare($update_query);
-        $stmt->bind_param('ississi', $status_id, $new_datetime, $duration_minutes, $new_datetime, $duration_minutes, $reschedule_notes, $booking_id);
-                $stmt->execute();
-                $stmt->close();
-        
-        // Add activity log
-        $log_query = "INSERT INTO booking_activity_logs 
-                     (booking_id, user_id, activity_type, description) 
-                     VALUES (?, ?, 'rescheduled', ?)";
-        $description = "Booking rescheduled to {$new_datetime} with notes: {$reschedule_notes}";
-        
-        $stmt = $conn->prepare($log_query);
-        $stmt->bind_param('iis', $booking_id, $_SESSION['id'], $description);
+        $stmt = $conn->prepare($update_status_query);
+        $stmt->bind_param('isi', $status_id, $reschedule_notes, $booking_id);
         $stmt->execute();
         $stmt->close();
         
-        // Commit transaction
-        $conn->commit();
+        // Update additional rescheduling fields
+        $update_query = "UPDATE bookings SET 
+                        booking_datetime = ?,
+                        duration_minutes = ?,
+                        end_datetime = DATE_ADD(?, INTERVAL ? MINUTE),
+                        reschedule_count = reschedule_count + 1
+                        WHERE id = ?";
+        $stmt = $conn->prepare($update_query);
+        $stmt->bind_param('sisis', $new_datetime, $duration_minutes, $new_datetime, $duration_minutes, $booking_id);
+        $stmt->execute();
+        $stmt->close();
+        
+        // Create activity log entry
+        $log_description = "Booking rescheduled to " . date('Y-m-d H:i', strtotime($new_datetime)) . 
+                           " for " . $duration_minutes . " minutes. Notes: " . $reschedule_notes;
+        
+        $log_query = "INSERT INTO booking_activity_logs (booking_id, user_id, activity_type, description) 
+                      VALUES (?, ?, 'rescheduled', ?)";
+        $stmt = $conn->prepare($log_query);
+        $stmt->bind_param('iis', $booking_id, $_SESSION['id'], $log_description);
+        $stmt->execute();
+        $stmt->close();
         
         $success_message = "Booking rescheduled successfully";
         header("Location: bookings.php?success=4");
         exit;
     } catch (Exception $e) {
-        // Rollback on error
-        $conn->rollback();
         $error_message = "Error rescheduling booking: " . $e->getMessage();
     }
 }
@@ -332,41 +354,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_booking'])) 
     $status_id = $status['id'];
     $stmt->close();
     
-    // Start transaction
-    $conn->begin_transaction();
-    
     try {
-        // Update booking
+        // Update booking status and completion details
         $update_query = "UPDATE bookings SET 
                         status_id = ?,
                         completed_by = ?,
-                        completion_notes = ?
+                        completion_notes = ?,
+                        admin_notes = CONCAT(IFNULL(admin_notes, ''), '\n[', NOW(), '] Completed: ', ?)
                         WHERE id = ?";
         $stmt = $conn->prepare($update_query);
-        $stmt->bind_param('iisi', $status_id, $_SESSION['id'], $completion_notes, $booking_id);
+        $stmt->bind_param('iissi', $status_id, $_SESSION['id'], $completion_notes, $completion_notes, $booking_id);
         $stmt->execute();
         $stmt->close();
         
-        // Add activity log
-        $log_query = "INSERT INTO booking_activity_logs 
-                     (booking_id, user_id, activity_type, description) 
-                     VALUES (?, ?, 'completed', ?)";
-        $description = "Booking marked as completed with notes: {$completion_notes}";
-        
+        // Create activity log entry
+        $log_description = "Booking marked as completed. Notes: " . $completion_notes;
+        $log_query = "INSERT INTO booking_activity_logs (booking_id, user_id, activity_type, description) VALUES (?, ?, 'completed', ?)";
         $stmt = $conn->prepare($log_query);
-        $stmt->bind_param('iis', $booking_id, $_SESSION['id'], $description);
+        $stmt->bind_param('iis', $booking_id, $_SESSION['id'], $log_description);
         $stmt->execute();
         $stmt->close();
-            
-            // Commit transaction
-            $conn->commit();
-            
+        
         $success_message = "Booking marked as completed";
         header("Location: bookings.php?success=5");
-            exit;
-        } catch (Exception $e) {
-            // Rollback on error
-            $conn->rollback();
+        exit;
+    } catch (Exception $e) {
         $error_message = "Error completing booking: " . $e->getMessage();
     }
 }
