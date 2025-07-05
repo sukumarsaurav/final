@@ -127,7 +127,8 @@ error_log('Profile picture in session: ' . print_r($_SESSION['profile_picture'] 
             <a href="/about-us.php" class="drawer-item">About Us</a>
             <a href="/services.php" class="drawer-item">Services</a>
             <a href="/eligibility-test.php" class="drawer-item">Eligibility Check</a>
-            <a href="/become-member.php" class="drawer-item">Become Partner</a>
+            <a href="/applicant.php" class="drawer-item">For Applicant</a>
+            <a href="/become-member.php" class="drawer-item"> For Immigration Professionals</a>
 
         </nav>
     </div>

@@ -28,8 +28,8 @@ if ($result && $result->num_rows > 0) {
 <section class="hero consultant-hero">
     <div class="container">
         <div class="hero-content text-center">
-            <h1 class="hero-title">Transform Your Immigration Consulting Practice</h1>
-            <p class="hero-subtitle">Join Visafy to access 30+ powerful features designed for immigration consultants</p>
+            <h1 class="hero-title">Manage your Immigration Law Firm. Grow your clients. The only Case Management Software you need. Try it for free today.</h1>
+            <p class="hero-subtitle">"Clear, Simple, Flexible plans for Immigration firms of any size</p>
             
         </div>
     </div>

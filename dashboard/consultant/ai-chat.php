@@ -252,9 +252,40 @@ function appendMessage(content, isUser = false, isError = false) {
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'} ${isError ? 'error-message' : ''}`;
     
-    // For AI messages, preserve formatting
+    // For AI messages, preserve formatting and add copy button
     if (!isUser && !isError) {
-        messageDiv.innerHTML = content;
+        // Create message content wrapper
+        const contentWrapper = document.createElement('div');
+        contentWrapper.className = 'message-content';
+        contentWrapper.innerHTML = content;
+        messageDiv.appendChild(contentWrapper);
+        
+        // Add copy button for AI messages
+        const copyButton = document.createElement('button');
+        copyButton.className = 'copy-message';
+        copyButton.innerHTML = '<i class="fas fa-copy"></i>';
+        copyButton.title = 'Copy to clipboard';
+        copyButton.addEventListener('click', function() {
+            // Create a temporary element to handle HTML content
+            const tempElement = document.createElement('div');
+            tempElement.innerHTML = content;
+            const textToCopy = tempElement.textContent || tempElement.innerText;
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                // Change icon to indicate copied
+                copyButton.innerHTML = '<i class="fas fa-check"></i>';
+                copyButton.classList.add('copied');
+                
+                // Reset icon after 2 seconds
+                setTimeout(() => {
+                    copyButton.innerHTML = '<i class="fas fa-copy"></i>';
+                    copyButton.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        });
+        messageDiv.appendChild(copyButton);
     } else {
         messageDiv.textContent = content;
     }
@@ -591,7 +622,7 @@ if (!document.querySelector('.conversation-item')) {
 
 .conversation-item.active {
     background-color: #edf2f7;
-    border-left: 3px solid #3498db;
+    border-left: 3px solid #042167;
 }
 
 .conversation-text {
@@ -712,7 +743,7 @@ if (!document.querySelector('.conversation-item')) {
 }
 
 .user-message {
-    background-color: #3498db;
+    background-color: #042167;
     color: white;
     margin-left: auto;
     border-bottom-right-radius: 4px;
@@ -723,10 +754,45 @@ if (!document.querySelector('.conversation-item')) {
     color: #2d3748;
     margin-right: auto;
     border-bottom-left-radius: 4px;
+    position: relative;
+}
+
+.message-content {
+    width: 100%;
+}
+
+.copy-message {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: none;
+    border: none;
+    color: #a0aec0;
+    cursor: pointer;
+    font-size: 14px;
+    opacity: 0;
+    transition: opacity 0.2s, color 0.2s;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.ai-message:hover .copy-message {
+    opacity: 0.7;
+}
+
+.copy-message:hover {
+    opacity: 1 !important;
+    color: #042167;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.copy-message.copied {
+    opacity: 1 !important;
+    color: #38a169;
 }
 
 .ai-message a {
-    color: #3498db;
+    color: #042167;
     text-decoration: underline;
 }
 
@@ -764,11 +830,11 @@ if (!document.querySelector('.conversation-item')) {
 }
 
 #user-input:focus {
-    border-color: #3498db;
+    border-color: #042167;
 }
 
 #send-button {
-    background-color: #3498db;
+    background-color: #042167;
     color: white;
     border: none;
     width: 40px;
@@ -890,4 +956,4 @@ if (!document.querySelector('.conversation-item')) {
 }
 </style>
 
-<?php require_once 'includes/footer.php'; ?> 
+<?php require_once 'includes/footer.php'; ?>
