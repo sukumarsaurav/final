@@ -155,7 +155,8 @@ error_log('Profile picture in session: ' . print_r($_SESSION['profile_picture'] 
                     <ul class="nav-menu">
                         <li class="nav-item"><a href="/about-us.php">About Us</a></li>
                         <li class="nav-item"><a href="/eligibility-test.php">Eligibility Check</a></li>
-                        <li class="nav-item"><a href="/become-member.php">Become Partner</a></li>
+                        <a href="/applicant.php" class="drawer-item">For Applicant</a>
+                        <a href="/become-member.php" class="drawer-item"> For Immigration Professionals</a>
                     </ul>
                 </nav>
                 
