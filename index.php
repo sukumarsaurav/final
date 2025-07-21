@@ -52,6 +52,10 @@ include('includes/header.php');
                         <i class="fas fa-tasks"></i>
                         <span>Browse thru reviews & ratings</span>
                     </div>
+                    <div class="feature-item">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Manage documents securely</span>
+                    </div>
                 </div>
                 <a href="register.php?type=applicant" class="btn btn-primary">Get Started</a>
             </div>
@@ -87,12 +91,12 @@ include('includes/header.php');
                 <a href="become-member.php" class="btn btn-primary">Join as Consultant</a>
             </div>
 
-            <!-- Platform Features -->
+            <!-- Combined Platform Features & AI Assistant -->
             <div class="service-card" data-aos="fade-up" data-aos-delay="400">
                 <div class="service-icon">
-                    <i class="fas fa-shield-alt"></i>
+                    <i class="fas fa-laptop-code"></i>
                 </div>
-                <h3>Platform Features</h3>
+                <h3>Platform Features & AI Assistant</h3>
                 <div class="service-features">
                     <div class="feature-item">
                         <i class="fas fa-comments"></i>
@@ -107,38 +111,15 @@ include('includes/header.php');
                         <span>Instant Notifications</span>
                     </div>
                     <div class="feature-item">
-                        <i class="fas fa-chart-line"></i>
-                        <span>Analytics & Insights</span>
-                    </div>
-                </div>
-                <a href="features.php" class="btn btn-primary">Learn More</a>
-            </div>
-
-            <!-- AI Assistant -->
-            <div class="service-card" data-aos="fade-up" data-aos-delay="500">
-                <div class="service-icon">
-                    <i class="fas fa-robot"></i>
-                </div>
-                <h3>AI Assistant</h3>
-                <div class="service-features">
-                    <div class="feature-item">
-                        <i class="fas fa-question-circle"></i>
-                        <span>24/7 Support</span>
-                    </div>
-                    <div class="feature-item">
-                        <i class="fas fa-lightbulb"></i>
-                        <span>Smart Recommendations</span>
+                        <i class="fas fa-brain"></i>
+                        <span>24/7 AI-Powered Support</span>
                     </div>
                     <div class="feature-item">
                         <i class="fas fa-language"></i>
                         <span>Multi-language Support</span>
                     </div>
-                    <div class="feature-item">
-                        <i class="fas fa-brain"></i>
-                        <span>Intelligent Responses</span>
-                    </div>
                 </div>
-                <a href="ai-assistant.php" class="btn btn-primary">Try AI Assistant</a>
+                <a href="features.php" class="btn btn-primary">Learn More</a>
             </div>
         </div>
     </div>
@@ -489,8 +470,7 @@ include('includes/header.php');
                 <div class="step-content">
                     <h3>Create Your Account</h3>
                     <p>Begin your immigration journey by creating a free account. Complete your profile with essential
-                        information to help us understand your goals and requirements. Our system will guide you through
-                        the initial setup process.</p>
+                        information to help us understand your goals and requirements.</p>
                     <a href="register.php" class="btn btn-outline">Sign Up Now</a>
                 </div>
             </div>
@@ -501,8 +481,7 @@ include('includes/header.php');
                 <div class="step-content">
                     <h3>Check Eligibility</h3>
                     <p>Take our comprehensive eligibility assessment to determine your immigration options. Our advanced
-                        algorithm analyzes your profile against various immigration programs to find the best pathway
-                        for your situation.</p>
+                        algorithm analyzes your profile against various immigration programs.</p>
                     <a href="eligibility-test.php" class="btn btn-outline">Start Assessment</a>
                 </div>
             </div>
@@ -513,8 +492,7 @@ include('includes/header.php');
                 <div class="step-content">
                     <h3>Book Consultation</h3>
                     <p>Schedule a free consultation with our immigration experts. Discuss your options, get personalized
-                        advice, and learn about the next steps in your immigration journey. Choose a time that works
-                        best for you.</p>
+                        advice, and learn about the next steps in your immigration journey.</p>
                     <a href="book-consultation.php" class="btn btn-outline">Book Now</a>
                 </div>
             </div>
@@ -525,8 +503,7 @@ include('includes/header.php');
                 <div class="step-content">
                     <h3>Begin Your Application</h3>
                     <p>Start your immigration process with expert guidance. Our consultants will help you prepare and
-                        submit your application, ensuring all requirements are met. Track your progress through our
-                        user-friendly dashboard.</p>
+                        submit your application, ensuring all requirements are met.</p>
                     <a href="services.php" class="btn btn-outline">View Services</a>
                 </div>
             </div>
@@ -727,78 +704,85 @@ include('includes/header.php');
 }
 
 .steps-container {
-    display: flex;
-    flex-direction: column;
-    gap: 40px;
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 20px;
     margin-top: 50px;
     position: relative;
 }
 
-.steps-container::before {
-    content: '';
-    position: absolute;
-    left: 30px;
-    top: 60px;
-    bottom: 60px;
-    width: 2px;
-    background: var(--primary-color);
-    z-index: 1;
+@media (min-width: 768px) {
+    .steps-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .steps-container {
+        grid-template-columns: repeat(4, 1fr);
+    }
 }
 
 .step-card {
     background: var(--white);
-    padding: 40px;
-    padding-left: 80px;
+    padding: 30px;
     border-radius: 15px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
     position: relative;
-    margin-left: 30px;
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.step-card:hover {
+    transform: translateY(-5px);
 }
 
 .step-number {
     position: absolute;
-    left: -30px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 60px;
-    height: 60px;
+    left: 20px;
+    top: 20px;
+    width: 40px;
+    height: 40px;
     background: var(--primary-color);
     color: var(--white);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: bold;
     z-index: 2;
-    border: 4px solid var(--white);
 }
 
 .step-content {
     position: relative;
+    padding-top: 40px;
 }
 
 .step-content h3 {
     margin-bottom: 15px;
     color: var(--primary-color);
-    font-size: 1.5rem;
+    font-size: 1.25rem;
 }
 
 .step-content p {
     margin-bottom: 20px;
     color: var(--text-color);
-    line-height: 1.6;
+    line-height: 1.5;
+    flex-grow: 1;
 }
 
 .btn-outline {
     display: inline-block;
-    padding: 12px 25px;
+    padding: 10px 20px;
     border: 2px solid var(--primary-color);
     color: var(--primary-color);
     border-radius: 5px;
     text-decoration: none;
     transition: all 0.3s ease;
     font-weight: 500;
+    text-align: center;
 }
 
 .btn-outline:hover {
@@ -806,22 +790,23 @@ include('includes/header.php');
     color: var(--white);
 }
 
-@media (max-width: 768px) {
-    .steps-container::before {
-        left: 20px;
+@media (max-width: 767px) {
+    .step-card {
+        padding: 25px;
     }
     
-    .step-card {
-        padding: 30px;
-        padding-left: 70px;
-        margin-left: 20px;
-    }
-
     .step-number {
-        left: -20px;
-        width: 50px;
-        height: 50px;
-        font-size: 1.25rem;
+        width: 35px;
+        height: 35px;
+        font-size: 1.1rem;
+    }
+    
+    .step-content {
+        padding-top: 35px;
+    }
+    
+    .step-content h3 {
+        font-size: 1.1rem;
     }
 }
 </style>
