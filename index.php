@@ -125,6 +125,224 @@ include('includes/header.php');
     </div>
 </section>
 
+<!-- Featured Section -->
+<section class="featured-section">
+    <div class="container">
+        <div class="featured-content">
+            <div class="featured-text" data-aos="fade-right">
+                <h2>Revolutionizing Immigration Services</h2>
+                <p>Our platform brings together technology and expertise to simplify the immigration process.</p>
+                
+                <div class="featured-cards">
+                    <div class="featured-card">
+                        <div class="card-icon">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Global Reach</h3>
+                            <p>Connect with immigration professionals worldwide</p>
+                        </div>
+                    </div>
+                    
+                    <div class="featured-card">
+                        <div class="card-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Secure Platform</h3>
+                            <p>Your data is protected with enterprise-grade security</p>
+                        </div>
+                    </div>
+                    
+                    <div class="featured-card">
+                        <div class="card-icon">
+                            <i class="fas fa-rocket"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Fast Processing</h3>
+                            <p>Streamlined workflows for quicker application processing</p>
+                        </div>
+                    </div>
+                    
+                    <div class="featured-card">
+                        <div class="card-icon">
+                            <i class="fas fa-certificate"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Certified Experts</h3>
+                            <p>All consultants are verified and certified</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <a href="features.php" class="btn-featured">Discover More</a>
+            </div>
+            
+            <div class="featured-image" data-aos="fade-left">
+                <img src="assets/images/plane.png" alt="Immigration Services">
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+/* Featured Section Styles */
+.services {
+    margin-bottom: 60px; /* Add margin to the bottom of services section */
+}
+
+.featured-section {
+    background-color: #042167;
+    color: white;
+    padding: 80px 0;
+    overflow: visible; /* Changed from hidden to visible */
+    position: relative;
+}
+
+.featured-content {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+}
+
+.featured-text {
+    flex: 1;
+    padding-right: 20px;
+}
+
+.featured-text h2 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+
+.featured-text p {
+    font-size: 1.1rem;
+    margin-bottom: 30px;
+    opacity: 0.9;
+}
+
+.featured-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.featured-card {
+    background-color: rgba(15, 40, 101, 0.8); /* Darker blue background */
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.featured-card:hover {
+    background-color: rgba(21, 49, 119, 0.9);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.card-icon {
+    width: 50px;
+    height: 50px;
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.card-icon i {
+    font-size: 1.5rem;
+    color: white;
+}
+
+.card-content h3 {
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.card-content p {
+    font-size: 0.9rem;
+    margin: 0;
+    opacity: 0.8;
+}
+
+.btn-featured {
+    display: inline-block;
+    background-color: white;
+    color: #042167;
+    padding: 12px 30px;
+    border-radius: 30px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.btn-featured:hover {
+    background-color: rgba(255, 255, 255, 0.9);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.featured-image {
+    flex: 1;
+    position: relative;
+    height: 500px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.featured-image img {
+    max-width: 120%;
+    transform: translateY(-50%) translateX(10%); /* Move up and slightly right */
+    position: absolute;
+    z-index: 2;
+    filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.3));
+}
+
+@media (max-width: 992px) {
+    .featured-content {
+        flex-direction: column;
+    }
+    
+    .featured-text {
+        padding-right: 0;
+        margin-bottom: 40px;
+    }
+    
+    .featured-image {
+        height: 400px;
+    }
+    
+    .featured-image img {
+        max-width: 100%;
+        transform: translateY(-30%);
+    }
+}
+
+@media (max-width: 768px) {
+    .featured-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .featured-text h2 {
+        font-size: 2rem;
+    }
+    
+    .featured-image {
+        height: 300px;
+    }
+}
+</style>
+
 <!-- Platform Benefits Section -->
 <section class="section platform-benefits">
     <div class="container">
@@ -138,7 +356,6 @@ include('includes/header.php');
                 <div class="benefit-content">
                     <div class="benefit-info">
                         <h3>
-
                             Real-Time Application Tracking
                         </h3>
                         <p class="benefit-description">
@@ -179,6 +396,11 @@ include('includes/header.php');
                         </ul>
                     </div>
                     <div class="benefit-image">
+                        <!-- Decorative Circles -->
+                        <div class="circle-decoration">
+                            <div class="circle circle-1"></div>
+                            <div class="circle circle-2"></div>
+                        </div>
                         <!-- SVG Shape Background -->
                         <div class="svg-background">
                             <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="shape shape-1">
@@ -204,6 +426,11 @@ include('includes/header.php');
             <div class="benefit-section" data-aos="fade-up">
                 <div class="benefit-content reverse">
                     <div class="benefit-image">
+                        <!-- Decorative Circles -->
+                        <div class="circle-decoration">
+                            <div class="circle circle-1"></div>
+                            <div class="circle circle-2"></div>
+                        </div>
                         <!-- SVG Shape Background -->
                         <div class="svg-background">
                             <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="shape shape-3">
@@ -270,7 +497,6 @@ include('includes/header.php');
                 <div class="benefit-content">
                     <div class="benefit-info">
                         <h3>
-
                             Direct Expert Communication
                         </h3>
                         <p class="benefit-description">
@@ -310,6 +536,11 @@ include('includes/header.php');
                         </ul>
                     </div>
                     <div class="benefit-image">
+                        <!-- Decorative Circles -->
+                        <div class="circle-decoration">
+                            <div class="circle circle-1"></div>
+                            <div class="circle circle-2"></div>
+                        </div>
                         <!-- SVG Shape Background -->
                         <div class="svg-background">
                             <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="shape shape-5">
@@ -336,6 +567,64 @@ include('includes/header.php');
         </div>
     </div>
 </section>
+
+<style>
+/* Decorative circles for benefit images */
+.benefit-image {
+    position: relative;
+}
+
+.circle-decoration {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+.circle {
+    position: absolute;
+    border-radius: 50%;
+    background-color: #4a90e2;
+}
+
+.circle-1 {
+    width: 300px;
+    height: 300px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0.1;
+}
+
+.circle-2 {
+    width: 200px;
+    height: 200px;
+    top: 60%;
+    left: 40%;
+    transform: translate(-50%, -50%);
+    opacity: 0.15;
+}
+
+.image-container {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+}
+
+.image-container img {
+    max-width: 90%;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    position: relative;
+    z-index: 2;
+}
+
+/* Hide SVG backgrounds since we're using circles now */
+.svg-background {
+    display: none;
+}
+</style>
+
 <div class="benefits-cta" data-aos="fade-up">
     <p>Ready to experience our innovative platform?</p>
     <div class="cta-buttons">

@@ -93,6 +93,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Handle profile picture upload
         $profile_picture = $user_data['profile_picture'];
         if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] == 0) {
+            // Delete old profile picture if exists
+            if (!empty($profile_picture) && file_exists('../../uploads/' . $profile_picture)) {
+                unlink('../../uploads/' . $profile_picture);
+            }
             $upload_result = handle_user_file_upload(
                 $user_id, 
                 $_FILES['profile_picture'],
@@ -1266,33 +1270,34 @@ document.addEventListener('DOMContentLoaded', function() {
     const profileImagePreview = document.getElementById('profile-image-preview');
     const changePhotoBtn = document.querySelector('.change-photo-btn');
     
-    // Open file picker when the camera icon is clicked
-    changePhotoBtn.addEventListener('click', function() {
+    // Prevent event bubbling and default behavior
+    changePhotoBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
         profilePicUpload.click();
     });
     
-    // Preview and submit when file is selected
-    profilePicUpload.addEventListener('change', function() {
+    // Handle file selection
+    profilePicUpload.addEventListener('change', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
         if (this.files && this.files[0]) {
             // First show a preview
             const reader = new FileReader();
-            
             reader.onload = function(e) {
                 profileImagePreview.src = e.target.result;
-                
                 // Submit the form to update the profile picture
                 profilePicForm.submit();
             }
-            
             reader.readAsDataURL(this.files[0]);
         }
     });
-    
     // Handle the file upload in the main form
     const fileUpload = document.getElementById('profile_picture');
     const fileText = document.querySelector('.file-upload-text');
-    
-    fileUpload.addEventListener('change', function() {
+    fileUpload.addEventListener('change', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
         if (this.files && this.files[0]) {
             fileText.innerHTML = '<i class="fas fa-file"></i> ' + this.files[0].name;
         } else {
