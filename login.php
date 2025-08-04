@@ -60,8 +60,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
     
     // Validate credentials
     if(empty($email_err) && empty($password_err)) {
-        // Prepare a select statement
-        $sql = "SELECT id, first_name, last_name, email, password, user_type, email_verified, status FROM users WHERE email = ? AND auth_provider = 'local'";
+        // Prepare a select statement - INCLUDE profile_picture in the main query
+        $sql = "SELECT id, first_name, last_name, email, password, user_type, email_verified, status, profile_picture FROM users WHERE email = ? AND auth_provider = 'local'";
         
         if($stmt = mysqli_prepare($conn, $sql)) {
             // Bind variables to the prepared statement as parameters
@@ -77,8 +77,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
                 
                 // Check if email exists, if yes then verify password
                 if(mysqli_stmt_num_rows($stmt) == 1) {                    
-                    // Bind result variables
-                    mysqli_stmt_bind_result($stmt, $id, $first_name, $last_name, $email, $hashed_password, $user_type, $email_verified, $status);
+                    // Bind result variables - INCLUDE profile_picture here
+                    mysqli_stmt_bind_result($stmt, $id, $first_name, $last_name, $email, $hashed_password, $user_type, $email_verified, $status, $profile_picture);
                     if(mysqli_stmt_fetch($stmt)) {
                         if(password_verify($password, $hashed_password)) {
                             // Check if email is verified
@@ -99,17 +99,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
                                 $_SESSION["first_name"] = $first_name;
                                 $_SESSION["last_name"] = $last_name;
                                 $_SESSION["user_type"] = $user_type;
-                                
-                                // Fetch and set profile picture in session
-                                $profile_query = "SELECT profile_picture FROM users WHERE id = ?";
-                                $stmt_profile = mysqli_prepare($conn, $profile_query);
-                                mysqli_stmt_bind_param($stmt_profile, "i", $id);
-                                mysqli_stmt_execute($stmt_profile);
-                                mysqli_stmt_bind_result($stmt_profile, $profile_picture);
-                                if(mysqli_stmt_fetch($stmt_profile)) {
-                                    $_SESSION["profile_picture"] = $profile_picture;
-                                }
-                                mysqli_stmt_close($stmt_profile);
+                                $_SESSION["profile_picture"] = $profile_picture; // Set directly from main query
                                 
                                 $_SESSION["last_activity"] = time();
                                 $_SESSION["created_at"] = time();
