@@ -1,5 +1,6 @@
 <?php
 // Set page title
+ob_start();
 $page_title = "Meeting Details - Applicant";
 
 // Include header
@@ -972,7 +973,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-
+<?php
+// End output buffering and send content to browser
+ob_end_flush();
+?>
 <?php
 // Include footer
 include('includes/footer.php');

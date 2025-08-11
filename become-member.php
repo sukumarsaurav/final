@@ -30,7 +30,7 @@ if ($result && $result->num_rows > 0) {
         <div class="hero-content text-center">
             <h1 class="hero-title">Manage your Immigration Law Firm. Grow your clients. The only Case Management Software you need. Try it for free today.</h1>
             <p class="hero-subtitle">"Clear, Simple, Flexible plans for Immigration firms of any size</p>
-            
+            <img src="assets/images/main-consultant.png" alt="Main Consultant" class="hero-image">
         </div>
     </div>
 </section>
@@ -154,7 +154,7 @@ if ($result && $result->num_rows > 0) {
                                 </svg>
                             </div>
                             <div class="image-container">
-                                <img src="assets/images/visa-processing.png" alt="Visa Processing">
+                                <img src="assets/images/main-consultant.png" alt="Visa Processing">
                             </div>
                         </div>
                         <div class="benefit-info">
@@ -240,7 +240,7 @@ if ($result && $result->num_rows > 0) {
                                 </svg>
                             </div>
                             <div class="image-container">
-                                <img src="assets/images/service-management.png" alt="Service Management">
+                                <img src="assets/images/main-consultant.png" alt="Service Management">
                             </div>
                         </div>
                     </div>

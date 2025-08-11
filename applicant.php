@@ -19,6 +19,7 @@ require_once 'includes/functions.php';
         <div class="hero-content text-center">
             <h1 class="hero-title">Your Immigration Journey Made Simple</h1>
             <p class="hero-subtitle">Connect with licensed immigration professionals, track your application progress, and get expert guidance throughout your visa process</p>
+            <img src="assets/images/main-consultant.png" alt="Main Consultant" class="hero-image">
             <div class="hero-buttons">
                 <a href="register.php?type=applicant" class="btn btn-primary">Join as Applicant</a>
                 <a href="eligibility-test.php" class="btn btn-secondary">Check Eligibility</a>

@@ -102,6 +102,7 @@ error_log('Profile picture in session: ' . print_r($_SESSION['profile_picture'] 
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/assets/css/styles.css">
+    <link rel="stylesheet" href="/assets/css/page.css">
 
     <!-- Load utils.js before other scripts -->
     <script src="/assets/js/utils.js"></script>

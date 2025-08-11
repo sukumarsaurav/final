@@ -9,12 +9,13 @@ include('includes/header.php');
         <div class="hero-content text-center">
             <h1 class="hero-title">Transforming Immigration Services Through Technology</h1>
             <p class="hero-subtitle">We're building the future of immigration consulting by connecting applicants with licensed professionals through our innovative digital platform.</p>
+            <img src="assets/images/main-consultant.png" alt="Main Consultant" class="hero-image">
         </div>
     </div>
 </section>
 
 <!-- Vision & Mission Section -->
-<section class="vision-mission" style="padding: 80px 0; background-color: #fff;">
+<section class="vision-mission">
     <div class="container">
         <div class="vision-mission-grid">
             <div class="vision-box">
@@ -36,7 +37,7 @@ include('includes/header.php');
 </section>
 
 <!-- Platform Benefits Section -->
-<section class="platform-benefits" style="padding: 80px 0; background-color: #fff;">
+<section class="platform-benefits">
     <div class="container">
         <h2 class="section-title">How We Help</h2>
         <div class="benefits-grid">
@@ -114,7 +115,7 @@ include('includes/header.php');
 </section>
 
 <!-- Problem & Solution Section -->
-<section class="problem-solution" style="padding: 80px 0; background-color: #f8f9fa;">
+<section class="problem-solution">
     <div class="container">
         <h2 class="section-title">The Problems We Solve</h2>
         <div class="problem-solution-grid">
@@ -149,7 +150,7 @@ include('includes/header.php');
 </section>
 
 <!-- Values Section -->
-<section class="our-values" style="padding: 80px 0; background-color: #f8f9fa;">
+<section class="our-values">
     <div class="container">
         <h2 class="section-title">Our Core Values</h2>
         <div class="values-grid">

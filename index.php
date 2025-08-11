@@ -5,346 +5,138 @@ require_once "includes/session.php";
 $page_title = "Visafy | Canadian Immigration Consultancy";
 include('includes/header.php');
 ?>
+<link rel="stylesheet" href="assets/css/responsive.css">
 
 <!-- Hero Section -->
-<section class="hero">
+<section class="hero bg-white">
     <div class="container">
-        <div class="hero-content text-center">
-            <h1 class="hero-title">Visafy, Your AI-fied Immigration Partner 
-               
-            </h1>
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1 class="hero-title">Visafy, Your AI-fied Immigration Partner</h1>
             <p class="hero-subtitle">An Immigration Marketplace serving both Immigration Professionals & Visa seekers across the globe</p>
             <div class="hero-buttons">
                 <a href="eligibility-test.php" class="btn btn-primary">Check Eligibility</a>
                 <a href="book-service.php" class="btn btn-secondary">Get Consultation</a>
+                </div>
+            </div>
+            <div class="hero-image-container">
+                <img src="assets/images/main-consultant.png" alt="Main Consultant" class="hero-image">
             </div>
         </div>
     </div>
 </section>
 
 <!-- Services Section -->
-<section class="section services">
+<section class="section services bg-dark-blue">
     <div class="container">
         <h2 class="section-title" data-aos="fade-up">Our Platform</h2>
         <p class="section-subtitle" data-aos="fade-up" data-aos-delay="100">Visafy is world's first Immigration Marketplace connecting Immigration Professionals and Applicants in one unified platform. For Immigration Professionals, it is a AI powered CRM Platform. For Applicants, it helps you at every stage of your Visa & Immigration journey with access to free Eligibility Checks, DIY tools & access to Professional assistance.</p>
-
-        <div class="services-grid">
-            <!-- For Applicants -->
-            <div class="service-card" data-aos="fade-up" data-aos-delay="200">
-                <div class="service-icon">
-                    <i class="fas fa-user-check"></i>
+        
+        <div class="services-grid" style="grid-template-columns: 4.5fr 2fr 2fr; gap: 2rem;">
+             <!-- Platform Image Column -->
+             <div class="platform-image-column" data-aos="fade-up" data-aos-delay="400">
+                <div class="animated-platform-image">
+                    <img src="assets/images/main-consultant.png" alt="Visafy Platform" style="max-width: 100%; height: auto;">
                 </div>
-                <h3>Applicants</h3>
-                <div class="service-features">
-                    <div class="feature-item">
-                        <i class="fas fa-search"></i>
+            </div>
+            <!-- For Applicants -->
+            <div class="service-card" data-aos="fade-up" data-aos-delay="200" style="min-height: 500px; display: flex; flex-direction: column; justify-content: space-between;">
+              
+                <h3 style="text-align: center; margin-bottom: 2rem; font-size: 1.8rem;">Applicants</h3>
+                <div class="service-features" style="flex-grow: 1;">
+                    <div class="feature-item" style="margin-bottom: 1.5rem;">
                         <span>Check Eligibility</span>
                     </div>
-                    <div class="feature-item">
-                        <i class="fas fa-star"></i>
+                    <div class="feature-item" style="margin-bottom: 1.5rem;">
                         <span>Get Professional Assistance</span>
                     </div>
-                    <div class="feature-item">
-                        <i class="fas fa-calendar-check"></i>
+                    <div class="feature-item" style="margin-bottom: 1.5rem;">
                         <span>Engage with Immigration Professionals</span>
                     </div>
-                    <div class="feature-item">
-                        <i class="fas fa-tasks"></i>
+                    <div class="feature-item" style="margin-bottom: 1.5rem;">
                         <span>Browse thru reviews & ratings</span>
                     </div>
-                    <div class="feature-item">
-                        <i class="fas fa-file-alt"></i>
+                    <div class="feature-item" style="margin-bottom: 1.5rem;">
                         <span>Manage documents securely</span>
                     </div>
                 </div>
-                <a href="register.php?type=applicant" class="btn btn-primary">Get Started</a>
+                <a href="register.php?type=applicant" class="btn btn-primary" style="margin-top: auto;">Get Started</a>
             </div>
 
             <!-- For Consultants -->
-            <div class="service-card" data-aos="fade-up" data-aos-delay="300">
-                <div class="service-icon">
-                    <i class="fas fa-building"></i>
-                </div>
-                <h3>Immigration Professionals</h3>
-                <div class="service-features">
-                    <div class="feature-item">
-                        <i class="fas fa-users"></i>
+            <div class="service-card" data-aos="fade-up" data-aos-delay="300" style="min-height: 500px; display: flex; flex-direction: column; justify-content: space-between;">
+              
+                <h3 style="text-align: center; margin-bottom: 2rem; font-size: 1.8rem;">Immigration Professionals</h3>
+                <div class="service-features" style="flex-grow: 1;">
+                    <div class="feature-item" style="margin-bottom: 1.5rem;">
                         <span>Full-fledged Practice Management system</span>
                     </div>
-                    <div class="feature-item">
-                        <i class="fas fa-calendar-alt"></i>
+                    <div class="feature-item" style="margin-bottom: 1.5rem;">
                         <span>Grow your reputation with verified reviews</span>
                     </div>
-                    <div class="feature-item">
-                        <i class="fas fa-file-alt"></i>
+                    <div class="feature-item" style="margin-bottom: 1.5rem;">
                         <span>Manage Clients, Cases, Staff in one place</span>
                     </div>
-                    <div class="feature-item">
-                        <i class="fas fa-robot"></i>
+                    <div class="feature-item" style="margin-bottom: 1.5rem;">
                         <span>AI Powered Case Law & Compliance</span>
                     </div>
-                    <div class="feature-item">
-                        <i class="fas fa-shield-alt"></i>
+                    <div class="feature-item" style="margin-bottom: 1.5rem;">
                         <span>Stay Regulator Compliant & reduce Practice risks</span>
                     </div>
                 </div>
-                <a href="become-member.php" class="btn btn-primary">Join as Consultant</a>
-            </div>
-
-            <!-- Combined Platform Features & AI Assistant -->
-            <div class="service-card" data-aos="fade-up" data-aos-delay="400">
-                <div class="service-icon">
-                    <i class="fas fa-laptop-code"></i>
-                </div>
-                <h3>Platform Features & AI Assistant</h3>
-                <div class="service-features">
-                    <div class="feature-item">
-                        <i class="fas fa-comments"></i>
-                        <span>Real-time Communication</span>
-                    </div>
-                    <div class="feature-item">
-                        <i class="fas fa-file-upload"></i>
-                        <span>Secure Document Management</span>
-                    </div>
-                    <div class="feature-item">
-                        <i class="fas fa-bell"></i>
-                        <span>Instant Notifications</span>
-                    </div>
-                    <div class="feature-item">
-                        <i class="fas fa-brain"></i>
-                        <span>24/7 AI-Powered Support</span>
-                    </div>
-                    <div class="feature-item">
-                        <i class="fas fa-language"></i>
-                        <span>Multi-language Support</span>
-                    </div>
-                </div>
-                <a href="features.php" class="btn btn-primary">Learn More</a>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Featured Section -->
-<section class="featured-section">
-    <div class="container">
-        <div class="featured-content">
-            <div class="featured-text" data-aos="fade-right">
-                <h2>Revolutionizing Immigration Services</h2>
-                <p>Our platform brings together technology and expertise to simplify the immigration process.</p>
-                
-                <div class="featured-cards">
-                    <div class="featured-card">
-                        <div class="card-icon">
-                            <i class="fas fa-globe"></i>
-                        </div>
-                        <div class="card-content">
-                            <h3>Global Reach</h3>
-                            <p>Connect with immigration professionals worldwide</p>
-                        </div>
-                    </div>
-                    
-                    <div class="featured-card">
-                        <div class="card-icon">
-                            <i class="fas fa-lock"></i>
-                        </div>
-                        <div class="card-content">
-                            <h3>Secure Platform</h3>
-                            <p>Your data is protected with enterprise-grade security</p>
-                        </div>
-                    </div>
-                    
-                    <div class="featured-card">
-                        <div class="card-icon">
-                            <i class="fas fa-rocket"></i>
-                        </div>
-                        <div class="card-content">
-                            <h3>Fast Processing</h3>
-                            <p>Streamlined workflows for quicker application processing</p>
-                        </div>
-                    </div>
-                    
-                    <div class="featured-card">
-                        <div class="card-icon">
-                            <i class="fas fa-certificate"></i>
-                        </div>
-                        <div class="card-content">
-                            <h3>Certified Experts</h3>
-                            <p>All consultants are verified and certified</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <a href="features.php" class="btn-featured">Discover More</a>
+                <a href="become-member.php" class="btn btn-primary" style="margin-top: auto;">Join as Consultant</a>
             </div>
             
-            <div class="featured-image" data-aos="fade-left">
-                <img src="assets/images/plane.png" alt="Immigration Services">
-            </div>
+           
         </div>
     </div>
 </section>
 
 <style>
-/* Featured Section Styles */
-.services {
-    margin-bottom: 60px; /* Add margin to the bottom of services section */
-}
-
-.featured-section {
-    background-color: #042167;
-    color: white;
-    padding: 80px 0;
-    overflow: visible; /* Changed from hidden to visible */
+.animated-platform-image {
     position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    transition: all 0.5s ease;
 }
 
-.featured-content {
-    display: flex;
-    align-items: center;
-    gap: 40px;
-}
-
-.featured-text {
-    flex: 1;
-    padding-right: 20px;
-}
-
-.featured-text h2 {
-    font-size: 2.5rem;
-    margin-bottom: 20px;
-    font-weight: 700;
-}
-
-.featured-text p {
-    font-size: 1.1rem;
-    margin-bottom: 30px;
-    opacity: 0.9;
-}
-
-.featured-cards {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-    margin-bottom: 30px;
-}
-
-.featured-card {
-    background-color: rgba(15, 40, 101, 0.8); /* Darker blue background */
-    border-radius: 10px;
-    padding: 20px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    transition: all 0.3s ease;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.featured-card:hover {
-    background-color: rgba(21, 49, 119, 0.9);
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-}
-
-.card-icon {
-    width: 50px;
-    height: 50px;
-    background-color: rgba(255, 255, 255, 0.15);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.card-icon i {
-    font-size: 1.5rem;
-    color: white;
-}
-
-.card-content h3 {
-    font-size: 1.1rem;
-    margin-bottom: 5px;
-    font-weight: 600;
-}
-
-.card-content p {
-    font-size: 0.9rem;
-    margin: 0;
-    opacity: 0.8;
-}
-
-.btn-featured {
-    display: inline-block;
-    background-color: white;
-    color: #042167;
-    padding: 12px 30px;
-    border-radius: 30px;
-    font-weight: 600;
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-
-.btn-featured:hover {
-    background-color: rgba(255, 255, 255, 0.9);
-    transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-}
-
-.featured-image {
-    flex: 1;
-    position: relative;
-    height: 500px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.featured-image img {
-    max-width: 120%;
-    transform: translateY(-50%) translateX(10%); /* Move up and slightly right */
+.animated-platform-image::before {
+    content: '';
     position: absolute;
-    z-index: 2;
-    filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.3));
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent);
+    transform: skewX(-25deg);
+    transition: all 0.75s ease;
+    z-index: 1;
 }
 
-@media (max-width: 992px) {
-    .featured-content {
-        flex-direction: column;
-    }
-    
-    .featured-text {
-        padding-right: 0;
-        margin-bottom: 40px;
-    }
-    
-    .featured-image {
-        height: 400px;
-    }
-    
-    .featured-image img {
-        max-width: 100%;
-        transform: translateY(-30%);
-    }
+.animated-platform-image:hover::before {
+    left: 100%;
 }
 
-@media (max-width: 768px) {
-    .featured-cards {
-        grid-template-columns: 1fr;
-    }
-    
-    .featured-text h2 {
-        font-size: 2rem;
-    }
-    
-    .featured-image {
-        height: 300px;
-    }
+.animated-platform-image img {
+    transform: scale(1);
+    transition: transform 0.6s ease-in-out;
+}
+
+.animated-platform-image:hover img {
+    transform: scale(1.05);
+}
+
+.platform-image-column {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
 }
 </style>
 
 <!-- Platform Benefits Section -->
-<section class="section platform-benefits">
+<section class="section platform-benefits bg-white">
     <div class="container">
         <h2 class="section-title" data-aos="fade-up">Your Immigration Journey, Simplified</h2>
         <p class="section-subtitle" data-aos="fade-up" data-aos-delay="100">Experience a seamless immigration process
@@ -426,11 +218,7 @@ include('includes/header.php');
             <div class="benefit-section" data-aos="fade-up">
                 <div class="benefit-content reverse">
                     <div class="benefit-image">
-                        <!-- Decorative Circles -->
-                        <div class="circle-decoration">
-                            <div class="circle circle-1"></div>
-                            <div class="circle circle-2"></div>
-                        </div>
+                   
                         <!-- SVG Shape Background -->
                         <div class="svg-background">
                             <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="shape shape-3">
@@ -568,538 +356,370 @@ include('includes/header.php');
     </div>
 </section>
 
-<style>
-/* Decorative circles for benefit images */
-.benefit-image {
-    position: relative;
-}
 
-.circle-decoration {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
-}
-
-.circle {
-    position: absolute;
-    border-radius: 50%;
-    background-color: #4a90e2;
-}
-
-.circle-1 {
-    width: 300px;
-    height: 300px;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    opacity: 0.1;
-}
-
-.circle-2 {
-    width: 200px;
-    height: 200px;
-    top: 60%;
-    left: 40%;
-    transform: translate(-50%, -50%);
-    opacity: 0.15;
-}
-
-.image-container {
-    position: relative;
-    z-index: 1;
-    text-align: center;
-}
-
-.image-container img {
-    max-width: 90%;
-    border-radius: 10px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-    position: relative;
-    z-index: 2;
-}
-
-/* Hide SVG backgrounds since we're using circles now */
-.svg-background {
-    display: none;
-}
-</style>
-
-<div class="benefits-cta" data-aos="fade-up">
-    <p>Ready to experience our innovative platform?</p>
-    <div class="cta-buttons">
-        <a href="register.php" class="btn-primary">
-            <i class="fas fa-user-plus"></i> Sign up for Free
-        </a>
-        <a href="how-it-works.php" class="btn-secondary">
-            <i class="fas fa-play-circle"></i> Watch Demo
-        </a>
-    </div>
-</div>
 <!-- Key Benefits Section -->
-<section class="section key-benefits">
+<section class="section key-benefits bg-dark-blue">
     <div class="container">
         <h2 class="section-title" data-aos="fade-up">Why Choose Visafy?</h2>
         <p class="section-subtitle" data-aos="fade-up" data-aos-delay="100">Experience a seamless immigration process
             with our comprehensive platform</p>
+        
+
 
         <div class="benefits-grid">
-            <!-- Expert Guidance -->
+            <!-- Row 1: Licensed Consultants & Digital Platform -->
             <div class="benefit-card" data-aos="fade-up" data-aos-delay="200">
-                <div class="svg-background">
-                    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                        <path
-                            d="M42.7,-73.4C55.9,-67.1,67.7,-57.2,75.9,-44.6C84.1,-32,88.7,-16,88.1,-0.3C87.5,15.3,81.8,30.6,73.1,43.9C64.4,57.2,52.8,68.5,39.1,75.3C25.4,82.1,9.7,84.4,-5.9,83.1C-21.5,81.8,-37,76.9,-50.9,68.5C-64.8,60.1,-77.1,48.3,-83.3,33.8C-89.5,19.3,-89.6,2.2,-85.1,-13.2C-80.6,-28.6,-71.5,-42.3,-59.8,-51.6C-48.1,-60.9,-33.8,-65.8,-20.4,-70.3C-7,-74.8,5.5,-78.9,18.8,-79.1C32.1,-79.3,46.2,-75.6,42.7,-73.4Z"
-                            transform="translate(100 100)" />
-                    </svg>
+                <div class="benefit-image">
+                    <img src="assets/images/main-consultant.png" alt="Licensed Consultants">
                 </div>
-                <div class="benefit-icon">
-                    <i class="fas fa-user-tie"></i>
+                <div class="benefit-content">
+                    <h3>Licensed Consultants</h3>
+                    <p>Get expert guidance from ICCRC licensed consultants with proven track records in successful
+                        applications.</p>
                 </div>
-                <h3>Licensed Consultants</h3>
-                <p>Get expert guidance from ICCRC licensed consultants with proven track records in successful
-                    applications.</p>
             </div>
 
-            <!-- Digital Platform -->
             <div class="benefit-card" data-aos="fade-up" data-aos-delay="300">
-                <div class="svg-background">
-                    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                        <path
-                            d="M47.7,-80.4C59.3,-71.3,64.8,-54.7,71.9,-39.4C79,-24.2,87.7,-10.3,87.5,3.4C87.3,17.1,78.1,30.6,68.3,42.8C58.5,55,48,65.9,35.1,73.4C22.2,80.9,6.9,85,-8.9,84.5C-24.8,84,-41.2,78.9,-54.3,69.5C-67.4,60.1,-77.2,46.4,-83.1,30.8C-89,15.3,-91,-1.1,-87.4,-16.2C-83.8,-31.3,-74.6,-45.2,-62.3,-54.8C-50,-64.4,-34.6,-69.8,-19.9,-74.9C-5.2,-80,9.7,-84.8,24.4,-84.1C39.2,-83.4,53.8,-77.2,47.7,-80.4Z"
-                            transform="translate(100 100)" />
-                    </svg>
+                <div class="benefit-image">
+                    <img src="assets/images/main-consultant.png" alt="Digital Platform">
                 </div>
-                <div class="benefit-icon">
-                    <i class="fas fa-laptop"></i>
+                <div class="benefit-content">
+                    <h3>Digital-First Platform</h3>
+                    <p>Manage your entire immigration journey through our user-friendly digital platform, accessible
+                        anytime, anywhere.</p>
                 </div>
-                <h3>Digital-First Platform</h3>
-                <p>Manage your entire immigration journey through our user-friendly digital platform, accessible
-                    anytime, anywhere.</p>
             </div>
 
-            <!-- Document Management -->
+            <!-- Row 2: Document Management & Real-time Updates -->
             <div class="benefit-card" data-aos="fade-up" data-aos-delay="400">
-                <div class="svg-background">
-                    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                        <path
-                            d="M39.9,-68.1C52.6,-62.1,64.5,-53.1,72.7,-41C80.9,-28.8,85.4,-14.4,83.9,-0.9C82.3,12.7,74.8,25.4,66.4,37.8C58,50.3,48.7,62.5,36.5,70.1C24.2,77.7,9.1,80.7,-5.9,79.5C-20.9,78.3,-35.9,72.9,-47.5,64C-59.1,55,-67.3,42.5,-73.4,28.5C-79.5,14.5,-83.5,-1,-80.8,-15.2C-78.1,-29.4,-68.7,-42.3,-56.8,-48.9C-44.9,-55.5,-30.5,-55.8,-17.7,-61.8C-4.9,-67.8,6.3,-79.5,18.4,-80.5C30.5,-81.5,43.5,-71.8,39.9,-68.1Z"
-                            transform="translate(100 100)" />
-                    </svg>
+                <div class="benefit-image">
+                    <img src="assets/images/main-consultant.png" alt="Document Management">
                 </div>
-                <div class="benefit-icon">
-                    <i class="fas fa-file-alt"></i>
+                <div class="benefit-content">
+                    <h3>Smart Document Management</h3>
+                    <p>Securely store and manage all your documents with our advanced document handling system.</p>
                 </div>
-                <h3>Smart Document Management</h3>
-                <p>Securely store and manage all your documents with our advanced document handling system.</p>
             </div>
 
-            <!-- Real-time Updates -->
             <div class="benefit-card" data-aos="fade-up" data-aos-delay="500">
-                <div class="svg-background">
-                    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                        <path
-                            d="M47.3,-79.7C62.9,-71.9,78.5,-62.3,86.4,-48.3C94.3,-34.3,94.5,-15.7,90.3,0.9C86.1,17.4,77.5,31.8,67.2,44.7C56.9,57.6,44.9,69,30.7,76.2C16.5,83.4,0.1,86.4,-16.4,83.3C-32.9,80.2,-45.5,71,-57.8,59C-70.1,47,-80.1,32.2,-84.6,15.6C-89.1,-1,-88.1,-19.4,-81.5,-35.1C-74.9,-50.8,-62.7,-63.8,-48.1,-72.1C-33.5,-80.4,-16.7,-84,0.2,-84.4C17.2,-84.8,34.3,-82,47.3,-79.7Z"
-                            transform="translate(100 100)" />
-                    </svg>
+                <div class="benefit-image">
+                    <img src="assets/images/main-consultant.png" alt="Real-time Updates">
                 </div>
-                <div class="benefit-icon">
-                    <i class="fas fa-bell"></i>
+                <div class="benefit-content">
+                    <h3>Real-time Updates</h3>
+                    <p>Stay informed with instant notifications and real-time updates on your application status.</p>
                 </div>
-                <h3>Real-time Updates</h3>
-                <p>Stay informed with instant notifications and real-time updates on your application status.</p>
             </div>
 
-            <!-- Success Rate -->
+            <!-- Row 3: High Success Rate & 24/7 Support -->
             <div class="benefit-card" data-aos="fade-up" data-aos-delay="600">
-                <div class="svg-background">
-                    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                        <path
-                            d="M48.2,-76.1C63.3,-69.2,77.2,-58.4,84.6,-44.2C92,-30,92.8,-12.5,89.6,3.7C86.3,19.9,78.9,34.8,68.9,47.9C58.9,61,46.2,72.3,31.5,77.8C16.8,83.2,0.1,82.8,-16.4,79.7C-32.9,76.6,-49.2,70.8,-62.7,60.3C-76.2,49.8,-87,34.6,-90.9,17.8C-94.8,0.9,-91.9,-17.5,-84.2,-32.8C-76.5,-48.1,-64,-60.2,-49.5,-67.5C-35,-74.8,-18.5,-77.3,-1.2,-75.5C16.1,-73.7,33.1,-83,48.2,-76.1Z"
-                            transform="translate(100 100)" />
-                    </svg>
+                <div class="benefit-image">
+                    <img src="assets/images/main-consultant.png" alt="High Success Rate">
                 </div>
-                <div class="benefit-icon">
-                    <i class="fas fa-chart-line"></i>
+                <div class="benefit-content">
+                    <h3>High Success Rate</h3>
+                    <p>Benefit from our proven track record of successful applications and satisfied clients.</p>
                 </div>
-                <h3>High Success Rate</h3>
-                <p>Benefit from our proven track record of successful applications and satisfied clients.</p>
             </div>
 
-            <!-- Support -->
             <div class="benefit-card" data-aos="fade-up" data-aos-delay="700">
-                <div class="svg-background">
-                    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                        <path
-                            d="M45.3,-76.3C59.9,-69.1,73.8,-59.3,82.1,-45.9C90.4,-32.5,93.2,-15.3,90.6,0.8C88,16.8,80,31.7,70.1,45.1C60.2,58.6,48.4,70.7,34.4,77.4C20.4,84.1,4.3,85.4,-12.4,83.5C-29.1,81.6,-46.5,76.4,-59.8,66.1C-73.1,55.7,-82.3,40.1,-86.9,23.4C-91.5,6.7,-91.5,-11.2,-85.8,-26.5C-80.1,-41.8,-68.7,-54.5,-54.9,-61.9C-41.1,-69.3,-24.9,-71.3,-8.9,-70.1C7.1,-68.9,14.1,-64.5,26.3,-67.2C38.5,-69.9,55.8,-79.7,45.3,-76.3Z"
-                            transform="translate(100 100)" />
-                    </svg>
+                <div class="benefit-image">
+                    <img src="assets/images/main-consultant.png" alt="24/7 Support">
                 </div>
-                <div class="benefit-icon">
-                    <i class="fas fa-headset"></i>
+                <div class="benefit-content">
+                    <h3>24/7 Support</h3>
+                    <p>Get assistance whenever you need it with our round-the-clock customer support team.</p>
                 </div>
-                <h3>24/7 Support</h3>
-                <p>Get assistance whenever you need it with our round-the-clock customer support team.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="testimonials-section">
+    <div class="container">
+        <h2 class="section-title" data-aos="fade-up">What Our Clients Say</h2>
+        <p class="section-subtitle" data-aos="fade-up" data-aos-delay="100">Hear from people who have successfully navigated their immigration journey with us</p>
+        
+        <div class="testimonials-container">
+            <div class="testimonial-arrow prev" id="prevTestimonial">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            
+            <div class="testimonials-slider" id="testimonialsSlider">
+                <!-- Testimonial 1 -->
+                <div class="testimonial-card" data-aos="fade-up">
+                    <img src="assets/images/default-profile.svg" alt="Sarah Johnson" class="testimonial-avatar">
+                    <p class="testimonial-quote">Visafy made my immigration process so much easier than I expected. Their platform kept me updated at every step, and my consultant was incredibly knowledgeable and supportive throughout the journey.</p>
+                    <h4 class="testimonial-author">Sarah Johnson</h4>
+                    <p class="testimonial-role">Successful Express Entry Applicant</p>
+                </div>
+                
+                <!-- Testimonial 2 -->
+                <div class="testimonial-card" data-aos="fade-up">
+                    <img src="assets/images/default-profile.svg" alt="Michael Chen" class="testimonial-avatar">
+                    <p class="testimonial-quote">As someone who was overwhelmed by the immigration process, Visafy was a game-changer. The eligibility assessment was spot-on, and the document management system saved me countless hours of work.</p>
+                    <h4 class="testimonial-author">Michael Chen</h4>
+                    <p class="testimonial-role">Work Permit Holder</p>
+                </div>
+                
+                <!-- Testimonial 3 -->
+                <div class="testimonial-card" data-aos="fade-up">
+                    <img src="assets/images/default-profile.svg" alt="Priya Sharma" class="testimonial-avatar">
+                    <p class="testimonial-quote">I can't thank Visafy enough for their exceptional service. Their platform connected me with an amazing consultant who guided me through every step of my family sponsorship application. Highly recommended!</p>
+                    <h4 class="testimonial-author">Priya Sharma</h4>
+                    <p class="testimonial-role">Family Sponsorship Applicant</p>
+                </div>
+            </div>
+            
+            <div class="testimonial-arrow next" id="nextTestimonial">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+            
+            <div class="testimonial-controls">
+                <div class="testimonial-dot active" data-index="0"></div>
+                <div class="testimonial-dot" data-index="1"></div>
+                <div class="testimonial-dot" data-index="2"></div>
             </div>
         </div>
     </div>
 </section>
 
 <!-- Steps Section -->
-<section class="section steps">
+<section class="section steps bg-white">
     <div class="container">
         <h2 class="section-title" data-aos="fade-up">Your Global Immigration Journey</h2>
         <p class="section-subtitle" data-aos="fade-up" data-aos-delay="100">Follow these simple steps to start your
             immigration process anywhere in the world</p>
+        
+       
 
-        <div class="steps-container">
+        <div class="steps-container" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem; position: relative;">
+            <!-- Connecting Line -->
+            <div style="position: absolute; top: 60px; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #667eea, #764ba2); z-index: 1;"></div>
+            
             <!-- Step 1 -->
-            <div class="step-card" data-aos="fade-up" data-aos-delay="200">
-                <div class="step-number">1</div>
+            <div class="step-card" data-aos="fade-up" data-aos-delay="200" style="position: relative; z-index: 2; background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 4px 20px rgba(0,0,0,0.1); text-align: center;">
+                <div class="step-number" style="font-size: 3rem; font-weight: bold; color: #667eea; margin-bottom: 1rem; display: block;">1</div>
                 <div class="step-content">
-                    <h3>Create Your Account</h3>
-                    <p>Begin your immigration journey by creating a free account. Complete your profile with essential
+                    <h3 style="color: #333; margin-bottom: 1rem;">Create Your Account</h3>
+                    <p style="color: #666; margin-bottom: 1.5rem;">Begin your immigration journey by creating a free account. Complete your profile with essential
                         information to help us understand your goals and requirements.</p>
-                    <a href="register.php" class="btn btn-outline">Sign Up Now</a>
+                    <a href="register.php" class="btn btn-outline" style="background: transparent; color: #667eea; border: 2px solid #667eea; padding: 0.75rem 1.5rem; border-radius: 6px; text-decoration: none; transition: all 0.3s ease;">Sign Up Now</a>
                 </div>
             </div>
 
             <!-- Step 2 -->
-            <div class="step-card" data-aos="fade-up" data-aos-delay="300">
-                <div class="step-number">2</div>
+            <div class="step-card" data-aos="fade-up" data-aos-delay="300" style="position: relative; z-index: 2; background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 4px 20px rgba(0,0,0,0.1); text-align: center;">
+                <div class="step-number" style="font-size: 3rem; font-weight: bold; color: #667eea; margin-bottom: 1rem; display: block;">2</div>
                 <div class="step-content">
-                    <h3>Check Eligibility</h3>
-                    <p>Take our comprehensive eligibility assessment to determine your immigration options. Our advanced
+                    <h3 style="color: #333; margin-bottom: 1rem;">Check Eligibility</h3>
+                    <p style="color: #666; margin-bottom: 1.5rem;">Take our comprehensive eligibility assessment to determine your immigration options. Our advanced
                         algorithm analyzes your profile against various immigration programs.</p>
-                    <a href="eligibility-test.php" class="btn btn-outline">Start Assessment</a>
+                    <a href="eligibility-test.php" class="btn btn-outline" style="background: transparent; color: #667eea; border: 2px solid #667eea; padding: 0.75rem 1.5rem; border-radius: 6px; text-decoration: none; transition: all 0.3s ease;">Start Assessment</a>
                 </div>
             </div>
 
             <!-- Step 3 -->
-            <div class="step-card" data-aos="fade-up" data-aos-delay="400">
-                <div class="step-number">3</div>
+            <div class="step-card" data-aos="fade-up" data-aos-delay="400" style="position: relative; z-index: 2; background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 4px 20px rgba(0,0,0,0.1); text-align: center;">
+                <div class="step-number" style="font-size: 3rem; font-weight: bold; color: #667eea; margin-bottom: 1rem; display: block;">3</div>
                 <div class="step-content">
-                    <h3>Book Consultation</h3>
-                    <p>Schedule a free consultation with our immigration experts. Discuss your options, get personalized
+                    <h3 style="color: #333; margin-bottom: 1rem;">Book Consultation</h3>
+                    <p style="color: #666; margin-bottom: 1.5rem;">Schedule a free consultation with our immigration experts. Discuss your options, get personalized
                         advice, and learn about the next steps in your immigration journey.</p>
-                    <a href="book-consultation.php" class="btn btn-outline">Book Now</a>
+                    <a href="book-consultation.php" class="btn btn-outline" style="background: transparent; color: #667eea; border: 2px solid #667eea; padding: 0.75rem 1.5rem; border-radius: 6px; text-decoration: none; transition: all 0.3s ease;">Book Now</a>
                 </div>
             </div>
 
             <!-- Step 4 -->
-            <div class="step-card" data-aos="fade-up" data-aos-delay="500">
-                <div class="step-number">4</div>
+            <div class="step-card" data-aos="fade-up" data-aos-delay="500" style="position: relative; z-index: 2; background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 4px 20px rgba(0,0,0,0.1); text-align: center;">
+                <div class="step-number" style="font-size: 3rem; font-weight: bold; color: #667eea; margin-bottom: 1rem; display: block;">4</div>
                 <div class="step-content">
-                    <h3>Begin Your Application</h3>
-                    <p>Start your immigration process with expert guidance. Our consultants will help you prepare and
+                    <h3 style="color: #333; margin-bottom: 1rem;">Begin Your Application</h3>
+                    <p style="color: #666; margin-bottom: 1.5rem;">Start your immigration process with expert guidance. Our consultants will help you prepare and
                         submit your application, ensuring all requirements are met.</p>
-                    <a href="services.php" class="btn btn-outline">View Services</a>
+                    <a href="services.php" class="btn btn-outline" style="background: transparent; color: #667eea; border: 2px solid #667eea; padding: 0.75rem 1.5rem; border-radius: 6px; text-decoration: none; transition: all 0.3s ease;">View Services</a>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<style>
-/* Key Benefits Section */
-.section {
-    padding: 4rem 0;
-}
+<div class="benefits-cta" data-aos="fade-up">
+    <div class="cta-content">
+        <div class="cta-text">
+            <p>Ready to experience our innovative platform?</p>
+            <div class="cta-buttons">
+                <a href="register.php" class="cta-btn-primary">
+                    <i class="fas fa-user-plus"></i> Sign up for Free
+                </a>
+                <a href="how-it-works.php" class="cta-btn-secondary">
+                    <i class="fas fa-play-circle"></i> Watch Demo
+                </a>
+            </div>
+        </div>
+        <div class="cta-image">
+            <img src="assets/images/cta-whitebg.png" alt="Call to Action">
+        </div>
+    </div>
+</div>
+<!-- FAQ Section -->
+<section class="faq-section bg-white">
+    <div class="container">
+        <h2 class="section-title" data-aos="fade-up">Frequently Asked Questions</h2>
+        <p class="section-subtitle" data-aos="fade-up" data-aos-delay="100">Find answers to common questions about our immigration services and platform</p>
+        
+        <div class="faq-container">
+            <div class="faq-column">
+                <div class="faq-item" data-aos="fade-up" data-aos-delay="200">
+                    <div class="faq-question">
+                        <h3>How does Visafy's eligibility assessment work?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Our AI-powered eligibility assessment analyzes your profile against various immigration programs, including Express Entry, Provincial Nominee Programs, and other pathways. The assessment considers factors like age, education, work experience, language proficiency, and other criteria to provide personalized recommendations.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item" data-aos="fade-up" data-aos-delay="300">
+                    <div class="faq-question">
+                        <h3>Are all consultants on Visafy licensed and verified?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Yes, all immigration consultants on our platform are verified and licensed by the Immigration Consultants of Canada Regulatory Council (ICCRC). We conduct thorough background checks and verify credentials before allowing consultants to join our platform.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item" data-aos="fade-up" data-aos-delay="400">
+                    <div class="faq-question">
+                        <h3>How much does it cost to use Visafy's services?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Our eligibility assessment is completely free. Consultation fees vary depending on the consultant and service type, but you can view all pricing upfront before booking. We also offer transparent pricing with no hidden fees.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="faq-column">
+                <div class="faq-item" data-aos="fade-up" data-aos-delay="500">
+                    <div class="faq-question">
+                        <h3>Can I track my application progress on Visafy?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Absolutely! Our platform provides real-time application tracking with status updates, milestone notifications, and document management. You'll receive instant notifications when your application status changes or requires action.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item" data-aos="fade-up" data-aos-delay="600">
+                    <div class="faq-question">
+                        <h3>What types of immigration services does Visafy offer?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>We offer comprehensive immigration services including Express Entry applications, Provincial Nominee Programs, family sponsorship, work permits, study permits, visitor visas, and citizenship applications. Our platform supports all major Canadian immigration pathways.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item" data-aos="fade-up" data-aos-delay="700">
+                    <div class="faq-question">
+                        <h3>How secure is my personal information on Visafy?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>We prioritize the security of your personal information. Our platform uses enterprise-grade encryption, secure document storage, and complies with Canadian privacy laws. Your data is protected with the highest security standards and is never shared without your consent.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
-.section-title {
-    font-size: 2rem;
-    font-weight: 700;
-    text-align: center;
-    margin-bottom: 0.5rem;
-}
-
-.section-subtitle {
-    font-size: 1rem;
-    color: var(--text-muted);
-    text-align: center;
-    max-width: 900px;
-    margin: 0 auto 3rem;
-}
-
-.services-grid {
-    display: grid;
-    grid-template-columns: repeat(1, 1fr);
-    gap: 1.5rem;
-}
-
-@media (min-width: 640px) {
-    .services-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (min-width: 1024px) {
-    .services-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-.service-card {
-    background-color: var(--white);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius);
-    padding: 1.5rem;
-    box-shadow: var(--shadow);
-    transition: var(--transition);
-}
-
-.service-card:hover {
-    box-shadow: var(--shadow-hover);
-    transform: translateY(-2px);
-}
-
-.service-icon {
-    width: 3rem;
-    height: 3rem;
-    background-color: var(--primary-light);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 1rem;
-}
-
-.service-icon i {
-    font-size: 1.5rem;
-    color: var(--primary-color);
-}
-
-.service-card h3 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-}
-
-.service-features {
-    margin-bottom: 1.5rem;
-}
-
-.feature-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
-}
-
-.feature-item i {
-    font-size: 1rem;
-    color: var(--primary-color);
-}
-
-.feature-item span {
-    font-size: 0.875rem;
-}
-
-.btn {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    font-weight: 500;
-    text-align: center;
-    text-decoration: none;
-    border-radius: var(--radius);
-    transition: var(--transition);
-    cursor: pointer;
-    width: 100%;
-}
-
-.btn-primary {
-    background-color: var(--primary-color);
-    color: var(--white);
-    border: 1px solid var(--primary-color);
-}
-
-.btn-primary:hover {
-    background-color: transparent;
-    color: var(--primary-color);
-}
-.benefits-cta {
-    padding: 80px;
-    background-color: rgba(254, 249, 225, 0.5);
-}
-
-.key-benefits {
-    padding: 80px 0;
-    background-color: var(--light-bg);
-}
-
-.benefits-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 30px;
-    margin-top: 50px;
-}
-
-.benefit-card {
-    background: var(--white);
-    padding: 40px;
-    border-radius: 15px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    transition: transform 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.benefit-card:hover {
-    transform: translateY(-5px);
-}
-
-.svg-background {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
-    opacity: 0.1;
-}
-
-.svg-background svg {
-    width: 100%;
-    height: 100%;
-    fill: var(--primary-color);
-}
-
-.benefit-icon {
-    position: relative;
-    z-index: 1;
-    font-size: 3.5rem;
-    color: var(--primary-color);
-    margin-bottom: 25px;
-}
-
-.benefit-card h3 {
-    position: relative;
-    z-index: 1;
-    margin-bottom: 15px;
-    color: var(--dark-color);
-}
-
-.benefit-card p {
-    position: relative;
-    z-index: 1;
-    color: var(--text-color);
-}
-
-/* Steps Section */
-.steps {
-    padding: 80px 0;
-    position: relative;
-}
-
-.steps-container {
-    display: grid;
-    grid-template-columns: repeat(1, 1fr);
-    gap: 20px;
-    margin-top: 50px;
-    position: relative;
-}
-
-@media (min-width: 768px) {
-    .steps-container {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (min-width: 1024px) {
-    .steps-container {
-        grid-template-columns: repeat(4, 1fr);
-    }
-}
-
-.step-card {
-    background: var(--white);
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    position: relative;
-    transition: transform 0.3s ease;
-    display: flex;
-    flex-direction: column;
-}
-
-.step-card:hover {
-    transform: translateY(-5px);
-}
-
-.step-number {
-    position: absolute;
-    left: 20px;
-    top: 20px;
-    width: 40px;
-    height: 40px;
-    background: var(--primary-color);
-    color: var(--white);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-    font-weight: bold;
-    z-index: 2;
-}
-
-.step-content {
-    position: relative;
-    padding-top: 40px;
-}
-
-.step-content h3 {
-    margin-bottom: 15px;
-    color: var(--primary-color);
-    font-size: 1.25rem;
-}
-
-.step-content p {
-    margin-bottom: 20px;
-    color: var(--text-color);
-    line-height: 1.5;
-    flex-grow: 1;
-}
-
-.btn-outline {
-    display: inline-block;
-    padding: 10px 20px;
-    border: 2px solid var(--primary-color);
-    color: var(--primary-color);
-    border-radius: 5px;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    font-weight: 500;
-    text-align: center;
-}
-
-.btn-outline:hover {
-    background: var(--primary-color);
-    color: var(--white);
-}
-
-@media (max-width: 767px) {
-    .step-card {
-        padding: 25px;
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Testimonial slider functionality
+    const slider = document.getElementById('testimonialsSlider');
+    const prevBtn = document.getElementById('prevTestimonial');
+    const nextBtn = document.getElementById('nextTestimonial');
+    const dots = document.querySelectorAll('.testimonial-dot');
+    
+    let currentIndex = 0;
+    const testimonialCount = document.querySelectorAll('.testimonial-card').length;
+    
+    // Function to update the slider position
+    function updateSlider() {
+        const translateX = -(currentIndex * 33.333333);
+        slider.style.transform = `translateX(${translateX}%)`;
+        
+        // Update active dot
+        dots.forEach((dot, index) => {
+            if (index === currentIndex) {
+                dot.classList.add('active');
+            } else {
+                dot.classList.remove('active');
+            }
+        });
     }
     
-    .step-number {
-        width: 35px;
-        height: 35px;
-        font-size: 1.1rem;
-    }
+    // Previous button click
+    prevBtn.addEventListener('click', function() {
+        currentIndex = (currentIndex === 0) ? testimonialCount - 1 : currentIndex - 1;
+        updateSlider();
+    });
     
-    .step-content {
-        padding-top: 35px;
-    }
+    // Next button click
+    nextBtn.addEventListener('click', function() {
+        currentIndex = (currentIndex === testimonialCount - 1) ? 0 : currentIndex + 1;
+        updateSlider();
+    });
     
-    .step-content h3 {
-        font-size: 1.1rem;
-    }
-}
-</style>
-
-
+    // Dot navigation
+    dots.forEach((dot, index) => {
+        dot.addEventListener('click', function() {
+            currentIndex = index;
+            updateSlider();
+        });
+    });
+    
+    // Auto-advance testimonials every 5 seconds
+    setInterval(function() {
+        currentIndex = (currentIndex === testimonialCount - 1) ? 0 : currentIndex + 1;
+        updateSlider();
+    }, 5000);
+    
+    // Initialize slider
+    updateSlider();
+    
+    // FAQ functionality
+    const faqItems = document.querySelectorAll('.faq-item');
+    
+    faqItems.forEach(item => {
+        const question = item.querySelector('.faq-question');
+        const answer = item.querySelector('.faq-answer');
+        const icon = item.querySelector('.faq-question i');
+        
+        question.addEventListener('click', function() {
+            const isActive = item.classList.contains('active');
+            
+            // Close all other FAQ items
+            faqItems.forEach(otherItem => {
+                otherItem.classList.remove('active');
+                const otherIcon = otherItem.querySelector('.faq-question i');
+                otherIcon.classList.remove('fa-chevron-up');
+                otherIcon.classList.add('fa-chevron-down');
+            });
+            
+            // Toggle current item
+            if (!isActive) {
+                item.classList.add('active');
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            }
+        });
+    });
+});
+</script>
 
 <?php include('includes/footer.php'); ?>

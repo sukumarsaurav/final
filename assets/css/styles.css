@@ -1,20 +1,26 @@
 :root {
-    --primary-color: #eaaa34;
-    --primary-light: rgba(234, 170, 52, 0.1);
-    --primary-medium: rgba(234, 170, 52, 0.2);
-    --dark-blue: #042167;
-    --text-color: #333;
-    --text-light: #666;
-    --background-light: #f8f9fa;
-    --white: #fff;
-    --border-color: #e5e7eb;
+    /* Primary colors based on style.json */
+    --primary-color: #FF5C28;
+    --primary-hover: #F04438;
+    --primary-light: rgba(255, 92, 40, 0.1);
+    --primary-medium: rgba(255, 92, 40, 0.2);
+    --dark-blue: #0B4A6F;
+    --text-color: #374151;
+    --text-light: #6B7280;
+    --background-light: #F9FAFB;
+    --white: #FFFFFF;
+    --border-color: #E5E7EB;
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
     --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    --border-radius: 0.5rem;
-    --border-radius-lg: 1rem;
-    --transition: all 0.3s ease;
+    --border-radius: 6px;
+    --border-radius-lg: 12px;
+    --transition: all 0.2s ease;
+    --secondary-color: #0BA5EC;
+    --success-color: #10B981;
+    --danger-color: #EF4444;
+    --warning-color: #F59E0B;
 }
 
 /* Reset and Base Styles */
@@ -30,11 +36,11 @@ html {
 
 
 body {
-    font-family: var(--font-primary);
+    font-family: 'Averta', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     font-size: 16px;
-    line-height: 1.6;
-    color: var(--color-dark);
-    background-color: var(--color-light);
+    line-height: 1.5;
+    color: var(--text-color);
+    background-color: var(--white);
     overflow-x: hidden;
     padding-top: 0; /* Remove any top padding */
 }
@@ -1747,23 +1753,59 @@ body {
 .benefits-cta {
     text-align: center;
     margin-top: 4rem;
+    padding: 3rem 0;
+}
+
+.benefits-cta .cta-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 3rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.benefits-cta .cta-text {
+    flex: 1;
+    text-align: left;
+}
+
+.benefits-cta .cta-image {
+    flex: 1;
+    text-align: center;
+}
+
+.benefits-cta .cta-image img {
+    max-width: 80%;
+    height: auto;
+   
+  
 }
 
 .benefits-cta p {
     margin-bottom: 1.5rem;
     font-size: 1.25rem;
-    color: var(--dark-blue);
+    color: var(--white);
     font-weight: 500;
 }
 
 .cta-buttons {
     display: flex;
-    justify-content: center;
+    justify-content: start;
     gap: 1.5rem;
     flex-wrap: wrap;
     
 }
-
+.cta-btn-primary {
+    background-color: var(--primary-color);
+    color: var(--white);
+    border: 2px solid var(--white);
+}
+.cta-btn-secondary {    
+    background-color: var(--white);
+    color: var(--primary-color);
+    border: none;
+}
 .cta-buttons a {
     padding: 1rem 2rem;
     font-size: 1.1rem;
@@ -1896,6 +1938,16 @@ body {
 
     .benefit-content {
         gap: 2.5rem;
+    }
+
+    .benefits-cta .cta-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 2rem;
+    }
+
+    .benefits-cta .cta-text {
+        text-align: center;
     }
 
     .cta-buttons {
