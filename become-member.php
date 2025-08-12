@@ -25,12 +25,17 @@ if ($result && $result->num_rows > 0) {
 ?>
 
 <!-- Hero Section -->
+<!-- Hero Section -->
 <section class="hero consultant-hero">
     <div class="container">
-        <div class="hero-content text-center">
-            <h1 class="hero-title">Manage your Immigration Law Firm. Grow your clients. The only Case Management Software you need. Try it for free today.</h1>
-            <p class="hero-subtitle">"Clear, Simple, Flexible plans for Immigration firms of any size</p>
-            <img src="assets/images/main-consultant.png" alt="Main Consultant" class="hero-image">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1 class="hero-title">Manage your Immigration Law Firm. Grow your clients. The only Case Management Software you need. Try it for free today.</h1>
+                <p class="hero-subtitle">"Clear, Simple, Flexible plans for Immigration firms of any size</p>
+            </div>
+            <div class="hero-image-container">
+                <img src="assets/images/main-consultant.png" alt="Main Consultant" class="hero-image">
+            </div>
         </div>
     </div>
 </section>
