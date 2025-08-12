@@ -1,25 +1,25 @@
-/* Responsive styles for benefit cards */
+/* Responsive styles for advantage cards */
 @media (max-width: 768px) {
-    /* Make benefits grid single column */
-    .benefits-grid {
+    /* Make advantage grid single column */
+    .advantage-grid {
         grid-template-columns: 1fr !important;
     }
     
-    .benefit-card {
+    .advantage-card {
         flex-direction: column !important;
         align-items: flex-start !important;
     }
     
-    .benefit-image {
+    .advantage-image {
         margin-bottom: 1.5rem !important;
     }
     
-    .benefit-content {
+    .advantage-content {
         align-items: flex-start !important;
     }
     
-    .benefit-content h3,
-    .benefit-content p {
+    .advantage-content h3,
+    .advantage-content p {
         text-align: left !important;
     }
 }

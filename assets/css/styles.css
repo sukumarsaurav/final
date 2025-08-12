@@ -1605,7 +1605,7 @@ body {
 
 
 
-.benefit-content.reverse .benefit-info {
+.advantage-content.reverse .advantage-info {
     direction: ltr;
 }
 
@@ -1878,7 +1878,7 @@ body {
         width: 100%;
     }
 
-    .benefit-content.reverse {
+    .advantage-content.reverse {
         flex-direction: column;
     }
 

@@ -142,21 +142,21 @@ include('includes/header.php');
         <p class="section-subtitle" data-aos="fade-up" data-aos-delay="100">Experience a seamless immigration process
             with our all-in-one digital platform</p>
 
-        <div class="benefits-container">
+        <div class="immigration-benefits-container">
             <!-- Dashboard Section -->
-            <div class="benefit-section" data-aos="fade-up">
-                <div class="benefit-content">
-                    <div class="benefit-info">
+            <div class="immigration-benefit-section" data-aos="fade-up">
+                <div class="immigration-benefit-content">
+                    <div class="immigration-benefit-info">
                         <h3>
                             Real-Time Application Tracking
                         </h3>
-                        <p class="benefit-description">
+                        <p class="immigration-benefit-description">
                             Monitor your applications in real-time and stay updated on every milestone of your
                             immigration journey.
                         </p>
-                        <ul class="benefit-features">
+                        <ul class="immigration-benefit-features">
                             <li>
-                                <div class="check-icon">
+                                <div class="immigration-check-icon">
                                     <i class="fas fa-check"></i>
                                 </div>
                                 <div>
@@ -166,7 +166,7 @@ include('includes/header.php');
                                 </div>
                             </li>
                             <li>
-                                <div class="check-icon">
+                                <div class="immigration-check-icon">
                                     <i class="fas fa-check"></i>
                                 </div>
                                 <div>
@@ -176,7 +176,7 @@ include('includes/header.php');
                                 </div>
                             </li>
                             <li>
-                                <div class="check-icon">
+                                <div class="immigration-check-icon">
                                     <i class="fas fa-check"></i>
                                 </div>
                                 <div>
@@ -187,27 +187,23 @@ include('includes/header.php');
                             </li>
                         </ul>
                     </div>
-                    <div class="benefit-image">
+                    <div class="immigration-benefit-image">
                         <!-- Decorative Circles -->
-                        <div class="circle-decoration">
-                            <div class="circle circle-1"></div>
-                            <div class="circle circle-2"></div>
+                        <div class="immigration-circle-decoration">
+                            <div class="immigration-circle immigration-circle-1"></div>
+                            <div class="immigration-circle immigration-circle-2"></div>
                         </div>
                         <!-- SVG Shape Background -->
-                        <div class="svg-background">
-                            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="shape shape-1">
-                                <path
-                                    d="M42.7,-73.4C55.9,-67.1,67.7,-57.2,75.9,-44.6C84.1,-32,88.7,-16,88.1,-0.3C87.5,15.3,81.8,30.6,73.1,43.9C64.4,57.2,52.8,68.5,39.1,75.3C25.4,82.1,9.7,84.4,-5.9,83.1C-21.5,81.8,-37,76.9,-50.9,68.5C-64.8,60.1,-77.1,48.3,-83.3,33.8C-89.5,19.3,-89.6,2.2,-85.1,-13.2C-80.6,-28.6,-71.5,-42.3,-59.8,-51.6C-48.1,-60.9,-33.8,-65.8,-20.4,-70.3C-7,-74.8,5.5,-78.9,18.8,-79.1C32.1,-79.3,46.2,-75.6,42.7,-73.4Z"
-                                    transform="translate(100 100)" />
+                        <div class="immigration-svg-background">
+                            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="immigration-shape immigration-shape-1">
+                                <path d="M42.7,-73.4C55.9,-67.1,67.7,-57.2,75.9,-44.6C84.1,-32,88.7,-16,88.1,-0.3C87.5,15.3,81.8,30.6,73.1,43.9C64.4,57.2,52.8,68.5,39.1,75.3C25.4,82.1,9.7,84.4,-5.9,83.1C-21.5,81.8,-37,76.9,-50.9,68.5C-64.8,60.1,-77.1,48.3,-83.3,33.8C-89.5,19.3,-89.6,2.2,-85.1,-13.2C-80.6,-28.6,-71.5,-42.3,-59.8,-51.6C-48.1,-60.9,-33.8,-65.8,-20.4,-70.3C-7,-74.8,5.5,-78.9,18.8,-79.1C32.1,-79.3,46.2,-75.6,42.7,-73.4Z" transform="translate(100 100)" />
                             </svg>
-                            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="shape shape-2">
-                                <path
-                                    d="M47.7,-80.4C59.3,-71.3,64.8,-54.7,71.9,-39.4C79,-24.2,87.7,-10.3,87.5,3.4C87.3,17.1,78.1,30.6,68.3,42.8C58.5,55,48,65.9,35.1,73.4C22.2,80.9,6.9,85,-8.9,84.5C-24.8,84,-41.2,78.9,-54.3,69.5C-67.4,60.1,-77.2,46.4,-83.1,30.8C-89,15.3,-91,-1.1,-87.4,-16.2C-83.8,-31.3,-74.6,-45.2,-62.3,-54.8C-50,-64.4,-34.6,-69.8,-19.9,-74.9C-5.2,-80,9.7,-84.8,24.4,-84.1C39.2,-83.4,53.8,-77.2,47.7,-80.4Z"
-                                    transform="translate(100 100)" />
+                            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="immigration-shape immigration-shape-2">
+                                <path d="M47.7,-80.4C59.3,-71.3,64.8,-54.7,71.9,-39.4C79,-24.2,87.7,-10.3,87.5,3.4C87.3,17.1,78.1,30.6,68.3,42.8C58.5,55,48,65.9,35.1,73.4C22.2,80.9,6.9,85,-8.9,84.5C-24.8,84,-41.2,78.9,-54.3,69.5C-67.4,60.1,-77.2,46.4,-83.1,30.8C-89.5,19.3,-91,-1.1,-87.4,-16.2C-83.8,-31.3,-74.6,-45.2,-62.3,-54.8C-50,-64.4,-34.6,-69.8,-19.9,-74.9C-5.2,-80,9.7,-84.8,24.4,-84.1C39.2,-83.4,53.8,-77.2,47.7,-80.4Z" transform="translate(100 100)" />
                             </svg>
                         </div>
 
-                        <div class="image-container">
+                        <div class="immigration-image-container">
                             <img src="assets/images/visafy-dashboard.png" alt="Application Dashboard">
                         </div>
                     </div>
@@ -215,38 +211,38 @@ include('includes/header.php');
             </div>
 
             <!-- Documents Section -->
-            <div class="benefit-section" data-aos="fade-up">
-                <div class="benefit-content reverse">
-                    <div class="benefit-image">
+            <div class="immigration-benefit-section" data-aos="fade-up">
+                <div class="immigration-benefit-content reverse">
+                    <div class="immigration-benefit-image">
                    
                         <!-- SVG Shape Background -->
-                        <div class="svg-background">
-                            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="shape shape-3">
+                        <div class="immigration-svg-background">
+                            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="immigration-shape immigration-shape-3">
                                 <path
                                     d="M39.9,-68.1C52.6,-62.1,64.5,-53.1,72.7,-41C80.9,-28.8,85.4,-14.4,83.9,-0.9C82.3,12.7,74.8,25.4,66.4,37.8C58,50.3,48.7,62.5,36.5,70.1C24.2,77.7,9.1,80.7,-5.9,79.5C-20.9,78.3,-35.9,72.9,-47.5,64C-59.1,55,-67.3,42.5,-73.4,28.5C-79.5,14.5,-83.5,-1,-80.8,-15.2C-78.1,-29.4,-68.7,-42.3,-56.8,-48.9C-44.9,-55.5,-30.5,-55.8,-17.7,-61.8C-4.9,-67.8,6.3,-79.5,18.4,-80.5C30.5,-81.5,43.5,-71.8,39.9,-68.1Z"
                                     transform="translate(100 100)" />
                             </svg>
-                            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="shape shape-4">
+                            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="immigration-shape immigration-shape-4">
                                 <path
                                     d="M47.3,-79.7C62.9,-71.9,78.5,-62.3,86.4,-48.3C94.3,-34.3,94.5,-15.7,90.3,0.9C86.1,17.4,77.5,31.8,67.2,44.7C56.9,57.6,44.9,69,30.7,76.2C16.5,83.4,0.1,86.4,-16.4,83.3C-32.9,80.2,-45.5,71,-57.8,59C-70.1,47,-80.1,32.2,-84.6,15.6C-89.1,-1,-88.1,-19.4,-81.5,-35.1C-74.9,-50.8,-62.7,-63.8,-48.1,-72.1C-33.5,-80.4,-16.7,-84,0.2,-84.4C17.2,-84.8,34.3,-82,47.3,-79.7Z"
                                     transform="translate(100 100)" />
                             </svg>
                         </div>
 
-                        <div class="image-container">
+                        <div class="immigration-image-container">
                             <img src="assets/images/documents.png" alt="Document Management">
                         </div>
                     </div>
-                    <div class="benefit-info">
+                    <div class="immigration-benefit-info">
                         <h3>
                             Streamlined Document Handling
                         </h3>
-                        <p class="benefit-description">
+                        <p class="immigration-benefit-description">
                             Securely manage all your important documents with our specialized document handling system.
                         </p>
-                        <ul class="benefit-features">
+                        <ul class="immigration-benefit-features">
                             <li>
-                                <div class="check-icon">
+                                <div class="immigration-check-icon">
                                     <i class="fas fa-check"></i>
                                 </div>
                                 <div>
@@ -256,7 +252,7 @@ include('includes/header.php');
                                 </div>
                             </li>
                             <li>
-                                <div class="check-icon">
+                                <div class="immigration-check-icon">
                                     <i class="fas fa-check"></i>
                                 </div>
                                 <div>
@@ -266,7 +262,7 @@ include('includes/header.php');
                                 </div>
                             </li>
                             <li>
-                                <div class="check-icon">
+                                <div class="immigration-check-icon">
                                     <i class="fas fa-check"></i>
                                 </div>
                                 <div>
@@ -281,19 +277,19 @@ include('includes/header.php');
             </div>
 
             <!-- Messaging Section -->
-            <div class="benefit-section" data-aos="fade-up">
-                <div class="benefit-content">
-                    <div class="benefit-info">
+            <div class="immigration-benefit-section" data-aos="fade-up">
+                <div class="immigration-benefit-content">
+                    <div class="immigration-benefit-info">
                         <h3>
                             Direct Expert Communication
                         </h3>
-                        <p class="benefit-description">
+                        <p class="immigration-benefit-description">
                             Get instant support and guidance from immigration experts through our integrated messaging
                             system.
                         </p>
-                        <ul class="benefit-features">
+                        <ul class="immigration-benefit-features">
                             <li>
-                                <div class="check-icon">
+                                <div class="immigration-check-icon">
                                     <i class="fas fa-check"></i>
                                 </div>
                                 <div>
@@ -303,7 +299,7 @@ include('includes/header.php');
                                 </div>
                             </li>
                             <li>
-                                <div class="check-icon">
+                                <div class="immigration-check-icon">
                                     <i class="fas fa-check"></i>
                                 </div>
                                 <div>
@@ -312,7 +308,7 @@ include('includes/header.php');
                                 </div>
                             </li>
                             <li>
-                                <div class="check-icon">
+                                <div class="immigration-check-icon">
                                     <i class="fas fa-check"></i>
                                 </div>
                                 <div>
@@ -323,27 +319,27 @@ include('includes/header.php');
                             </li>
                         </ul>
                     </div>
-                    <div class="benefit-image">
+                    <div class="immigration-benefit-image">
                         <!-- Decorative Circles -->
-                        <div class="circle-decoration">
-                            <div class="circle circle-1"></div>
-                            <div class="circle circle-2"></div>
+                        <div class="immigration-circle-decoration">
+                            <div class="immigration-circle immigration-circle-1"></div>
+                            <div class="immigration-circle immigration-circle-2"></div>
                         </div>
                         <!-- SVG Shape Background -->
-                        <div class="svg-background">
-                            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="shape shape-5">
+                        <div class="immigration-svg-background">
+                            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="immigration-shape immigration-shape-5">
                                 <path
                                     d="M48.2,-76.1C63.3,-69.2,77.2,-58.4,84.6,-44.2C92,-30,92.8,-12.5,89.6,3.7C86.3,19.9,78.9,34.8,68.9,47.9C58.9,61,46.2,72.3,31.5,77.8C16.8,83.2,0.1,82.8,-16.4,79.7C-32.9,76.6,-49.2,70.8,-62.7,60.3C-76.2,49.8,-87,34.6,-90.9,17.8C-94.8,0.9,-91.9,-17.5,-84.2,-32.8C-76.5,-48.1,-64,-60.2,-49.5,-67.5C-35,-74.8,-18.5,-77.3,-1.2,-75.5C16.1,-73.7,33.1,-83,48.2,-76.1Z"
                                     transform="translate(100 100)" />
                             </svg>
-                            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="shape shape-6">
+                            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="immigration-shape immigration-shape-6">
                                 <path
                                     d="M45.3,-76.3C59.9,-69.1,73.8,-59.3,82.1,-45.9C90.4,-32.5,93.2,-15.3,90.6,0.8C88,16.8,80,31.7,70.1,45.1C60.2,58.6,48.4,70.7,34.4,77.4C20.4,84.1,4.3,85.4,-12.4,83.5C-29.1,81.6,-46.5,76.4,-59.8,66.1C-73.1,55.7,-82.3,40.1,-86.9,23.4C-91.5,6.7,-91.5,-11.2,-85.8,-26.5C-80.1,-41.8,-68.7,-54.5,-54.9,-61.9C-41.1,-69.3,-24.9,-71.3,-8.9,-70.1C7.1,-68.9,14.1,-64.5,26.3,-67.2C38.5,-69.9,55.8,-79.7,45.3,-76.3Z"
                                     transform="translate(100 100)" />
                             </svg>
                         </div>
 
-                        <div class="image-container">
+                        <div class="immigration-image-container">
                             <img src="assets/images/messaging.png" alt="Messaging System">
                         </div>
                     </div>
@@ -358,32 +354,30 @@ include('includes/header.php');
 
 
 <!-- Key Benefits Section -->
-<section class="section key-benefits bg-dark-blue">
+<section class="section key-benefits-section bg-dark-blue">
     <div class="container">
         <h2 class="section-title" data-aos="fade-up">Why Choose Visafy?</h2>
         <p class="section-subtitle" data-aos="fade-up" data-aos-delay="100">Experience a seamless immigration process
             with our comprehensive platform</p>
         
-
-
-        <div class="benefits-grid">
+        <div class="key-benefits-grid">
             <!-- Row 1: Licensed Consultants & Digital Platform -->
-            <div class="benefit-card" data-aos="fade-up" data-aos-delay="200">
-                <div class="benefit-image">
+            <div class="key-benefit-card" data-aos="fade-up" data-aos-delay="200">
+                <div class="key-benefit-image">
                     <img src="assets/images/main-consultant.png" alt="Licensed Consultants">
                 </div>
-                <div class="benefit-content">
+                <div class="key-benefit-content">
                     <h3>Licensed Consultants</h3>
                     <p>Get expert guidance from ICCRC licensed consultants with proven track records in successful
                         applications.</p>
                 </div>
             </div>
 
-            <div class="benefit-card" data-aos="fade-up" data-aos-delay="300">
-                <div class="benefit-image">
+            <div class="key-benefit-card" data-aos="fade-up" data-aos-delay="300">
+                <div class="key-benefit-image">
                     <img src="assets/images/main-consultant.png" alt="Digital Platform">
                 </div>
-                <div class="benefit-content">
+                <div class="key-benefit-content">
                     <h3>Digital-First Platform</h3>
                     <p>Manage your entire immigration journey through our user-friendly digital platform, accessible
                         anytime, anywhere.</p>
@@ -391,42 +385,42 @@ include('includes/header.php');
             </div>
 
             <!-- Row 2: Document Management & Real-time Updates -->
-            <div class="benefit-card" data-aos="fade-up" data-aos-delay="400">
-                <div class="benefit-image">
+            <div class="key-benefit-card" data-aos="fade-up" data-aos-delay="400">
+                <div class="key-benefit-image">
                     <img src="assets/images/main-consultant.png" alt="Document Management">
                 </div>
-                <div class="benefit-content">
+                <div class="key-benefit-content">
                     <h3>Smart Document Management</h3>
                     <p>Securely store and manage all your documents with our advanced document handling system.</p>
                 </div>
             </div>
 
-            <div class="benefit-card" data-aos="fade-up" data-aos-delay="500">
-                <div class="benefit-image">
+            <div class="key-benefit-card" data-aos="fade-up" data-aos-delay="500">
+                <div class="key-benefit-image">
                     <img src="assets/images/main-consultant.png" alt="Real-time Updates">
                 </div>
-                <div class="benefit-content">
+                <div class="key-benefit-content">
                     <h3>Real-time Updates</h3>
                     <p>Stay informed with instant notifications and real-time updates on your application status.</p>
                 </div>
             </div>
 
             <!-- Row 3: High Success Rate & 24/7 Support -->
-            <div class="benefit-card" data-aos="fade-up" data-aos-delay="600">
-                <div class="benefit-image">
+            <div class="key-benefit-card" data-aos="fade-up" data-aos-delay="600">
+                <div class="key-benefit-image">
                     <img src="assets/images/main-consultant.png" alt="High Success Rate">
                 </div>
-                <div class="benefit-content">
+                <div class="key-benefit-content">
                     <h3>High Success Rate</h3>
-                    <p>Benefit from our proven track record of successful applications and satisfied clients.</p>
+                    <p>Benefit from our proven track records of successful applications and satisfied clients.</p>
                 </div>
             </div>
 
-            <div class="benefit-card" data-aos="fade-up" data-aos-delay="700">
-                <div class="benefit-image">
+            <div class="key-benefit-card" data-aos="fade-up" data-aos-delay="700">
+                <div class="key-benefit-image">
                     <img src="assets/images/main-consultant.png" alt="24/7 Support">
                 </div>
-                <div class="benefit-content">
+                <div class="key-benefit-content">
                     <h3>24/7 Support</h3>
                     <p>Get assistance whenever you need it with our round-the-clock customer support team.</p>
                 </div>
@@ -494,51 +488,51 @@ include('includes/header.php');
         
        
 
-        <div class="steps-container" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem; position: relative;">
+        <div class="steps-container">
             <!-- Connecting Line -->
-            <div style="position: absolute; top: 60px; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #667eea, #764ba2); z-index: 1;"></div>
+            <div class="steps-connecting-line"></div>
             
             <!-- Step 1 -->
-            <div class="step-card" data-aos="fade-up" data-aos-delay="200" style="position: relative; z-index: 2; background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 4px 20px rgba(0,0,0,0.1); text-align: center;">
-                <div class="step-number" style="font-size: 3rem; font-weight: bold; color: #667eea; margin-bottom: 1rem; display: block;">1</div>
+            <div class="step-card" data-aos="fade-up" data-aos-delay="200">
+                <div class="step-number">1</div>
                 <div class="step-content">
-                    <h3 style="color: #333; margin-bottom: 1rem;">Create Your Account</h3>
-                    <p style="color: #666; margin-bottom: 1.5rem;">Begin your immigration journey by creating a free account. Complete your profile with essential
+                    <h3>Create Your Account</h3>
+                    <p>Begin your immigration journey by creating a free account. Complete your profile with essential
                         information to help us understand your goals and requirements.</p>
-                    <a href="register.php" class="btn btn-outline" style="background: transparent; color: #667eea; border: 2px solid #667eea; padding: 0.75rem 1.5rem; border-radius: 6px; text-decoration: none; transition: all 0.3s ease;">Sign Up Now</a>
+                    <a href="register.php" class="btn">Sign Up Now</a>
                 </div>
             </div>
 
             <!-- Step 2 -->
-            <div class="step-card" data-aos="fade-up" data-aos-delay="300" style="position: relative; z-index: 2; background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 4px 20px rgba(0,0,0,0.1); text-align: center;">
-                <div class="step-number" style="font-size: 3rem; font-weight: bold; color: #667eea; margin-bottom: 1rem; display: block;">2</div>
+            <div class="step-card" data-aos="fade-up" data-aos-delay="300">
+                <div class="step-number">2</div>
                 <div class="step-content">
-                    <h3 style="color: #333; margin-bottom: 1rem;">Check Eligibility</h3>
-                    <p style="color: #666; margin-bottom: 1.5rem;">Take our comprehensive eligibility assessment to determine your immigration options. Our advanced
+                    <h3>Check Eligibility</h3>
+                    <p>Take our comprehensive eligibility assessment to determine your immigration options. Our advanced
                         algorithm analyzes your profile against various immigration programs.</p>
-                    <a href="eligibility-test.php" class="btn btn-outline" style="background: transparent; color: #667eea; border: 2px solid #667eea; padding: 0.75rem 1.5rem; border-radius: 6px; text-decoration: none; transition: all 0.3s ease;">Start Assessment</a>
+                    <a href="eligibility-test.php" class="btn">Start Assessment</a>
                 </div>
             </div>
 
             <!-- Step 3 -->
-            <div class="step-card" data-aos="fade-up" data-aos-delay="400" style="position: relative; z-index: 2; background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 4px 20px rgba(0,0,0,0.1); text-align: center;">
-                <div class="step-number" style="font-size: 3rem; font-weight: bold; color: #667eea; margin-bottom: 1rem; display: block;">3</div>
+            <div class="step-card" data-aos="fade-up" data-aos-delay="400">
+                <div class="step-number">3</div>
                 <div class="step-content">
-                    <h3 style="color: #333; margin-bottom: 1rem;">Book Consultation</h3>
-                    <p style="color: #666; margin-bottom: 1.5rem;">Schedule a free consultation with our immigration experts. Discuss your options, get personalized
+                    <h3>Book Consultation</h3>
+                    <p>Schedule a free consultation with our immigration experts. Discuss your options, get personalized
                         advice, and learn about the next steps in your immigration journey.</p>
-                    <a href="book-consultation.php" class="btn btn-outline" style="background: transparent; color: #667eea; border: 2px solid #667eea; padding: 0.75rem 1.5rem; border-radius: 6px; text-decoration: none; transition: all 0.3s ease;">Book Now</a>
+                    <a href="book-consultation.php" class="btn">Book Now</a>
                 </div>
             </div>
 
             <!-- Step 4 -->
-            <div class="step-card" data-aos="fade-up" data-aos-delay="500" style="position: relative; z-index: 2; background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 4px 20px rgba(0,0,0,0.1); text-align: center;">
-                <div class="step-number" style="font-size: 3rem; font-weight: bold; color: #667eea; margin-bottom: 1rem; display: block;">4</div>
+            <div class="step-card" data-aos="fade-up" data-aos-delay="500">
+                <div class="step-number">4</div>
                 <div class="step-content">
-                    <h3 style="color: #333; margin-bottom: 1rem;">Begin Your Application</h3>
-                    <p style="color: #666; margin-bottom: 1.5rem;">Start your immigration process with expert guidance. Our consultants will help you prepare and
+                    <h3>Begin Your Application</h3>
+                    <p>Start your immigration process with expert guidance. Our consultants will help you prepare and
                         submit your application, ensuring all requirements are met.</p>
-                    <a href="services.php" class="btn btn-outline" style="background: transparent; color: #667eea; border: 2px solid #667eea; padding: 0.75rem 1.5rem; border-radius: 6px; text-decoration: none; transition: all 0.3s ease;">View Services</a>
+                    <a href="services.php" class="btn">View Services</a>
                 </div>
             </div>
         </div>

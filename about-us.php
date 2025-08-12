@@ -4,28 +4,32 @@ include('includes/header.php');
 ?>
 
 <!-- Hero Section -->
-<section class="hero">
+<section class="hero bg-white">
     <div class="container">
-        <div class="hero-content text-center">
-            <h1 class="hero-title">Transforming Immigration Services Through Technology</h1>
-            <p class="hero-subtitle">We're building the future of immigration consulting by connecting applicants with licensed professionals through our innovative digital platform.</p>
-            <img src="assets/images/main-consultant.png" alt="Main Consultant" class="hero-image">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1 class="hero-title">Transforming Immigration Services Through Technology</h1>
+                <p class="hero-subtitle">We're building the future of immigration consulting by connecting applicants with licensed professionals through our innovative digital platform.</p>
+            </div>
+            <div class="hero-image-container">
+                <img src="assets/images/main-consultant.png" alt="Main Consultant" class="hero-image">
+            </div>
         </div>
     </div>
 </section>
 
 <!-- Vision & Mission Section -->
-<section class="vision-mission">
+<section class="section vision-mission bg-white">
     <div class="container">
         <div class="vision-mission-grid">
-            <div class="vision-box">
+            <div class="vision-box" data-aos="fade-up">
                 <div class="icon-wrapper">
                     <i class="fas fa-eye"></i>
                 </div>
                 <h2>Our Vision</h2>
                 <p>To be the leading digital platform that makes immigration services accessible, transparent, and efficient for everyone seeking to build their future in Canada.</p>
             </div>
-            <div class="mission-box">
+            <div class="mission-box" data-aos="fade-up" data-aos-delay="100">
                 <div class="icon-wrapper">
                     <i class="fas fa-bullseye"></i>
                 </div>
@@ -37,12 +41,12 @@ include('includes/header.php');
 </section>
 
 <!-- Platform Benefits Section -->
-<section class="platform-benefits">
+<section class="section platform-benefits bg-light">
     <div class="container">
-        <h2 class="section-title">How We Help</h2>
+        <h2 class="section-title" data-aos="fade-up">How We Help</h2>
         <div class="benefits-grid">
             <!-- For Applicants -->
-            <div class="benefit-group">
+            <div class="benefit-group" data-aos="fade-up" data-aos-delay="200">
                 <h3 class="benefit-title">For Applicants</h3>
                 <div class="benefits-list">
                     <div class="benefit-item">
@@ -77,7 +81,7 @@ include('includes/header.php');
             </div>
             
             <!-- For Consultants -->
-            <div class="benefit-group">
+            <div class="benefit-group" data-aos="fade-up" data-aos-delay="300">
                 <h3 class="benefit-title">For Consultants</h3>
                 <div class="benefits-list">
                     <div class="benefit-item">
@@ -115,11 +119,11 @@ include('includes/header.php');
 </section>
 
 <!-- Problem & Solution Section -->
-<section class="problem-solution">
+<section class="section problem-solution bg-white">
     <div class="container">
-        <h2 class="section-title">The Problems We Solve</h2>
+        <h2 class="section-title" data-aos="fade-up">The Problems We Solve</h2>
         <div class="problem-solution-grid">
-            <div class="problem-card">
+            <div class="problem-card" data-aos="fade-up" data-aos-delay="200">
                 <div class="card-icon">
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
@@ -132,7 +136,7 @@ include('includes/header.php');
                     <li>Difficulty in managing multiple applications</li>
                 </ul>
             </div>
-            <div class="solution-card">
+            <div class="solution-card" data-aos="fade-up" data-aos-delay="300">
                 <div class="card-icon">
                     <i class="fas fa-lightbulb"></i>
                 </div>
@@ -150,26 +154,26 @@ include('includes/header.php');
 </section>
 
 <!-- Values Section -->
-<section class="our-values">
+<section class="section our-values bg-light">
     <div class="container">
-        <h2 class="section-title">Our Core Values</h2>
+        <h2 class="section-title" data-aos="fade-up">Our Core Values</h2>
         <div class="values-grid">
-            <div class="value-card">
+            <div class="value-card" data-aos="fade-up" data-aos-delay="200">
                 <i class="fas fa-lock"></i>
                 <h3>Trust & Security</h3>
                 <p>We prioritize the security of your information and maintain the highest standards of data protection.</p>
             </div>
-            <div class="value-card">
+            <div class="value-card" data-aos="fade-up" data-aos-delay="300">
                 <i class="fas fa-handshake"></i>
                 <h3>Transparency</h3>
                 <p>We believe in complete transparency in our processes, pricing, and communication.</p>
             </div>
-            <div class="value-card">
+            <div class="value-card" data-aos="fade-up" data-aos-delay="400">
                 <i class="fas fa-star"></i>
                 <h3>Excellence</h3>
                 <p>We strive for excellence in every aspect of our service delivery and platform functionality.</p>
             </div>
-            <div class="value-card">
+            <div class="value-card" data-aos="fade-up" data-aos-delay="500">
                 <i class="fas fa-heart"></i>
                 <h3>Client Success</h3>
                 <p>Your success is our success. We're committed to helping you achieve your immigration goals.</p>
@@ -180,183 +184,345 @@ include('includes/header.php');
 
 <style>
 /* About Hero Styles */
-.about-hero {
-    min-height: 300px;
+.hero {
+    padding: 6rem 0;
+    background-color: var(--white);
+    color: var(--text-color);
+    overflow: hidden;
+    position: relative;
+}
+
+.hero-content {
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    gap: 3rem;
 }
 
-.about-hero-content {
-    max-width: 800px;
-    margin: 0 auto;
+.hero-text {
+    flex: 1;
+    text-align: left;
 }
 
-.about-title {
-    font-size: 2.8rem;
-    color: #042167;
+.hero-image-container {
+    flex: 1;
+    text-align: right;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    color: var(--dark-blue);
     margin-bottom: 20px;
     line-height: 1.2;
+    font-weight: 700;
 }
 
-.about-subtitle {
+.hero-subtitle {
     font-size: 1.2rem;
-    color: #666;
+    color: var(--text-light);
     line-height: 1.6;
+    margin-bottom: 30px;
+}
+
+.hero-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
 }
 
 /* Vision & Mission Styles */
+.vision-mission {
+    background-color: var(--white);
+}
+
 .vision-mission-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 30px;
+    gap: 3rem;
+    margin-top: 2rem;
 }
 
 .vision-box, .mission-box {
-    padding: 40px;
-    background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    padding: 3rem 2rem;
+    background: var(--white);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow);
     text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.vision-box:hover, .mission-box:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
 }
 
 .icon-wrapper {
-    font-size: 2.5rem;
-    color: #eaaa34;
-    margin-bottom: 20px;
+    font-size: 3rem;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+}
+
+.vision-box h2, .mission-box h2 {
+    color: var(--dark-blue);
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.vision-box p, .mission-box p {
+    color: var(--text-light);
+    line-height: 1.6;
+    font-size: 1.1rem;
 }
 
 /* Problem & Solution Styles */
+.problem-solution {
+    background-color: var(--white);
+}
+
 .problem-solution-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 30px;
-    margin-top: 40px;
+    gap: 3rem;
+    margin-top: 3rem;
 }
 
 .problem-card, .solution-card {
-    padding: 40px;
-    background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    padding: 3rem 2rem;
+    background: var(--white);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.problem-card:hover, .solution-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
 }
 
 .card-icon {
-    font-size: 2rem;
-    color: #eaaa34;
-    margin-bottom: 20px;
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
 }
 
-.section-title {
-    font-size: 2.5rem;
-    color: #042167;
-    text-align: center;
-    margin-bottom: 40px;
+.problem-card h3, .solution-card h3 {
+    color: var(--dark-blue);
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+.problem-card ul, .solution-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.problem-card li, .solution-card li {
+    color: var(--text-light);
+    line-height: 1.6;
+    margin-bottom: 0.75rem;
+    padding-left: 1.5rem;
+    position: relative;
+}
+
+.problem-card li::before, .solution-card li::before {
+    content: '•';
+    color: var(--primary-color);
+    font-weight: bold;
+    position: absolute;
+    left: 0;
 }
 
 /* Benefits Styles */
+.platform-benefits {
+    background-color: var(--background-light);
+}
+
 .benefits-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 50px;
+    gap: 3rem;
+    margin-top: 3rem;
 }
 
 .benefit-group {
-    background: #fff;
-    padding: 40px;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    background: var(--white);
+    padding: 3rem 2rem;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.benefit-group:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
 }
 
 .benefit-title {
-    color: #042167;
+    color: var(--dark-blue);
     font-size: 1.8rem;
-    margin-bottom: 30px;
+    margin-bottom: 2rem;
     text-align: center;
+    font-weight: 600;
 }
 
 .benefit-item {
     display: flex;
     align-items: flex-start;
-    margin-bottom: 30px;
+    margin-bottom: 2rem;
 }
 
 .benefit-item i {
-    color: #eaaa34;
+    color: var(--primary-color);
     font-size: 1.5rem;
-    margin-right: 20px;
-    margin-top: 5px;
+    margin-right: 1.25rem;
+    margin-top: 0.25rem;
+    flex-shrink: 0;
 }
 
 .benefit-content h4 {
-    color: #042167;
-    margin-bottom: 10px;
+    color: var(--dark-blue);
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
 }
 
 .benefit-content p {
-    color: #666;
+    color: var(--text-light);
     line-height: 1.6;
+    margin: 0;
 }
 
 /* Values Styles */
+.our-values {
+    background-color: var(--white);
+}
+
 .values-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 30px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
 }
 
 .value-card {
-    background: #fff;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    background: var(--white);
+    padding: 2.5rem 2rem;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow);
     text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.value-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
 }
 
 .value-card i {
-    font-size: 2rem;
-    color: #eaaa34;
-    margin-bottom: 20px;
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
 }
 
 .value-card h3 {
-    color: #042167;
-    margin-bottom: 15px;
+    color: var(--dark-blue);
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+    font-weight: 600;
 }
 
 .value-card p {
-    color: #666;
+    color: var(--text-light);
     line-height: 1.6;
+    margin: 0;
 }
 
 /* Responsive Styles */
 @media (max-width: 992px) {
-    .about-hero-grid,
     .vision-mission-grid,
     .problem-solution-grid,
     .benefits-grid {
         grid-template-columns: 1fr;
+        gap: 2rem;
     }
 
-    .about-title {
+    .hero-title {
+        font-size: 2.8rem;
+    }
+
+    .section-title {
         font-size: 2.2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero {
+        padding: 4rem 0;
+    }
+
+    .section {
+        padding: 4rem 0;
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
     }
 
     .section-title {
         font-size: 2rem;
     }
-}
 
-@media (max-width: 768px) {
-    .about-hero,
-    .vision-mission,
-    .problem-solution,
-    .platform-benefits,
-    .our-values {
-        padding: 60px 0;
+    .hero-content {
+        flex-direction: column;
+        text-align: center;
     }
 
-    .value-card {
-        padding: 20px;
+    .hero-image-container {
+        text-align: center;
+    }
+
+    .hero-image {
+        max-width: 80%; /* Adjust image width for smaller screens */
+    }
+
+    .vision-box, .mission-box,
+    .problem-card, .solution-card,
+    .benefit-group, .value-card {
+        padding: 2rem 1.5rem;
+    }
+
+    .benefit-item {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .benefit-item i {
+        margin-right: 0;
+        margin-bottom: 0.75rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+
+    .vision-box, .mission-box,
+    .problem-card, .solution-card,
+    .benefit-group, .value-card {
+        padding: 1.5rem 1rem;
+    }
+
+    .values-grid {
+        grid-template-columns: 1fr;
     }
 }
 </style>
