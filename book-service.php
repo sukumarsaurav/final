@@ -102,23 +102,24 @@ if ($visas_result && $visas_result->num_rows > 0) {
 ?>
 
 <!-- Hero Section -->
-<section class="hero book-service-hero">
+<!-- Hero Section -->
+<section class="hero book-consultation-hero">
     <div class="container">
-        <div class="hero-content text-center">
-            <h1 class="hero-title">Book a Professional Consultation</h1>
-            <p class="hero-subtitle">Connect with our network of experienced visa consultants to guide your immigration
+        <div class="book-hero-content text-center">
+            <h1 class="book-hero-title">Book a Professional Consultation</h1>
+            <p class="book-hero-subtitle">Connect with our network of experienced visa consultants to guide your immigration
                 journey</p>
         </div>
 
-        <!-- Search and Filter Controls (inline at bottom of hero) -->
-        <div class="search-filters">
-            <div class="filter-container">
-                <div class="filter-item">
-                    <input type="text" id="search-consultant" class="form-control"
+        <!-- Search and Filter Controls -->
+        <div class="book-search-filters">
+            <div class="book-filter-container">
+                <div class="book-filter-item">
+                    <input type="text" id="search-consultant" class="book-form-control"
                         placeholder="Search by name or specialization">
                 </div>
-                <div class="filter-item">
-                    <select id="filter-country" class="form-control">
+                <div class="book-filter-item">
+                    <select id="filter-country" class="book-form-control">
                         <option value="">All Countries</option>
                         <?php foreach ($countries as $country): ?>
                         <option value="<?php echo htmlspecialchars($country['country_name']); ?>">
@@ -127,8 +128,8 @@ if ($visas_result && $visas_result->num_rows > 0) {
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="filter-item">
-                    <select id="filter-visa" class="form-control">
+                <div class="book-filter-item">
+                    <select id="filter-visa" class="book-form-control">
                         <option value="">All Visa Types</option>
                         <?php foreach ($visas as $visa): ?>
                         <option value="<?php echo htmlspecialchars($visa['visa_type']); ?>">
@@ -137,8 +138,8 @@ if ($visas_result && $visas_result->num_rows > 0) {
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="filter-item">
-                    <select id="filter-rating" class="form-control">
+                <div class="book-filter-item">
+                    <select id="filter-rating" class="book-form-control">
                         <option value="">All Ratings</option>
                         <option value="no-rating">No Ratings</option>
                         <option value="4">4+ Stars</option>
@@ -146,14 +147,14 @@ if ($visas_result && $visas_result->num_rows > 0) {
                         <option value="2">2+ Stars</option>
                     </select>
                 </div>
-                <div class="filter-item">
-                    <select id="filter-verified" class="form-control">
+                <div class="book-filter-item">
+                    <select id="filter-verified" class="book-form-control">
                         <option value="">All Consultants</option>
                         <option value="1">Verified by Visafy</option>
                     </select>
                 </div>
-                <div class="filter-item">
-                    <button id="reset-filters" class="btn btn-secondary">Reset</button>
+                <div class="book-filter-item">
+                    <button id="reset-filters" class="book-btn book-btn-secondary">Reset</button>
                 </div>
             </div>
         </div>

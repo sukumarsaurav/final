@@ -26,7 +26,7 @@ require_once 'includes/functions.php';
                 </div>
             </div>
             <div class="hero-image-container">
-                <img src="assets/images/main-consultant.png" alt="Main Consultant" class="hero-image">
+                <img src="assets/images/Booking-review.png" alt="Main Consultant" class="hero-image">
             </div>
         </div>
     </div>
@@ -85,7 +85,7 @@ require_once 'includes/functions.php';
                                 </svg>
                             </div>
                             <div class="image-container">
-                                <img src="assets/images/consultant-profile.jpg" alt="Expert Access">
+                                <img src="assets/images/applicant-maindashboard.png" alt="Expert Access">
                             </div>
                         </div>
                     </div>
@@ -101,7 +101,7 @@ require_once 'includes/functions.php';
                                 </svg>
                             </div>
                             <div class="image-container">
-                                <img src="assets/images/application-status.png" alt="Application Tracking">
+                                <img src="assets/images/applicant-meetings.png" alt="Application Tracking">
                             </div>
                         </div>
                         <div class="benefit-info">
@@ -187,7 +187,7 @@ require_once 'includes/functions.php';
                                 </svg>
                             </div>
                             <div class="image-container">
-                                <img src="assets/images/documents.png" alt="Document Management">
+                                <img src="assets/images/documet-applicant.png" alt="Document Management">
                             </div>
                         </div>
                     </div>
@@ -203,7 +203,7 @@ require_once 'includes/functions.php';
                                 </svg>
                             </div>
                             <div class="image-container">
-                                <img src="assets/images/messaging.png" alt="Direct Communication">
+                                <img src="assets/images/applicant-message.png" alt="Direct Communication">
                             </div>
                         </div>
                         <div class="benefit-info">
@@ -247,27 +247,6 @@ require_once 'includes/functions.php';
         </div>
     </section>
 
-    <!-- AI Assistant Section -->
-    <section class="ai-assistant-section">
-        <div class="container">
-            <div class="ai-assistant-content">
-                <div class="ai-assistant-info">
-                    <h2>Get Help from Our AI Assistant</h2>
-                    <p>Our AI-powered assistant can help with common questions and guide you through the application process.</p>
-                    <ul class="ai-assistant-features">
-                        <li><i class="fas fa-check-circle"></i> 24/7 availability for quick answers</li>
-                        <li><i class="fas fa-check-circle"></i> Guidance on visa requirements and processes</li>
-                        <li><i class="fas fa-check-circle"></i> Document checklists based on your visa type</li>
-                        <li><i class="fas fa-check-circle"></i> Instant responses to common immigration questions</li>
-                    </ul>
-                    <a href="ai-assistant.php" class="btn btn-primary">Try AI Assistant</a>
-                </div>
-                <div class="ai-assistant-image">
-                    <img src="assets/images/ai-chatbot.svg" alt="AI Assistant">
-                </div>
-            </div>
-        </div>
-    </section>
     
     <!-- Feature Categories -->
     <section class="feature-categories">

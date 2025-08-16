@@ -3142,3 +3142,177 @@ h1, h2, h3, h4, h5, h6 {
       width: 100%;
   }
 }
+/* Update the hero section styles for book-service.php with new class names */
+
+/* Book Service Hero Section - Completely Renamed */
+.book-consultation-hero {
+  background-color: rgba(234, 170, 52, 0.05);
+  padding: 6rem 0;
+  color: var(--text-color);
+  overflow: hidden;
+  position: relative;
+}
+
+.book-hero-content {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto 3rem auto;
+}
+
+.book-hero-title {
+  font-size: 3.5rem;
+  color: var(--dark-blue);
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.book-hero-subtitle {
+  font-size: 1.2rem;
+  margin-bottom: 0;
+  line-height: 1.6;
+  opacity: 0.9;
+  color: var(--dark-blue);
+}
+
+/* Search Filters - Renamed and Restructured */
+.book-search-filters {
+  background-color: var(--white);
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  margin-bottom: 3rem;
+  box-shadow: var(--shadow);
+}
+
+.book-filter-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.book-filter-item {
+  flex: 1;
+  min-width: 180px;
+  max-width: 200px;
+}
+
+.book-form-control {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  transition: var(--transition);
+  background-color: var(--white);
+}
+
+.book-form-control:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.book-btn {
+  padding: 1rem 2rem;
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  text-decoration: none;
+  transition: var(--transition);
+  display: inline-block;
+  cursor: pointer;
+  border: none;
+  width: 100%;
+  text-align: center;
+  font-size: 1rem;
+}
+
+.book-btn-secondary {
+  background-color: var(--white);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+.book-btn-secondary:hover {
+  background-color: var(--background-light);
+  transform: translateY(-2px);
+}
+
+/* Add bottom margin to consultant cards */
+.consultant-card-wrapper {
+  width: 100%;
+  padding: 0;
+  margin-bottom: 2rem;
+}
+
+.consultant-card-wrapper:last-child {
+  margin-bottom: 0;
+}
+
+/* Responsive Design for New Layout */
+@media (max-width: 1200px) {
+  .book-filter-container {
+      justify-content: space-between;
+  }
+  
+  .book-filter-item {
+      min-width: 160px;
+      max-width: 180px;
+  }
+}
+
+@media (max-width: 991px) {
+  .book-consultation-hero .hero-title {
+      font-size: 3rem;
+  }
+  
+  .book-filter-container {
+      flex-wrap: wrap;
+      justify-content: center;
+  }
+  
+  .book-filter-item {
+      min-width: 200px;
+      max-width: 250px;
+  }
+}
+
+@media (max-width: 768px) {
+  .book-consultation-hero .hero-title {
+      font-size: 2.5rem;
+  }
+  
+  .book-filter-container {
+      flex-direction: column;
+      align-items: stretch;
+  }
+  
+  .book-filter-item {
+      min-width: 100%;
+      max-width: 100%;
+  }
+  
+  .book-search-filters {
+      padding: 1.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .book-consultation-hero .hero-title {
+      font-size: 2rem;
+  }
+  
+  .book-consultation-hero .hero-subtitle {
+      font-size: 1.1rem;
+  }
+  
+  .book-hero-content {
+      margin-bottom: 2rem;
+  }
+  
+  .book-search-filters {
+      padding: 1rem;
+  }
+}

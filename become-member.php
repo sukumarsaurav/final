@@ -30,8 +30,8 @@ if ($result && $result->num_rows > 0) {
     <div class="container">
         <div class="hero-content">
             <div class="hero-text">
-                <h1 class="hero-title">Manage your Immigration Law Firm. Grow your clients. The only Case Management Software you need. Try it for free today.</h1>
-                <p class="hero-subtitle">"Clear, Simple, Flexible plans for Immigration firms of any size</p>
+                <h1 class="hero-title">Manage your Immigration Law Firm. Grow your clients.</h1>
+                <p class="hero-subtitle"> The only Case Management Software you need. Try it for free today."Clear, Simple, Flexible plans for Immigration firms of any size</p>
             </div>
             <div class="hero-image-container">
                 <img src="assets/images/main-consultant.png" alt="Main Consultant" class="hero-image">
