@@ -204,7 +204,7 @@ include('includes/header.php');
                         </div>
 
                         <div class="immigration-image-container">
-                            <img src="assets/images/visafy-dashboard.png" alt="Application Dashboard">
+                            <img src="assets/images/applicant-application.png" alt="Application Dashboard">
                         </div>
                     </div>
                 </div>
@@ -230,7 +230,7 @@ include('includes/header.php');
                         </div>
 
                         <div class="immigration-image-container">
-                            <img src="assets/images/documents.png" alt="Document Management">
+                            <img src="assets/images/applicant-document.png" alt="Document Management">
                         </div>
                     </div>
                     <div class="immigration-benefit-info">
@@ -281,11 +281,10 @@ include('includes/header.php');
                 <div class="immigration-benefit-content">
                     <div class="immigration-benefit-info">
                         <h3>
-                            Direct Expert Communication
+                            Manage Consultant Meetings & Communication
                         </h3>
                         <p class="immigration-benefit-description">
-                            Get instant support and guidance from immigration experts through our integrated messaging
-                            system.
+                            Schedule, manage, and communicate directly with your immigration consultants through our integrated meeting and messaging platform.
                         </p>
                         <ul class="immigration-benefit-features">
                             <li>
@@ -293,9 +292,8 @@ include('includes/header.php');
                                     <i class="fas fa-check"></i>
                                 </div>
                                 <div>
-                                    <strong>Instant Messaging</strong>
-                                    <p>Connect directly with your assigned immigration consultant for quick questions
-                                        and updates</p>
+                                    <strong>Meeting Scheduling & Management</strong>
+                                    <p>Book consultation sessions, reschedule meetings, and track your upcoming appointments with real-time calendar integration</p>
                                 </div>
                             </li>
                             <li>
@@ -303,8 +301,8 @@ include('includes/header.php');
                                     <i class="fas fa-check"></i>
                                 </div>
                                 <div>
-                                    <strong>Conversation History</strong>
-                                    <p>Access your complete communication history for reference and documentation</p>
+                                    <strong>Direct Messaging System</strong>
+                                    <p>Communicate directly with your assigned consultants and team members through our secure messaging platform</p>
                                 </div>
                             </li>
                             <li>
@@ -312,9 +310,8 @@ include('includes/header.php');
                                     <i class="fas fa-check"></i>
                                 </div>
                                 <div>
-                                    <strong>Multilingual Support</strong>
-                                    <p>Communicate with team members in multiple languages with real-time message
-                                        notifications</p>
+                                    <strong>Meeting Documentation & History</strong>
+                                    <p>Access complete meeting records, notes, and follow-up actions from all your consultation sessions</p>
                                 </div>
                             </li>
                         </ul>
@@ -340,7 +337,7 @@ include('includes/header.php');
                         </div>
 
                         <div class="immigration-image-container">
-                            <img src="assets/images/messaging.png" alt="Messaging System">
+                            <img src="assets/images/applicant-meetings-circular.png" alt="Meeting & Communication Platform">
                         </div>
                     </div>
                 </div>
