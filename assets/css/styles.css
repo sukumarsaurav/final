@@ -1733,9 +1733,6 @@ body {
 
 .image-container {
     position: relative;
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    box-shadow: var(--shadow-lg);
     z-index: 1;
 }
 

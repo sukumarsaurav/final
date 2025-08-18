@@ -25,16 +25,15 @@ if ($result && $result->num_rows > 0) {
 ?>
 
 <!-- Hero Section -->
-<!-- Hero Section -->
 <section class="hero consultant-hero">
     <div class="container">
         <div class="hero-content">
             <div class="hero-text">
-                <h1 class="hero-title">Manage your Immigration Law Firm. Grow your clients.</h1>
-                <p class="hero-subtitle"> The only Case Management Software you need. Try it for free today."Clear, Simple, Flexible plans for Immigration firms of any size</p>
+                <h1 class="hero-title">Manage your Immigration Practice. Grow your Business.</h1>
+                <p class="hero-subtitle">Comprehensive practice management platform designed specifically for immigration consultants. Try it for free today.</p>
             </div>
             <div class="hero-image-container">
-                <img src="assets/images/main-consultant.png" alt="Main Consultant" class="hero-image">
+                <img src="assets/images/become-member-hero.png" alt="Main Consultant" class="hero-image">
             </div>
         </div>
     </div>
@@ -65,16 +64,16 @@ if ($result && $result->num_rows > 0) {
                                 <div>Up to <?php echo (int)$plan['max_team_members']; ?> team members</div>
                             </div>
                             <div class="feature">
-                                <i class="fas fa-check-circle"></i>
-                                <div>Client management tools</div>
+                                <i class="fas fa-robot"></i>
+                                <div><?php echo $plan['name'] === 'Bronze' ? '40' : ($plan['name'] === 'Silver' ? '80' : '150'); ?> AI chat messages/month</div>
                             </div>
                             <div class="feature">
                                 <i class="fas fa-check-circle"></i>
-                                <div>Document management</div>
+                                <div>Full platform access</div>
                             </div>
                             <div class="feature">
                                 <i class="fas fa-check-circle"></i>
-                                <div>Visa tracking system</div>
+                                <div>Priority support</div>
                             </div>
                         </div>
                         <div class="plan-action">
@@ -131,8 +130,8 @@ if ($result && $result->num_rows > 0) {
                                         <i class="fas fa-check"></i>
                                     </div>
                                     <div>
-                                        <strong>Communication Hub</strong>
-                                        <p>Integrated messaging, email templates, and automated notifications</p>
+                                        <strong>Direct Messaging</strong>
+                                        <p>Integrated messaging system for direct communication with clients and team members</p>
                                     </div>
                                 </li>
                             </ul>
@@ -144,13 +143,13 @@ if ($result && $result->num_rows > 0) {
                                 </svg>
                             </div>
                             <div class="image-container">
-                                <img src="assets/images/client-management.png" alt="Client Management">
+                                <img src="assets/images/main-consultant.png" alt="Client Management">
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Visa Processing Section -->
+                <!-- Booking Management Section -->
                 <div class="benefit-section" data-aos="fade-up">
                     <div class="benefit-content reverse">
                         <div class="benefit-image">
@@ -160,13 +159,13 @@ if ($result && $result->num_rows > 0) {
                                 </svg>
                             </div>
                             <div class="image-container">
-                                <img src="assets/images/main-consultant.png" alt="Visa Processing">
+                                <img src="assets/images/meetings.png" alt="Booking Management">
                             </div>
                         </div>
                         <div class="benefit-info">
-                            <h3>Advanced Visa Processing</h3>
+                            <h3>Advanced Booking Management</h3>
                             <p class="benefit-description">
-                                Streamline your visa application process with our comprehensive tools.
+                                Streamline your consultation scheduling and client management process.
                             </p>
                             <ul class="benefit-features">
                                 <li>
@@ -174,8 +173,8 @@ if ($result && $result->num_rows > 0) {
                                         <i class="fas fa-check"></i>
                                     </div>
                                     <div>
-                                        <strong>Application Tracking</strong>
-                                        <p>Monitor application status, processing times, and deadlines</p>
+                                        <strong>Comprehensive Booking System</strong>
+                                        <p>Manage all bookings with status filtering, team assignment, and detailed tracking</p>
                                     </div>
                                 </li>
                                 <li>
@@ -183,8 +182,8 @@ if ($result && $result->num_rows > 0) {
                                         <i class="fas fa-check"></i>
                                     </div>
                                     <div>
-                                        <strong>Document Verification</strong>
-                                        <p>Automated document checks and verification workflows</p>
+                                        <strong>Team Assignment</strong>
+                                        <p>Assign bookings to team members and track their performance</p>
                                     </div>
                                 </li>
                                 <li>
@@ -192,8 +191,8 @@ if ($result && $result->num_rows > 0) {
                                         <i class="fas fa-check"></i>
                                     </div>
                                     <div>
-                                        <strong>Status Updates</strong>
-                                        <p>Real-time status tracking and automated notifications</p>
+                                        <strong>Advanced Filtering</strong>
+                                        <p>Filter bookings by status, date ranges, and search through all records</p>
                                     </div>
                                 </li>
                             </ul>
@@ -215,8 +214,8 @@ if ($result && $result->num_rows > 0) {
                                         <i class="fas fa-check"></i>
                                     </div>
                                     <div>
-                                        <strong>Service Customization</strong>
-                                        <p>Create and manage customized service packages with flexible pricing</p>
+                                        <strong>Visa Service Management</strong>
+                                        <p>Create and manage visa service offerings with flexible pricing and consultation modes</p>
                                     </div>
                                 </li>
                                 <li>
@@ -225,7 +224,7 @@ if ($result && $result->num_rows > 0) {
                                     </div>
                                     <div>
                                         <strong>Team Collaboration</strong>
-                                        <p>Assign tasks, track progress, and manage team performance</p>
+                                        <p>Invite team members, assign tasks, and manage team performance</p>
                                     </div>
                                 </li>
                                 <li>
@@ -233,8 +232,8 @@ if ($result && $result->num_rows > 0) {
                                         <i class="fas fa-check"></i>
                                     </div>
                                     <div>
-                                        <strong>Booking Management</strong>
-                                        <p>Automated scheduling, availability management, and appointment tracking</p>
+                                        <strong>Task Management</strong>
+                                        <p>Create tasks, set priorities, assign deadlines, and track progress</p>
                                     </div>
                                 </li>
                             </ul>
@@ -246,20 +245,71 @@ if ($result && $result->num_rows > 0) {
                                 </svg>
                             </div>
                             <div class="image-container">
-                                <img src="assets/images/main-consultant.png" alt="Service Management">
+                                <img src="assets/images/team-management.png" alt="Service Management">
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Business Growth Section -->
-              
+                <!-- AI & Analytics Section -->
+                <div class="benefit-section" data-aos="fade-up">
+                    <div class="benefit-content reverse">
+                        <div class="benefit-image">
+                            <div class="svg-background">
+                                <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="shape shape-4">
+                                    <path d="M47.3,-79.7C62.9,-71.9,78.5,-62.3,86.4,-48.3C94.3,-34.3,94.5,-15.7,90.3,0.9C86.1,17.4,77.5,31.8,67.2,44.7C56.9,57.6,44.9,69,30.7,76.2C16.5,83.4,0.1,86.4,-16.4,83.3C-32.9,80.2,-45.5,71,-57.8,59C-70.1,47,-80.1,32.2,-84.6,15.6C-89.1,-1,-88.1,-19.4,-81.5,-35.1C-74.9,-50.8,-62.7,-63.8,-48.1,-72.1C-33.5,-80.4,-16.7,-84,0.2,-84.4C17.2,-84.8,34.3,-82,47.3,-79.7Z" transform="translate(100 100)" />
+                                </svg>
+                            </div>
+                            <div class="image-container">
+                                <img src="assets/images/ai-chat.png" alt="AI & Analytics">
+                            </div>
+                        </div>
+                        <div class="benefit-info">
+                            <h3>AI Assistance & Analytics</h3>
+                            <p class="benefit-description">
+                                Leverage AI technology and comprehensive analytics to grow your practice.
+                            </p>
+                            <ul class="benefit-features">
+                                <li>
+                                    <div class="check-icon">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                    <div>
+                                        <strong>AI Chat System</strong>
+                                        <p>Get AI assistance with monthly message limits based on your membership plan</p>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="check-icon">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                    <div>
+                                        <strong>Performance Analytics</strong>
+                                        <p>Track booking statistics, client counts, team performance, and service metrics</p>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="check-icon">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                    <div>
+                                        <strong>Smart Notifications</strong>
+                                        <p>Stay updated with real-time notifications and system alerts</p>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
     
     <section class="feature-categories">
         <div class="container">
+            <h2 class="section-title" data-aos="fade-up">Complete Platform Features</h2>
+            <p class="section-subtitle" data-aos="fade-up" data-aos-delay="100">Everything you need to manage your immigration practice efficiently</p>
+            
             <div class="categories-grid">
                 <!-- Client Management -->
                 <div class="category-card" data-category="client">
@@ -268,24 +318,26 @@ if ($result && $result->num_rows > 0) {
                     </div>
                     <h3>Client Management</h3>
                     <ul class="feature-list">
-                        <li>Client profiles & history</li>
-                        <li>Relationship tracking</li>
-                        <li>Communication tools</li>
-                        <li>Document management</li>
+                        <li>Client profiles & application history</li>
+                        <li>Relationship tracking & management</li>
+                        <li>Direct messaging system</li>
+                        <li>Document storage & sharing</li>
+                        <li>Client account activation/deactivation</li>
                     </ul>
                 </div>
 
-                <!-- Visa Processing -->
-                <div class="category-card" data-category="visa">
+                <!-- Booking Management -->
+                <div class="category-card" data-category="booking">
                     <div class="category-icon">
-                        <i class="fas fa-passport"></i>
+                        <i class="fas fa-calendar-check"></i>
                     </div>
-                    <h3>Visa Processing</h3>
+                    <h3>Booking Management</h3>
                     <ul class="feature-list">
-                        <li>Application tracking</li>
-                        <li>Document verification</li>
-                        <li>Status updates</li>
-                        <li>Processing timelines</li>
+                        <li>Comprehensive booking system</li>
+                        <li>Status filtering & tracking</li>
+                        <li>Team assignment capabilities</li>
+                        <li>Date range filtering</li>
+                        <li>Advanced search functionality</li>
                     </ul>
                 </div>
 
@@ -296,10 +348,56 @@ if ($result && $result->num_rows > 0) {
                     </div>
                     <h3>Service Management</h3>
                     <ul class="feature-list">
-                        <li>Service customization</li>
-                        <li>Availability scheduling</li>
-                        <li>Booking management</li>
-                        <li>Team collaboration</li>
+                        <li>Visa service customization</li>
+                        <li>Service type management</li>
+                        <li>Consultation mode options</li>
+                        <li>Flexible pricing structure</li>
+                        <li>Service availability settings</li>
+                    </ul>
+                </div>
+
+                <!-- Team Management -->
+                <div class="category-card" data-category="team">
+                    <div class="category-icon">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <h3>Team Management</h3>
+                    <ul class="feature-list">
+                        <li>Team member invitations</li>
+                        <li>Role-based access control</li>
+                        <li>Task assignment & tracking</li>
+                        <li>Performance monitoring</li>
+                        <li>Organization structure management</li>
+                    </ul>
+                </div>
+
+                <!-- AI & Analytics -->
+                <div class="category-card" data-category="ai">
+                    <div class="category-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h3>AI & Analytics</h3>
+                    <ul class="feature-list">
+                        <li>AI chat assistance</li>
+                        <li>Usage tracking & limits</li>
+                        <li>Performance analytics</li>
+                        <li>Real-time notifications</li>
+                        <li>System monitoring</li>
+                    </ul>
+                </div>
+
+                <!-- Document Management -->
+                <div class="category-card" data-category="documents">
+                    <div class="category-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <h3>Document Management</h3>
+                    <ul class="feature-list">
+                        <li>Document categorization</li>
+                        <li>Template management</li>
+                        <li>Version control</li>
+                        <li>Secure storage</li>
+                        <li>Easy sharing & access</li>
                     </ul>
                 </div>
             </div>
@@ -316,37 +414,18 @@ ob_end_flush();
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('featureSearch');
     const categoryCards = document.querySelectorAll('.category-card');
 
-    // Keyboard shortcut for search
-    document.addEventListener('keydown', function(e) {
-        if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-            e.preventDefault();
-            searchInput.focus();
-        }
-    });
+    // Add hover effects and animations
+    categoryCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
+        });
 
-    // Search functionality
-    searchInput.addEventListener('input', function(e) {
-        const searchTerm = e.target.value.toLowerCase();
-        
-        categoryCards.forEach(card => {
-            const category = card.dataset.category;
-            const features = card.querySelectorAll('.feature-list li');
-            let hasMatch = false;
-
-            features.forEach(feature => {
-                const text = feature.textContent.toLowerCase();
-                if (text.includes(searchTerm)) {
-                    hasMatch = true;
-                    feature.style.backgroundColor = 'var(--primary-light)';
-                } else {
-                    feature.style.backgroundColor = 'transparent';
-                }
-            });
-
-            card.style.display = hasMatch ? 'block' : 'none';
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '0 5px 15px rgba(0,0,0,0.1)';
         });
     });
 });
