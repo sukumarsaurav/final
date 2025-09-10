@@ -218,6 +218,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
                             'customer' => $stripe_customer->id,
                             'payment_method' => $payment_method->id,
                             'usage' => 'off_session',
+                            'automatic_payment_methods' => [
+                                'enabled' => true,
+                                'allow_redirects' => 'never'
+                            ],
+                            'return_url' => 'https://beige-antelope-215732.hostingersite.com/consultant-registration.php',
                             'metadata' => [
                                 'is_fallback' => 'true',
                                 'email' => $email
@@ -238,12 +243,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
                             'payment_method' => $payment_method->id,
                             'payment_method_types' => ['card'],
                             'usage' => 'off_session',
+                            'automatic_payment_methods' => [
+                                'enabled' => true,
+                                'allow_redirects' => 'never'
+                            ],
                             'metadata' => [
                                 'user_email' => $email,
                                 'registration_flow' => 'consultant'
                             ],
                             'confirm' => true,
-                            'return_url' => 'https://visafy.io/registration-complete.php'
+                            'return_url' => 'https://visafy.io/consultant-registration.php'
                         ]);
                         
                         if ($setup_intent->status === 'requires_action' && $setup_intent->next_action) {
@@ -404,6 +413,11 @@ function generate_setup_intent($email, $name, $phone) {
             'customer' => $customer->id,
             'payment_method_types' => ['card'],
             'usage' => 'off_session',
+            'automatic_payment_methods' => [
+                'enabled' => true,
+                'allow_redirects' => 'never'
+            ],
+            'return_url' => 'https://visafy.io/consultant-registration.php',
             'metadata' => [
                 'customer_email' => $email,
                 'customer_name' => $name,
@@ -455,7 +469,12 @@ function safe_attach_payment_method($payment_method_id, $customer_id) {
                 'customer' => $customer_id,
                 'payment_method' => $payment_method_id,
                 'confirm' => true,
-                'usage' => 'off_session'
+                'usage' => 'off_session',
+                'automatic_payment_methods' => [
+                    'enabled' => true,
+                    'allow_redirects' => 'never'
+                ],
+                'return_url' => 'https://visafy.io/consultant-registration.php'
             ]);
             
             if ($setup_intent->status === 'requires_action') {
