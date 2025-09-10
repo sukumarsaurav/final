@@ -84,7 +84,7 @@ error_log('Profile picture in session: ' . print_r($_SESSION['profile_picture'] 
     <meta name="description" content="Expert Canadian immigration consultancy services for study permits, work permits, express entry, and more.">
     
     <!-- Favicon -->
-    <link rel="icon" href="<?php echo $base; ?>/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
     
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet">

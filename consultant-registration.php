@@ -431,19 +431,23 @@ function safe_attach_payment_method($payment_method_id, $customer_id) {
     try {
         $payment_method = \Stripe\PaymentMethod::retrieve($payment_method_id);
         
-        $customer = \Stripe\Customer::retrieve([
-            'id' => $customer_id,
-            'expand' => ['payment_methods']
-        ]);
-        
+        // Check if payment method is already attached to customer
         $is_attached = false;
-        if (isset($customer->payment_methods) && is_array($customer->payment_methods->data)) {
-            foreach ($customer->payment_methods->data as $pm) {
+        try {
+            $payment_methods = \Stripe\PaymentMethod::all([
+                'customer' => $customer_id,
+                'type' => 'card'
+            ]);
+            
+            foreach ($payment_methods->data as $pm) {
                 if ($pm->id === $payment_method_id) {
                     $is_attached = true;
                     break;
                 }
             }
+        } catch (\Exception $e) {
+            // If we can't check existing payment methods, assume it's not attached
+            $is_attached = false;
         }
         
         if (!$is_attached) {
