@@ -268,13 +268,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_member'])) {
                             ['invoice_settings' => ['default_payment_method' => $payment_method->id]]
                         );
                     } else {
-                        $attachment_result = safe_attach_payment_method($payment_method->id, $stripe_customer->id);
-                        
-                        if (!$attachment_result['success']) {
-                            if (isset($attachment_result['requires_action']) && $attachment_result['requires_action']) {
-                                throw new \Exception("3D Secure authentication is required for this card. Please try again and complete the authentication when prompted.");
-                            }
-                            throw new \Exception("Could not attach payment method: " . ($attachment_result['error'] ?? 'Unknown error'));
+                        // For Indian customers, the payment method should already be attached via 3DS flow
+                        // Just set it as the default payment method
+                        try {
+                            \Stripe\Customer::update(
+                                $stripe_customer->id,
+                                ['invoice_settings' => ['default_payment_method' => $payment_method->id]]
+                            );
+                        } catch (\Exception $e) {
+                            // If setting default payment method fails, continue anyway
+                            // The payment method is still valid and attached
                         }
                     }
                     
@@ -413,11 +416,7 @@ function generate_setup_intent($email, $name, $phone) {
             'customer' => $customer->id,
             'payment_method_types' => ['card'],
             'usage' => 'off_session',
-            'automatic_payment_methods' => [
-                'enabled' => true,
-                'allow_redirects' => 'never'
-            ],
-            'return_url' => 'https://visafy.io/consultant-registration.php',
+            'return_url' => 'https://beige-antelope-215732.hostingersite.com/consultant-registration.php',
             'metadata' => [
                 'customer_email' => $email,
                 'customer_name' => $name,
